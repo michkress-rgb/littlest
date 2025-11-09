@@ -1187,7 +1187,7 @@
 .lw-count{font-size:1.6rem;font-weight:600;color:#7a4b2b;padding:0 .5rem}
 .btn-pill{border-radius:9999px;padding:.4rem .75rem}
 
-.quick-action-btn.active{outline:2px solid #7a4b2b}
+.quick-action-btn.active{outline:2px solid #7a4b2b;background:#f9f2ec}
 .qa-dot{display:inline-block;width:.5rem;height:.5rem;border-radius:9999px;margin-left:.4rem;background:#cbb39f;vertical-align:middle}
 .quick-action-btn.active .qa-dot{background:#7a4b2b}
 </style>
@@ -1277,19 +1277,15 @@
           <button class="btn-link" id="setGoalBtn">Set Goal</button>
         </div>
         <div class="quick-actions">
-          <button class="quick-action-btn" id="quickMass">
+          <button class="quick-action-btn" id="quickMass" aria-pressed="false">
             <span class="quick-action-icon"></span>
             <span class="quick-action-label">Mass</span><span class="qa-dot"></span>
           </button>
-<button class="quick-action-btn" id="quickMassMinus" title="Decrease Mass">
-  <span class="quick-action-icon"></span>
-  <span class="quick-action-label">Mass -</span>
-</button>
-          <button class="quick-action-btn" id="quickScripture">
+          <button class="quick-action-btn" id="quickScripture" aria-pressed="false">
             <span class="quick-action-icon"></span>
             <span class="quick-action-label">Scripture</span>
           </button>
-          <button class="quick-action-btn" id="quickLectio">
+          <button class="quick-action-btn" id="quickLectio" aria-pressed="false">
             <span class="quick-action-icon"></span>
             <span class="quick-action-label">Lectio Divina</span><span class="qa-dot"></span>
           </button>
@@ -2593,7 +2589,10 @@ async function startApp(){
       if(qm) qm.classList.toggle("active", massOn);
       if(qs) qs.classList.toggle("active", scrOn);
       if(ql) ql.classList.toggle("active", lecOn);
-    
+      if(qm) qm.setAttribute("aria-pressed", String(massOn));
+      if(qs) qs.setAttribute("aria-pressed", String(scrOn));
+      if(ql) ql.setAttribute("aria-pressed", String(lecOn));
+        
       document.getElementById("streakCount").textContent = "0";
     }
 
@@ -3593,37 +3592,16 @@ async function startApp(){
       });
 
       // Quick actions
-      document.getElementById("quickMass").addEventListener("click", async () => {
-  const current = !!todayDailyData.massDone;
+      document.getElementById("quickMass").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  const current = btn.classList.contains("active");
   const next = !current;
+  btn.classList.toggle("active", next);
+  btn.setAttribute("aria-pressed", String(next));
   await set(ref(db, `dailyData/${todayString}/massDone`), next);
   try{ showToast(next? "Mass: done" : "Mass: cleared"); }catch(e){}
+  if (typeof loadData === "function") try{ await loadData(); }catch(_){}
 });
-document.getElementById("quickLectioMinus")?.addEventListener("click", async () => {
-  const current = (todayDailyData.reading?.lectioCount||0);
-  const next = Math.max(0, current-1);
-  await set(ref(db, `dailyData/${todayString}/reading/lectioCount`), next);
-  try{ showToast("Lectio Divina −1"); }catch(e){}
-});
-      document.getElementById("quickScripture").addEventListener("click", async () => {
-  const current = !!(todayDailyData.reading && todayDailyData.reading.scripture);
-  const next = !current;
-  await set(ref(db, `dailyData/${todayString}/reading/scripture`), next);
-  try{ showToast(next? "Scripture: done" : "Scripture: cleared"); }catch(e){}
-});
-      document.getElementById("quickLectio").addEventListener("click", async () => {
-  const current = !!(todayDailyData.reading && todayDailyData.reading.lectio);
-  const next = !current;
-  await set(ref(db, `dailyData/${todayString}/reading/lectio`), next);
-  try{ showToast(next? "Lectio Divina: done" : "Lectio Divina: cleared"); }catch(e){}
-});
-
-      // Children selector
-      
-    // Rename children per request
-    (function renameChildren(){
-      const names = ["Philip","Agnes","Edmund","Leo","Zoë"];
-      const childButtons = Array.from(document.querySelectorAll('.btn-child'));
       childButtons.forEach((btn, i)=>{ if(names[i]) btn.textContent = names[i]; });
     })();
 
