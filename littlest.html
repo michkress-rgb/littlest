@@ -2542,15 +2542,18 @@ async function startApp(){
       if (qLectio) qLectio.classList.toggle("active", !!(todayDailyData.reading && todayDailyData.reading.lectio));
     
       
-      // Update Scripture/Lectio badges from counts
+      // Update Scripture/Lectio badges from counts      if (lBadge) lBadge.textContent = String(lCount);
+    
+      
+      // Scripture/Lectio badges from counts
+    
+      
       const sCount = todayDailyData.reading?.scriptureCount || 0;
       const lCount = todayDailyData.reading?.lectioCount || 0;
       const sBadge = document.getElementById("scriptureBadge");
       const lBadge = document.getElementById("lectioBadge");
+      if (sBadge) sBadge.textContent = String(sCount);
       if (lBadge) lBadge.textContent = String(lCount);
-    
-      
-      // Scripture/Lectio badges from counts
     
       document.getElementById("streakCount").textContent = "0";
     }
@@ -3539,11 +3542,13 @@ async function startApp(){
         const current = (todayDailyData.reading?.scriptureCount||0);
         await set(ref(db, `dailyData/${todayString}/reading/scriptureCount`), current+1);
         try{ showToast("Holy Scripture +1"); }catch(e){}
+        const b=document.getElementById("scriptureBadge"); if (b) b.textContent=String(current+1);
       });
       document.getElementById("quickLectio").addEventListener("click", async () => {
         const current = (todayDailyData.reading?.lectioCount||0);
         await set(ref(db, `dailyData/${todayString}/reading/lectioCount`), current+1);
         try{ showToast("Lectio Divina +1"); }catch(e){}
+        const b=document.getElementById("lectioBadge"); if (b) b.textContent=String(current+1);
       });
 
       // Children selector
