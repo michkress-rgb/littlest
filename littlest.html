@@ -2329,7 +2329,15 @@ Relying on your maternal protection and on your constant help, I resolve to live
         if (e.target.value === "332211") {
           showScreen("loadingScreen");
           setTimeout(loadApp, 1000);
-        } else {
+        
+          // hard fallback if something stalls
+          setTimeout(function(){
+            try { if (document.getElementById("loadingScreen").classList.contains("active")) {
+              if (typeof renderAll === "function") renderAll();
+              if (typeof showScreen === "function") showScreen("mainApp");
+            }} catch(_){}
+          }, 7000);
+} else {
           e.target.value = "";
           alert("Incorrect PIN");
         }
@@ -2341,15 +2349,14 @@ Relying on your maternal protection and on your constant help, I resolve to live
       document.getElementById(screenId).classList.add("active");
     }
 
-    async function loadApp() {
-  try {
+    async function loadApp(){try{
     if (typeof setupListeners === 'function') setupListeners();
     if (typeof loadData === 'function') await loadData();
-  } catch (err) {console.error("Init failed:", err);
+  }catch(err){console.error("Init failed:", err);
     try { if (typeof showToast === 'function') showToast("Could not load data. Working offline.", "error"); } catch (e) {}
   
     try { if (typeof renderAll === "function") renderAll(); } catch(e) {}
-  } finally {
+  }finally{ console.log("loadApp.finally"); 
     try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(e){}
     try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(e){}
   }
@@ -3673,5 +3680,11 @@ Relying on your maternal protection and on your constant help, I resolve to live
       if (currentView === "childrenView") loadChildrenChart();
     }
   </script>
+
+<script>
+window.addEventListener('error', function(e){
+  console.error('Global error:', e.message, e.filename, e.lineno, e.error);
+});
+</script>
 </body>
 </html>
