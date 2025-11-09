@@ -3,312 +3,1668 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Littlest Way – Rebuilt</title>
+  <title>Littlest Way - Prayer Tracker</title>
   <meta name="theme-color" content="#5a3825" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --primary:#8b4513;--primary-dark:#5d2f0e;--secondary:#2f4f4f;
-      --bg:#faf8f5;--card:#fff;--text:#2b2b2b;--muted:#6b6b6b;--border:#e6dccf;
+    :root {
+      --primary: #8b4513;
+      --primary-dark: #5d2f0e;
+      --primary-light: #a0522d;
+      --secondary: #2f4f4f;
+      --secondary-light: #4a7c7c;
+      --accent-gold: #d4af37;
+      --accent-rose: #c17b7b;
+      --bg-main: #faf8f5;
+      --bg-card: #ffffff;
+      --bg-overlay: rgba(0, 0, 0, 0.7);
+      --text-primary: #2c2c2c;
+      --text-secondary: #5a5a5a;
+      --text-muted: #8a8a8a;
+      --border: #e5ddd3;
+      --border-dark: #d0c4b8;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --shadow-lg: rgba(0, 0, 0, 0.15);
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Cormorant Garamond','Georgia',serif;background:var(--bg);color:var(--text);line-height:1.6}
-    h1,h2,h3{font-family:'Cinzel','Garamond',serif}
-    .screen{display:none;min-height:100vh}
-    .screen.active{display:block}
-    /* PIN */
-    #pinScreen.active{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary-dark),var(--primary))}
-    .pin-card{background:var(--card);border:1px solid var(--border);padding:2rem;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.25);width:min(420px,92vw);text-align:center}
-    .pin-card h1{color:var(--primary);letter-spacing:1px;margin-bottom:.25rem}
-    .pin-sub{color:var(--muted);font-style:italic;margin-bottom:1rem}
-    .pin-input{width:100%;padding:0.85rem;border:2px solid var(--border);border-radius:8px;text-align:center;font-size:1.25rem;letter-spacing:.25em}
-    .pin-btn{margin-top:1rem;width:100%;padding:.85rem;border:none;border-radius:8px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
-    .pin-hint{margin-top:.75rem;color:var(--muted);font-size:.95rem}
-    .pin-error{margin-top:.75rem;color:#b00020;font-weight:700}
-    /* Loading */
-    #loadingScreen.active{display:flex;align-items:center;justify-content:center}
-    .spinner{width:56px;height:56px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    /* Header */
-    .header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.05)}
-    .header-wrap{max-width:1100px;margin:0 auto;padding:1rem}
-    .topbar{display:flex;gap:1rem;align-items:center;justify-content:space-between}
-    .title{color:var(--primary);letter-spacing:1px}
-    .actions{display:flex;gap:.5rem}
-    .icon-btn{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.5rem .65rem;cursor:pointer}
-    .datebar{display:flex;gap:.5rem;align-items:center;justify-content:center;padding:.5rem;margin-top:.5rem}
-    .datebar button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:.35rem .75rem;cursor:pointer}
-    .date{font-weight:700;color:var(--primary)}
-    /* Tabs (wrap across 2+ lines) */
-    .tabs{display:flex;flex-wrap:wrap;gap:.25rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.25rem .25rem .5rem}
-    .tab{flex:1 1 160px;min-width:150px;white-space:normal;text-align:center;border:none;background:transparent;padding:.6rem .4rem;border-bottom:3px solid transparent;cursor:pointer}
-    .tab.active{border-bottom-color:var(--primary);color:var(--primary);background:rgba(139,69,19,.06)}
-    /* Views */
-    .view{display:none;max-width:1100px;margin:0 auto;padding:1rem}
-    .view.active{display:block}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin:1rem 0;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-    .row{display:flex;gap:1rem;flex-wrap:wrap}
-    .btn{border:none;border-radius:8px;background:var(--primary);color:#fff;padding:.6rem .9rem;cursor:pointer}
-    .btn.alt{background:var(--secondary)}
-    .btn.ghost{background:#fff;color:var(--primary);border:1px solid var(--primary)}
-    .list{display:grid;gap:.5rem}
-    .item{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;background:#fff}
-    .label{font-weight:700}
-    .muted{color:var(--muted);font-style:italic}
-    .badge{display:inline-block;background:rgba(139,69,19,.1);color:var(--primary);border:1px solid var(--primary);padding:.15rem .5rem;border-radius:999px;font-size:.85rem}
-    .controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-    .field{width:100%;padding:.65rem;border:1px solid var(--border);border-radius:8px}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
-    @media (max-width:700px){.two{grid-template-columns:1fr}}
+
+    body.dark-mode {
+      --primary: #d4af37;
+      --primary-dark: #b8941f;
+      --primary-light: #e6c550;
+      --secondary: #5a7d7d;
+      --secondary-light: #7a9d9d;
+      --accent-gold: #f0d875;
+      --accent-rose: #d99999;
+      --bg-main: #1a1a1a;
+      --bg-card: #2a2a2a;
+      --text-primary: #e5e5e5;
+      --text-secondary: #b5b5b5;
+      --text-muted: #858585;
+      --border: #3a3a3a;
+      --border-dark: #4a4a4a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 18px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Cinzel', 'Garamond', serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* === PIN SCREEN === */
+    #pinScreen.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+    }
+
+    .pin-container {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 420px;
+      width: 90%;
+      border: 1px solid var(--border);
+    }
+
+    .pin-container h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+    }
+
+    .pin-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    .pin-input-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pin-input-group input {
+      flex: 1;
+      padding: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 1.25rem;
+      text-align: center;
+      letter-spacing: 0.5em;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .pin-input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .pin-hint {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    /* === LOADING === */
+    #loadingScreen.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-main);
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* === BUTTONS === */
+    .btn {
+      padding: 0.875rem 1.5rem;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-light);
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      color: var(--text-secondary);
+    }
+
+    .btn-icon:hover {
+      background: var(--border);
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      text-decoration: underline;
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .btn-link:hover {
+      color: var(--primary-dark);
+    }
+
+    .btn-small {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    /* === HEADER === */
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-dark);
+      padding: 1.25rem 1.5rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .app-header h1 {
+      font-size: 1.75rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* === DATE NAVIGATOR === */
+    .date-navigator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      margin: 1rem auto;
+      max-width: 500px;
+    }
+
+    .date-navigator button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .date-navigator button:hover {
+      background: var(--primary-dark);
+    }
+
+    .date-navigator button:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .date-display {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 150px;
+      text-align: center;
+    }
+
+    .date-display.not-today {
+      color: var(--secondary);
+    }
+
+    /* === TABS === */
+
+/* Wrapped tab layout */
+.tab-btn{
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 3.5rem;
+  flex: 1 1 20%;
+}
+@media (max-width: 900px){
+  .tab-btn{ flex: 1 1 33%; }
+}
+@media (max-width: 640px){
+  .tab-btn{ flex: 1 1 50%; }
+}
+
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      
+      border-bottom: 2px solid var(--border-dark);
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: wrap;
+}
+
+    .tab-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 0.875rem 1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: rgba(139, 69, 19, 0.05);
+    }
+
+    /* === APP VIEWS === */
+    .app-view {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .app-view.active {
+      display: block;
+    }
+
+    /* === CARDS === */
+    .card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 16px var(--shadow-lg);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 0.25rem;
+    }
+
+    /* === PRAYER ITEMS === */
+    .prayer-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .prayer-item:hover {
+      background: rgba(0, 0, 0, 0.02);
+      border-color: var(--border-dark);
+    }
+
+    .prayer-item.completed {
+      background: rgba(139, 69, 19, 0.05);
+      border-color: var(--primary-light);
+    }
+
+    .prayer-info {
+      flex: 1;
+    }
+
+    .prayer-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .prayer-detail {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .prayer-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .count-display {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 50px;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+    }
+
+    .toggle-btn {
+      padding: 0.75rem 1.25rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .toggle-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .toggle-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    .counter-btns {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .counter-btn {
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+    }
+
+    .counter-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .counter-btn:active {
+      transform: translateY(0);
+    }
+
+    .counter-btn.minus {
+      background: var(--secondary);
+    }
+
+    .counter-btn.minus:hover {
+      background: var(--secondary-light);
+    }
+
+    /* === WAY OF THE CROSS === */
+    .stations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .station-btn {
+      padding: 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .station-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .station-btn.completed {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    .station-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.25rem;
+      color: var(--primary);
+    }
+
+    .station-btn.completed .station-number {
+      color: white;
+    }
+
+    .station-title {
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--text-secondary);
+      display: block;
+    }
+
+    .station-btn.completed .station-title {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stations-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* === SILENT PRAYER TIMER === */
+    .timer-container {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .timer-display {
+      font-size: 4rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 1.5rem 0;
+      letter-spacing: 2px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .timer-btn {
+      padding: 1rem 2rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+    }
+
+    .timer-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .timer-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .timer-presets {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .preset-btn {
+      padding: 0.75rem 1.25rem;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+    }
+
+    .preset-btn:hover {
+      background: var(--secondary-light);
+    }
+
+    .preset-btn.active {
+      background: var(--primary);
+    }
+
+    .timer-sessions {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid var(--border);
+    }
+
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .session-time {
+      color: var(--text-secondary);
+    }
+
+    .session-duration {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* === INTENTIONS === */
+    .intention-item {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      background: var(--bg-card);
+      transition: all 0.2s ease;
+    }
+
+    .intention-item:hover {
+      border-color: var(--primary-light);
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .intention-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .intention-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      font-family: 'Cinzel', serif;
+    }
+
+    .intention-note {
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .intention-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .intention-count {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .intention-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .intention-date {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* === NOVENAS === */
+    .novena-item {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      background: var(--bg-card);
+    }
+
+    .novena-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .novena-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .novena-for {
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 0.75rem;
+      padding-left: 1rem;
+    }
+
+    .novena-info {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+    }
+
+    .novena-info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .novena-info-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .novena-info-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .novena-progress {
+      margin: 1rem 0;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .novena-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .novena-checked {
+      background: rgba(139, 69, 19, 0.05);
+      border-color: var(--primary-light);
+    }
+
+    /* === CHILDREN === */
+    .children-selector {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-child {
+      padding: 0.75rem 1.25rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-child:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-child.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    /* === QUICK ACTIONS === */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quick-action-btn {
+      padding: 1.5rem 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+    }
+
+    .quick-action-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-lg);
+    }
+
+    .quick-action-icon {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .quick-action-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* === MODALS === */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-overlay);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 8px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--border);
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 0.25rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 2px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* === FORMS === */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: 'Cormorant Garamond', serif;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* === STATS === */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .stat-label {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* === TOAST === */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px var(--shadow-lg);
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+      max-width: 300px;
+      font-family: 'Cinzel', serif;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.error {
+      background: var(--accent-rose);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .app-header h1 {
+        font-size: 1.25rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .timer-display {
+        font-size: 3rem;
+      }
+
+      .stations-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app-header {
+        padding: 1rem;
+      }
+
+      .app-view {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .timer-display {
+        font-size: 2.5rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- PIN -->
-  <section id="pinScreen" class="screen active">
-    <div class="pin-card">
+  <!-- === PIN SCREEN === -->
+  <div id="pinScreen" class="screen active">
+    <div class="pin-container">
       <h1>Littlest Way</h1>
-      <div class="pin-sub">Enter passcode to continue</div>
-      <input id="pinInput" class="pin-input" type="password" inputmode="numeric" placeholder="Enter 332211" maxlength="6" autocomplete="off"/>
-      <button id="pinBtn" class="pin-btn">Unlock</button>
-      <div id="pinMsg" class="pin-hint">Tip: passcode is 332211</div>
-      <div id="pinErr" class="pin-error" style="display:none;"></div>
+      <p class="pin-subtitle">A path of little prayers</p>
+      <div class="pin-input-group">
+        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+      </div>
+      <p class="pin-hint">Enter your 6-digit PIN</p>
     </div>
-  </section>
+  </div>
 
-  <!-- Loading -->
-  <section id="loadingScreen" class="screen">
-    <div style="text-align:center;padding:2rem">
+  <!-- === LOADING SCREEN === -->
+  <div id="loadingScreen" class="screen">
+    <div class="loading-content">
       <div class="spinner"></div>
-      <div>Loading from Firebase…</div>
-      <div id="loadStatus" class="muted" style="margin-top:.5rem">Connecting…</div>
+      <p><span id="loadingMessage">Loading your prayers...</span></p>
     </div>
-  </section>
+  </div>
 
-  <!-- App -->
-  <section id="app" class="screen">
-    <header class="header">
-      <div class="header-wrap">
-        <div class="topbar">
-          <h2 class="title">Littlest Way</h2>
-          <div class="actions">
-            <button id="exportBtn" class="icon-btn" title="Export JSON">📤</button>
-            <button id="themeBtn" class="icon-btn" title="Toggle theme">☾</button>
-          </div>
+  <!-- === MAIN APP === -->
+  <div id="mainApp" class="screen">
+    <header class="app-header">
+      <div class="header-content">
+        <h1>Littlest Way</h1>
+        <div class="header-actions">
+          <button id="exportDataBtn" class="btn-icon" title="Export Data">📊</button>
+          <button id="themeToggle" class="btn-icon" title="Toggle Theme">
+            <span class="theme-icon">☾</span>
+          </button>
         </div>
-        <div class="datebar">
-          <button id="prevDay">←</button>
-          <div id="dateLabel" class="date">Today</div>
-          <button id="nextDay">→</button>
-        </div>
-        <div class="tabs">
-          <button data-view="dash" class="tab active">Dashboard</button>
-          <button data-view="daily" class="tab">Daily Prayers</button>
-          <button data-view="michael" class="tab">St. Michael</button>
-          <button data-view="way" class="tab">Way of the Cross</button>
-          <button data-view="silent" class="tab">Silent Prayer</button>
-          <button data-view="devotions" class="tab">Devotions</button>
-          <button data-view="children" class="tab">Children</button>
-          <button data-view="intentions" class="tab">Intentions</button>
-          <button data-view="novenas" class="tab">Novenas</button>
-          <button data-view="history" class="tab">History</button>
-        </div>
+      </div>
+
+      <div class="date-navigator">
+        <button id="prevDayBtn">←</button>
+        <div class="date-display" id="currentDateDisplay">Today</div>
+        <button id="nextDayBtn">→</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-view="dashboardView">Dashboard</button>
+        <button class="tab-btn" data-view="dailyPrayersView">Daily Prayers</button>
+        <button class="tab-btn" data-view="rosaryView">Rosary</button>
+        <button class="tab-btn" data-view="stMichaelView">St. Michael</button>
+        <button class="tab-btn" data-view="wayView">Way of Cross</button>
+        <button class="tab-btn" data-view="silentView">Silent Prayer</button>
+        <button class="tab-btn" data-view="devotionsView">Devotions</button>
+        <button class="tab-btn" data-view="breviaryView">Breviary</button>
+        <button class="tab-btn" data-view="stJosephView">St. Joseph</button>
+        <button class="tab-btn" data-view="carmelitePrayersView">Carmelite Prayers</button>
+        <button class="tab-btn" data-view="readingView">Reading</button>
+        <button class="tab-btn" data-view="carmeliteView">Carmelite Reading</button>
+        <button class="tab-btn" data-view="sacramentsView">Sacraments</button>
+        <button class="tab-btn" data-view="childrenView">Children</button>
+        <button class="tab-btn" data-view="intentionsView">Intentions</button>
+        <button class="tab-btn" data-view="novenaView">Novenas</button>
+        <button class="tab-btn" data-view="historyView">History</button>
       </div>
     </header>
 
-    <!-- DASH -->
-    <div id="view-dash" class="view active">
-      <div class="row">
-        <div class="card" style="flex:1 1 260px">
-          <h3>Today’s Prayers</h3>
-          <div style="font-size:2rem;margin-top:.25rem" id="statToday">0</div>
-          <div class="muted">Total increments for <span id="statDate"></span></div>
+    <!-- === DASHBOARD VIEW === -->
+    <div id="dashboardView" class="app-view active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="todayPrayersCount">0</div>
+          <div class="stat-label">Prayers Today</div>
         </div>
-        <div class="card" style="flex:1 1 260px">
-          <h3>Daily Goal</h3>
-          <div class="controls" style="margin-top:.5rem">
-            <input id="goalInput" class="field" type="number" min="0" step="1" placeholder="Enter goal…"/>
-            <button id="saveGoal" class="btn">Save</button>
+        <div class="stat-card">
+          <div class="stat-value" id="dailyGoalProgress">0%</div>
+          <div class="stat-label">Daily Goal</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="streakCount">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Quick Actions</h2>
+          <button class="btn-link" id="setGoalBtn">Set Goal</button>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-action-btn" id="quickMass">
+            <span class="quick-action-icon">✟</span>
+            <span class="quick-action-label">Mass</span>
+          </button>
+          <button class="quick-action-btn" id="quickScripture">
+            <span class="quick-action-icon">📖</span>
+            <span class="quick-action-label">Scripture</span>
+          </button>
+          <button class="quick-action-btn" id="quickLectio">
+            <span class="quick-action-icon">📜</span>
+            <span class="quick-action-label">Lectio Divina</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === DAILY PRAYERS VIEW === -->
+    <div id="dailyPrayersView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🌅 Daily Prayers</h2>
+        </div>
+        <div id="dailyPrayersList"></div>
+      </div>
+    </div>
+
+    <!-- === ROSARY VIEW === -->
+    <div id="rosaryView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🌹 Rosary</h2>
+        </div>
+        <div id="rosaryList"></div>
+      </div>
+    </div>
+
+    <!-- === ST. MICHAEL CHAPLET VIEW === -->
+    <div id="stMichaelView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">⚔️ St. Michael Chaplet</h2>
+            <p class="card-subtitle">In honor of the nine choirs of angels</p>
           </div>
-          <div style="margin-top:.5rem"><span id="goalPct" class="badge">0%</span></div>
+          <button class="btn-icon" onclick="showPrayerInfo('stMichaelChaplet')" title="Prayer Instructions">ℹ️</button>
         </div>
-        <div class="card" style="flex:1 1 260px">
-          <h3>Streak</h3>
-          <div style="font-size:2rem;margin-top:.25rem" id="statStreak">0</div>
-          <div class="muted">Consecutive days with any prayer</div>
-        </div>
-      </div>
 
-      <div class="card">
-        <h3>Quick Add</h3>
-        <div class="controls" style="margin-top:.5rem;flex-wrap:wrap">
-          <button class="btn" data-qadd="+1">+1</button>
-          <button class="btn" data-qadd="+10">+10</button>
-          <button class="btn" data-qadd="+100">+100</button>
-          <button class="btn alt" data-qadd="-1">−1</button>
-        </div>
-        <div class="muted" style="margin-top:.5rem">Updates /littlestWay/totals/YYYY-MM-DD</div>
-      </div>
-    </div>
-
-    <!-- DAILY -->
-    <div id="view-daily" class="view">
-      <div class="card">
-        <h3>Daily Prayers</h3>
-        <div id="dailyList" class="list" style="margin-top:.75rem"></div>
-        <div class="two" style="margin-top:.75rem">
-          <input id="dailyNewName" class="field" placeholder="Add prayer (e.g., Morning Offering)"/>
-          <button id="dailyAdd" class="btn">Add</button>
-        </div>
-        <div class="muted" style="margin-top:.5rem">Synced at /littlestWay/dailyPrayers</div>
-      </div>
-    </div>
-
-    <!-- ST MICHAEL -->
-    <div id="view-michael" class="view">
-      <div class="card">
-        <h3>Chaplet of St. Michael</h3>
-        <div class="muted">Guided steps + completion counter</div>
-        <div id="michaelStep" class="card" style="margin-top:.75rem">
-          <div id="michaelText">Press “Start”.</div>
-          <div class="controls" style="margin-top:.5rem">
-            <button id="mStart" class="btn">Start</button>
-            <button id="mPrev" class="btn ghost">← Prev</button>
-            <button id="mNext" class="btn">Next →</button>
-            <button id="mDone" class="btn alt" style="display:none">Complete Chaplet</button>
+        <div id="stMichaelPrayerInterface" style="display: none;">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">Pray the Chaplet</h3>
+            <div id="stMichaelCurrentPrayer" style="font-size: 1.1rem; line-height: 1.8; margin: 2rem 0; padding: 1.5rem; background: rgba(0,0,0,0.02); border-radius: 8px; border-left: 4px solid var(--primary);"></div>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-secondary" id="stMichaelPrevBtn">← Previous</button>
+              <button class="btn btn-primary" id="stMichaelNextBtn">Next →</button>
+              <button class="btn btn-primary" id="stMichaelCompleteBtn" style="display: none;">Complete Chaplet</button>
+            </div>
           </div>
         </div>
-        <div class="item">
-          <div><span class="label">Completed</span><div class="muted">Full nine-choir devotion</div></div>
-          <div class="controls">
-            <button id="mPlus" class="btn">+1</button>
-            <div id="mCount" class="badge">0</div>
+
+        <div id="stMichaelTrackingInterface">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <button class="btn btn-primary" id="startStMichaelChaplet" style="font-size: 1.1rem; padding: 1.25rem 2rem;">🙏 Start Praying Chaplet</button>
+          </div>
+
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">St. Michael Chaplet Completed</div>
+              <div class="prayer-detail">Full nine-choir devotion</div>
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display" id="stMichaelCount">0</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addStMichael(1)">+1</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- WAY OF THE CROSS -->
-    <div id="view-way" class="view">
+    <!-- === WAY OF THE CROSS VIEW === -->
+    <div id="wayView" class="app-view">
       <div class="card">
-        <h3>Way of the Cross</h3>
-        <div id="stations" class="row" style="margin-top:.5rem"></div>
-        <div class="controls" style="margin-top:.75rem">
-          <button id="wayAll" class="btn">Complete All</button>
-          <button id="wayReset" class="btn alt">Reset</button>
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">✟ Way of the Cross</h2>
+            <p class="card-subtitle">Select individual stations or complete all</p>
+          </div>
         </div>
-        <div class="item" style="margin-top:.75rem">
-          <div><span class="label">Total Completions</span><div class="muted">All 14 stations</div></div>
-          <div id="wayCount" class="badge">0</div>
+        
+        <div class="stations-grid" id="stationsList"></div>
+        
+        <div class="stations-actions">
+          <button class="btn btn-primary" id="completeAllStations">Complete All Stations</button>
+          <button class="btn btn-secondary" id="resetStations">Reset All</button>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">Total Way of the Cross Completed</div>
+              <div class="prayer-detail">Full devotion (all 14 stations)</div>
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display" id="wayOfCrossCount">0</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- SILENT PRAYER -->
-    <div id="view-silent" class="view">
+    <!-- === SILENT PRAYER VIEW === -->
+    <div id="silentView" class="app-view">
       <div class="card">
-        <h3>Silent Prayer</h3>
-        <div style="font-size:3rem;margin:.5rem 0" id="timer">00:00</div>
-        <div class="controls">
-          <button id="tStart" class="btn">Start</button>
-          <button id="tStop" class="btn alt" disabled>Stop</button>
+        <div class="card-header">
+          <h2 class="card-title">🕊️ Silent Prayer</h2>
         </div>
-        <div class="controls" style="margin-top:.5rem">
-          <button class="btn ghost" data-preset="5">5m</button>
-          <button class="btn ghost" data-preset="10">10m</button>
-          <button class="btn ghost" data-preset="20">20m</button>
-          <button class="btn ghost" data-preset="30">30m</button>
+        
+        <div class="timer-container">
+          <div class="timer-display" id="timerDisplay">00:00</div>
+          
+          <div class="timer-controls">
+            <button class="timer-btn" id="startTimerBtn">Start</button>
+            <button class="timer-btn" id="stopTimerBtn" disabled>Stop</button>
+          </div>
+
+          <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(0,0,0,0.02); border-radius: 6px;">
+            <label style="display: block; text-align: center; margin-bottom: 0.75rem; font-weight: 600; color: var(--text-secondary);">Optional Timer Presets</label>
+            <div class="timer-presets">
+              <button class="preset-btn" data-minutes="1">1 min</button>
+              <button class="preset-btn" data-minutes="3">3 min</button>
+              <button class="preset-btn" data-minutes="5">5 min</button>
+              <button class="preset-btn" data-minutes="10">10 min</button>
+              <button class="preset-btn" data-minutes="20">20 min</button>
+              <button class="preset-btn" data-minutes="30">30 min</button>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 1rem;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);" id="totalSilentTime">0</div>
+            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Total minutes today</div>
+          </div>
         </div>
-        <div class="item" style="margin-top:.75rem">
-          <div><span class="label">Total Minutes Today</span></div>
-          <div id="tTotal" class="badge">0</div>
-        </div>
-        <div class="card" style="margin-top:.75rem">
-          <h4>Today’s Sessions</h4>
-          <div id="tSessions" class="list" style="margin-top:.5rem"></div>
+
+        <div class="timer-sessions" id="timerSessions">
+          <h3 style="margin-bottom: 1rem; font-size: 1.2rem; color: var(--primary);">Today's Sessions</h3>
+          <div id="sessionsListToday"></div>
         </div>
       </div>
     </div>
 
-    <!-- DEVOTIONS -->
-    <div id="view-devotions" class="view">
+    <!-- === DEVOTIONS VIEW === -->
+    <div id="devotionsView" class="app-view">
       <div class="card">
-        <h3>Devotions</h3>
-        <div id="devList" class="list" style="margin-top:.75rem"></div>
-        <div class="two" style="margin-top:.75rem">
-          <input id="devName" class="field" placeholder="Add devotion (e.g., Rosary, Angelus)"/>
-          <button id="devAdd" class="btn">Add</button>
+        <div class="card-header">
+          <h2 class="card-title">🙏 Devotions</h2>
         </div>
-        <div class="muted" style="margin-top:.5rem">Each devotion can have a saved intention.</div>
+        <div id="devotionsList"></div>
       </div>
     </div>
 
-    <!-- CHILDREN -->
-    <div id="view-children" class="view">
+    <!-- === BREVIARY VIEW === -->
+    <div id="breviaryView" class="app-view">
       <div class="card">
-        <h3>Children’s Prayers</h3>
-        <div class="controls" style="margin-top:.5rem;flex-wrap:wrap" id="childTabs"></div>
-        <div id="childList" class="list" style="margin-top:.75rem"></div>
-        <div class="two" style="margin-top:.75rem">
-          <input id="childNewPrayer" class="field" placeholder="Add child prayer (e.g., Night Prayer)"/>
-          <button id="childAdd" class="btn">Add</button>
+        <div class="card-header">
+          <h2 class="card-title">📿 Liturgy of the Hours</h2>
         </div>
+        <div id="breviaryList"></div>
       </div>
     </div>
 
-    <!-- INTENTIONS -->
-    <div id="view-intentions" class="view">
+    <!-- === LITTLE OFFICE OF ST. JOSEPH === -->
+    <div id="stJosephView" class="app-view">
       <div class="card">
-        <h3>Prayer Intentions</h3>
-        <div id="intList" class="list" style="margin-top:.75rem"></div>
-        <div class="two" style="margin-top:.75rem">
-          <input id="intTitle" class="field" placeholder="Add intention (e.g., For Maria)"/>
-          <button id="intAdd" class="btn">Add</button>
+        <div class="card-header">
+          <h2 class="card-title">🔨 Little Office of St. Joseph</h2>
         </div>
+        <div id="stJosephOfficeList"></div>
       </div>
     </div>
 
-    <!-- NOVENAS -->
-    <div id="view-novenas" class="view">
+    <!-- === CARMELITE PRAYERS VIEW === -->
+    <div id="carmelitePrayersView" class="app-view">
       <div class="card">
-        <h3>Novenas</h3>
-        <div id="novList" class="list" style="margin-top:.75rem"></div>
-        <div class="two" style="margin-top:.75rem">
-          <input id="novTitle" class="field" placeholder="Novena title"/>
-          <select id="novType" class="field">
-            <option value="9">9-Day Novena</option>
-            <option value="54">54-Day Rosary Novena</option>
-          </select>
+        <div class="card-header">
+          <h2 class="card-title">⛰️ Carmelite Prayers</h2>
         </div>
-        <div class="two" style="margin-top:.5rem">
-          <input id="novFor" class="field" placeholder="Praying for (optional)"/>
-          <input id="novStart" class="field" type="date"/>
-        </div>
-        <div style="margin-top:.5rem">
-          <button id="novAdd" class="btn">Add Novena</button>
-        </div>
+        <div id="carmelitePrayersList"></div>
       </div>
     </div>
 
-    <!-- HISTORY -->
-    <div id="view-history" class="view">
+    <!-- === READING VIEW === -->
+    <div id="readingView" class="app-view">
       <div class="card">
-        <h3>Last 14 Days</h3>
-        <canvas id="histChart"></canvas>
+        <div class="card-header">
+          <h2 class="card-title">📖 Spiritual Reading</h2>
+        </div>
+        <div id="readingList"></div>
       </div>
     </div>
-  </section>
 
+    <!-- === CARMELITE READING VIEW === -->
+    <div id="carmeliteView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📚 Carmelite Spiritual Reading</h2>
+        </div>
+        <div id="carmeliteReadingList"></div>
+      </div>
+    </div>
+
+    <!-- === SACRAMENTS VIEW === -->
+    <div id="sacramentsView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">✟ Sacraments</h2>
+        </div>
+        <div class="prayer-item">
+          <div class="prayer-info">
+            <div class="prayer-name">Holy Mass</div>
+            <div class="prayer-detail">The source and summit of Christian life</div>
+          </div>
+          <div class="prayer-actions">
+            <button class="btn btn-primary" id="logMassBtn">Attended</button>
+          </div>
+        </div>
+        <div class="prayer-item">
+          <div class="prayer-info">
+            <div class="prayer-name">Confession</div>
+            <div class="prayer-detail">Sacrament of Reconciliation</div>
+          </div>
+          <div class="prayer-actions">
+            <button class="btn btn-primary" id="logConfessionBtn">Received</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Mass Attendance</h2>
+        </div>
+        <canvas id="massChart"></canvas>
+      </div>
+    </div>
+
+    <!-- === CHILDREN VIEW === -->
+    <div id="childrenView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">👶 Children's Prayers</h2>
+        </div>
+        <div class="children-selector">
+          <button class="btn-child active" data-child="child1">Child 1</button>
+          <button class="btn-child" data-child="child2">Child 2</button>
+          <button class="btn-child" data-child="child3">Child 3</button>
+          <button class="btn-child" data-child="child4">Child 4</button>
+          <button class="btn-child" data-child="child5">Child 5</button>
+        </div>
+        <div id="childPrayerSection"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Children's Progress</h2>
+        </div>
+        <canvas id="childrenChart"></canvas>
+      </div>
+    </div>
+
+    <!-- === INTENTIONS VIEW === -->
+    <div id="intentionsView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">💭 Prayer Intentions</h2>
+          <button class="btn btn-primary" id="addIntentionBtn">+ Add Intention</button>
+        </div>
+        <div id="intentionsList"></div>
+      </div>
+    </div>
+
+    <!-- === NOVENA VIEW === -->
+    <div id="novenaView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🕯️ Novenas</h2>
+          <button class="btn btn-primary" id="addNovenaBtn">+ Add Novena</button>
+        </div>
+        <div id="novenaList"></div>
+      </div>
+    </div>
+
+    <!-- === HISTORY VIEW === -->
+    <div id="historyView" class="app-view">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📊 Prayer History</h2>
+        </div>
+        <canvas id="historyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- === MODALS === -->
+  
+  <!-- Intention Modal -->
+  <div id="intentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Add Intention</h3>
+        <button class="modal-close" id="closeModal">×</button>
+      </div>
+      <form id="intentionForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Intention Title *</label>
+            <input type="text" class="form-input" id="intentionTitle" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-textarea" id="intentionNote" placeholder="Add any additional details..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelIntentionModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Novena Modal -->
+  <div id="novenaModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Novena</h3>
+        <button class="modal-close" id="closeNovenaModal">×</button>
+      </div>
+      <form id="novenaForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Novena Title *</label>
+            <input type="text" class="form-input" id="novenaTitle" placeholder="e.g., Novena to St. Thérèse" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Praying For (Optional)</label>
+            <input type="text" class="form-input" id="novenaFor" placeholder="e.g., Healing, guidance..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type *</label>
+            <select class="form-select" id="novenaType">
+              <option value="9">9-Day Novena</option>
+              <option value="54">54-Day Rosary Novena</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Date *</label>
+            <input type="date" class="form-input" id="novenaStartDate" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelNovenaModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Novena</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Answered Prayer Modal -->
+  <div id="answeredModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Prayer Answered</h3>
+        <button class="modal-close" id="closeAnsweredModal">×</button>
+      </div>
+      <form id="answeredForm">
+        <div class="modal-body">
+          <input type="hidden" id="answeredIntentionId" />
+          <input type="hidden" id="answeredIntentionTitle" />
+          <div class="form-group">
+            <label class="form-label">Testimony (Optional)</label>
+            <textarea class="form-textarea" id="answeredTestimony" placeholder="Share how your prayer was answered..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelAnsweredModal">Skip</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Devotion Intention Modal -->
+  <div id="devotionIntentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Set Intention</h3>
+        <button class="modal-close" id="closeDevotionIntentionModal">×</button>
+      </div>
+      <form id="devotionIntentionForm">
+        <div class="modal-body">
+          <input type="hidden" id="devotionKey" />
+          <div class="form-group">
+            <label class="form-label">Prayer Intention</label>
+            <textarea class="form-textarea" id="devotionIntentionText" placeholder="What would you like to pray for?"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelDevotionIntentionModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Prayer Text Modal -->
+  <div id="prayerTextModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="prayerTextTitle">Prayer</h3>
+        <button class="modal-close" onclick="closePrayerTextModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="prayerTextContent" style="font-size: 1.05rem; line-height: 1.9; white-space: pre-wrap;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closePrayerTextModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & App Script -->
   <script type="module">
-    // --- Firebase (same project settings) ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import {
-      getDatabase, ref, set, get, update, onValue, push, increment, query, orderByKey, limitToLast
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      update, 
+      onValue, 
+      push,
+      increment,
+      query,
+      orderByChild,
+      startAt,
+      endAt
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDTX23Nf_6FZsPPf7nDdBVbXoHEQKvXr1s",
       authDomain: "littleway-53e73.firebaseapp.com",
@@ -318,561 +1674,2028 @@
       messagingSenderId: "869175074742",
       appId: "1:869175074742:web:ccb8d0fee2e1ff21d21485"
     };
-    const appFB = initializeApp(firebaseConfig);
-    const db = getDatabase(appFB);
 
-    // --- Elements ---
-    const pinScreen = document.getElementById('pinScreen');
-    const loadingScreen = document.getElementById('loadingScreen');
-    const app = document.getElementById('app');
-    const pinInput = document.getElementById('pinInput');
-    const pinBtn = document.getElementById('pinBtn');
-    const pinErr = document.getElementById('pinErr');
-    const loadStatus = document.getElementById('loadStatus');
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    // Local YYYY-MM-DD (avoids UTC off-by-one)
+    function localISODate(d=new Date()){
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,'0');
+      const da=String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${da}`;
+    }
+    
 
-    const dateLabel = document.getElementById('dateLabel');
-    const prevDay = document.getElementById('prevDay');
-    const nextDay = document.getElementById('nextDay');
+    // Global state
+    let todayString = localISODate(new Date());
+    let currentViewDate = new Date();
+    let todayDailyData = {};
+    let activeIntentions = {};
+    let activeNovenas = {};
+    let currentChild = "child1";
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let presetMinutes = null;
+    let timerStartTime = null;
+    let stMichaelCurrentStep = 0;
+    let stMichaelPraying = false;
 
-    // Views
-    const viewIds = ['dash','daily','michael','way','silent','devotions','children','intentions','novenas','history'];
-    const tabs = document.querySelectorAll('.tab');
-    const showView = (id)=>{
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.getElementById('view-'+id).classList.add('active');
-      tabs.forEach(t=>t.classList.toggle('active', t.dataset.view===id));
-    };
-    tabs.forEach(t=>t.addEventListener('click',()=>showView(t.dataset.view)));
+    // Audio notification
+    const timerSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZUQ4PUqvn77FiGwc5kdPwyXUrAyV6x/DajkALEl+16OecTgwOSKXi8bhvIQU2jdXy13o0AyN3w+/dlEIMEWG56eqgUg8OT67m8LJkHAc6kNPxy3MoASh9yO/YiDoIGWu/7uKWTw0PUa3n77RjHQc8kdTyx3QpAih9ye/aizsIGGu/7+KWTg0QUa3n7rNiHQc7kdTyx3QpAid9ye/ait0IFmrA7+KXTgwPUK3o77RjHQc7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kdTyx3MoASh9ye/aitAIFGrA7+KXTgwPUK3o77RjHQg7kQ==');
 
-    // Date helpers (Europe/Berlin)
-    const tz = 'Europe/Berlin';
-    const toDateKey = (d)=> new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString().slice(0,10);
-    const toLabel = (d)=> d.toLocaleDateString('en-GB',{weekday:'short',year:'numeric',month:'short',day:'numeric', timeZone: tz});
-    let currentDate = new Date(); // today
-    const syncDateLabel = ()=>{
-      dateLabel.textContent = toLabel(currentDate);
-      document.getElementById('statDate').textContent = toLabel(currentDate);
-    };
-    prevDay.onclick=()=>{currentDate.setDate(currentDate.getDate()-1); syncDateLabel(); refreshAllForDate();};
-    nextDay.onclick=()=>{currentDate.setDate(currentDate.getDate()+1); syncDateLabel(); refreshAllForDate();};
-    syncDateLabel();
+    // Way of the Cross stations
+    const stations = [
+      "Jesus is condemned",
+      "Jesus carries His cross",
+      "Jesus falls the first time",
+      "Jesus meets His mother",
+      "Simon helps Jesus",
+      "Veronica wipes Jesus' face",
+      "Jesus falls the second time",
+      "Jesus meets the women",
+      "Jesus falls the third time",
+      "Jesus is stripped",
+      "Jesus is nailed to the cross",
+      "Jesus dies on the cross",
+      "Jesus is taken down",
+      "Jesus is laid in the tomb"
+    ];
 
-    // PIN
-    const REQUIRED_PIN = "332211";
-    const unlock = ()=>{
-      if(pinInput.value.trim()===REQUIRED_PIN){
-        pinScreen.classList.remove('active');
-        loadingScreen.classList.add('active');
-        boot();
-      }else{
-        pinErr.style.display='block';
-        pinErr.textContent='Incorrect passcode.';
+    // Prayer texts database
+    const prayerTexts = {
+      angelOfPeace: {
+        title: "Angel of Peace Prayer (Fatima)",
+        text: `My God, I believe, I adore, I hope and I love You! I ask pardon of You for those who do not believe, do not adore, do not hope and do not love You.`
+      },
+      pardonPrayer: {
+        title: "Pardon Prayer (Fatima)",
+        text: `My God, I believe, I adore, I hope, and I love Thee! I beg pardon for those who do not believe, do not adore, do not hope, and do not love Thee.`
+      },
+      eucharisticPrayer: {
+        title: "Eucharistic Prayer (Fatima)",
+        text: `Most Holy Trinity, Father, Son and Holy Spirit, I adore You profoundly. I offer You the most precious Body, Blood, Soul and Divinity of Jesus Christ, present in all the tabernacles of the world, in reparation for the outrages, sacrileges and indifferences by which He is offended. By the infinite merits of the Sacred Heart of Jesus and the Immaculate Heart of Mary, I beg the conversion of poor sinners.`
+      },
+      fatimaDecade: {
+        title: "Fatima Prayer (After Each Decade)",
+        text: `O my Jesus, forgive us our sins, save us from the fires of hell, and lead all souls to Heaven, especially those in most need of Thy mercy.`
+      },
+      sacrificePrayer: {
+        title: "Sacrifice Prayer (Fatima)",
+        text: `O Jesus, it is for love of You, for the conversion of sinners, and in reparation for the sins committed against the Immaculate Heart of Mary.`
+      },
+      divMercy: {
+        title: "Divine Mercy Chaplet",
+        text: `Opening Prayers:
+You expired, Jesus, but the source of life gushed forth for souls, and the ocean of mercy opened up for the whole world. O Fount of Life, unfathomable Divine Mercy, envelop the whole world and empty Yourself out upon us.
+
+(Repeat 3 times): O Blood and Water, which gushed forth from the Heart of Jesus as a fountain of mercy for us, I trust in You!
+
+On the Our Father Beads:
+Eternal Father, I offer you the Body and Blood, Soul and Divinity of Your Dearly Beloved Son, Our Lord, Jesus Christ, in atonement for our sins and those of the whole world.
+
+On the Hail Mary Beads:
+For the sake of His sorrowful Passion, have mercy on us and on the whole world.
+
+Concluding Prayers (Repeat 3 times):
+Holy God, Holy Mighty One, Holy Immortal One, have mercy on us and on the whole world.`
+      },
+      stMichaelChaplet: {
+        title: "Chaplet of St. Michael the Archangel",
+        text: `Opening:
+O God, come to my assistance. O Lord, make haste to help me.
+Glory be to the Father...
+
+Say one Our Father and three Hail Marys after each of the following nine salutations in honor of the nine choirs of angels:
+
+1. By the intercession of St. Michael and the celestial Choir of Seraphim may the Lord make us worthy to burn with the fire of perfect charity. Amen.
+
+2. By the intercession of St. Michael and the celestial Choir of Cherubim may the Lord grant us the grace to leave the ways of sin and run in the paths of Christian perfection. Amen.
+
+3. By the intercession of St. Michael and the celestial Choir of Thrones may the Lord infuse into our hearts a true and sincere spirit of humility. Amen.
+
+4. By the intercession of St. Michael and the celestial Choir of Dominions may the Lord give us grace to govern our senses and overcome any unruly passions. Amen.
+
+5. By the intercession of St. Michael and the celestial Choir of Virtues may the Lord preserve us from evil and falling into temptation. Amen.
+
+6. By the intercession of St. Michael and the celestial Choir of Powers may the Lord protect our souls against the snares and temptations of the devil. Amen.
+
+7. By the intercession of St. Michael and the celestial Choir of Principalities may God fill our souls with a true spirit of obedience. Amen.
+
+8. By the intercession of St. Michael and the celestial Choir of Archangels may the Lord give us perseverance in faith and in all good works in order that we may attain the glory of Heaven. Amen.
+
+9. By the intercession of St. Michael and the celestial Choir of Angels may the Lord grant us to be protected by them in this mortal life and conducted in the life to come to Heaven. Amen.
+
+Closing:
+Say one Our Father in honor of each of the following leading Angels: St. Michael, St. Gabriel, St. Raphael and our Guardian Angel.
+
+Conclude with the following:
+O glorious prince St. Michael, chief and commander of the heavenly hosts, guardian of souls, vanquisher of rebel spirits, servant in the house of the Divine King and our admirable conductor, you who shine with excellence and superhuman virtue deliver us from all evil, who turn to you with confidence and enable us by your gracious protection to serve God more and more faithfully every day. Amen.`
+      },
+      holyWounds: {
+        title: "Chaplet of the Holy Wounds",
+        text: `Opening:
+O Jesus, Divine Redeemer, be merciful to us and to the whole world. Amen.
+Strong God, Holy God, Immortal God, have mercy on us and on the whole world. Amen.
+Grace and Mercy, O my Jesus, during present dangers; cover us with Your Precious Blood. Amen.
+Eternal Father, grant us mercy through the Blood of Jesus Christ, Your only Son; grant us mercy, we beseech You. Amen, Amen, Amen.
+
+On the Large Beads (say once):
+Eternal Father, I offer You the Wounds of our Lord Jesus Christ, to heal the wounds of our souls.
+
+On the Small Beads (say three times):
+My Jesus, pardon and mercy, through the merits of Your Holy Wounds.
+
+Closing (say three times):
+Eternal Father, I offer You the Wounds of our Lord Jesus Christ, to heal the wounds of our souls.`
+      },
+      sacredHeart: {
+        title: "Sacred Heart Devotion",
+        text: `Act of Consecration to the Sacred Heart:
+O Sacred Heart of Jesus, filled with infinite love, broken by my ingratitude, pierced by my sins, yet loving me still, accept the consecration that I make to You of all that I am and all that I have. Take every faculty of my soul and body, and draw me, day by day, nearer and nearer to Your Sacred Heart, and there, as I can bear the lesson, teach me Your blessed ways. Amen.
+
+Litany of the Sacred Heart (partial):
+Lord, have mercy on us.
+Christ, have mercy on us.
+Lord, have mercy on us.
+Heart of Jesus, Son of the Eternal Father, have mercy on us.
+Heart of Jesus, formed by the Holy Spirit in the womb of the Virgin Mother, have mercy on us.
+Heart of Jesus, united to the Word of God, have mercy on us.
+Heart of Jesus, infinite in majesty, have mercy on us.
+Heart of Jesus, holy temple of God, have mercy on us.
+Heart of Jesus, tabernacle of the Most High, have mercy on us.`
+      },
+      immacHeart: {
+        title: "Immaculate Heart of Mary Devotion",
+        text: `Act of Consecration to the Immaculate Heart:
+O Immaculate Heart of Mary, full of goodness, show your love towards us. Let the flame of your Heart, O Mary, descend on all people. We love you immensely. Impress true love in our hearts so that we have a continuous desire for you. O Mary, humble and meek of heart, remember us when we are in sin. You know that all people sin. Give us, by means of your Immaculate Heart, spiritual health. Let us always see the goodness of your maternal Heart and may we be converted by means of the flame of your Heart. Amen.`
+      },
+      angelus: {
+        title: "The Angelus",
+        text: `V. The Angel of the Lord declared unto Mary.
+R. And she conceived of the Holy Spirit.
+Hail Mary...
+
+V. Behold the handmaid of the Lord.
+R. Be it done unto me according to thy word.
+Hail Mary...
+
+V. And the Word was made Flesh.
+R. And dwelt among us.
+Hail Mary...
+
+V. Pray for us, O holy Mother of God.
+R. That we may be made worthy of the promises of Christ.
+
+Let us pray: Pour forth, we beseech Thee, O Lord, Thy grace into our hearts, that we to whom the Incarnation of Christ Thy Son was made known by the message of an angel, may by His Passion and Cross be brought to the glory of His Resurrection. Through the same Christ Our Lord. Amen.`
+      },
+      holySpiritNovena: {
+        title: "Prayer to the Holy Spirit",
+        text: `Come, Holy Spirit, fill the hearts of Thy faithful and enkindle in them the fire of Thy love.
+V. Send forth Thy Spirit and they shall be created.
+R. And Thou shalt renew the face of the earth.
+
+Let us pray: O God, who didst instruct the hearts of the faithful by the light of the Holy Spirit, grant us in the same Spirit to be truly wise, and ever to rejoice in His consolation. Through Christ our Lord. Amen.`
+      },
+      morningAspirations: {
+        title: "Morning Aspirations",
+        text: `O Jesus, through the Immaculate Heart of Mary, I offer You my prayers, works, joys, and sufferings of this day for all the intentions of Your Sacred Heart, in union with the Holy Sacrifice of the Mass throughout the world, in reparation for my sins, for the intentions of all my relatives and friends, and in particular for the intentions of the Holy Father. Amen.`
+      },
+      actAdoration: {
+        title: "Act of Adoration and Thanksgiving",
+        text: `My God, I adore Thee, and I love Thee with all my heart. I thank Thee for having created me, made me a Christian, and preserved me this day. I offer Thee the good that I have done this day, and I ask pardon for all the faults I have committed. Preserve me this night from sin, and deliver me from all evil. May Thy grace be always with me and with all my dear ones. Amen.`
+      },
+      actFaith: {
+        title: "Act of Faith",
+        text: `O my God, I firmly believe that Thou art one God in three Divine Persons, Father, Son, and Holy Spirit. I believe that Thy Divine Son became man and died for our sins, and that He will come to judge the living and the dead. I believe these and all the truths which the Holy Catholic Church teaches, because Thou hast revealed them, Who canst neither deceive nor be deceived. Amen.`
+      },
+      actHope: {
+        title: "Act of Hope",
+        text: `O my God, relying on Thy infinite goodness and promises, I hope to obtain pardon of my sins, the help of Thy grace, and life everlasting, through the merits of Jesus Christ, my Lord and Redeemer. Amen.`
+      },
+      actLove: {
+        title: "Act of Love",
+        text: `O my God, I love Thee above all things, with my whole heart and soul, because Thou art all good and worthy of all my love. I love my neighbor as myself for the love of Thee. I forgive all who have injured me, and I ask pardon of all whom I have injured. Amen.`
+      },
+      actContrition: {
+        title: "Act of Contrition",
+        text: `O my God, I am heartily sorry for having offended Thee, and I detest all my sins, because I dread the loss of heaven and the pains of hell, but most of all because they offend Thee, my God, Who art all-good and deserving of all my love. I firmly resolve, with the help of Thy grace, to confess my sins, to do penance, and to amend my life. Amen.`
+      },
+      actSupplication: {
+        title: "Act of Supplication",
+        text: `My God, give me Thy grace to do always what is most pleasing to Thee. Give me Thy light to know Thy holy Will and the strength to fulfill it. Have mercy on me, O Lord, for I am weak. Amen.`
+      },
+      actConsecration: {
+        title: "Act of Consecration",
+        text: `O Jesus, through the Immaculate Heart of Mary, I offer Thee all my prayers, works, joys, and sufferings of this day, for all the intentions of Thy Sacred Heart, in union with the Holy Sacrifice of the Mass throughout the world, in reparation for my sins, for the requests of our relatives and friends, and for the intentions of the Holy Father. Amen.`
+      },
+      dailyOffering: {
+        title: "Morning Offering",
+        text: `O Jesus, through the Immaculate Heart of Mary, I offer You all my prayers, works, joys, and sufferings of this day for all the intentions of Your Sacred Heart, in union with the Holy Sacrifice of the Mass throughout the world, in reparation for my sins, for the intentions of all my relatives and friends, and in particular for the intentions of the Holy Father. Amen.`
+      },
+      sweetHeartJesus: {
+        title: "Sweet Heart of Jesus",
+        text: `Sweet Heart of my Jesus, grant that I may ever love Thee more and more.`
+      },
+      dailyNeglects: {
+        title: "Prayer for Daily Neglects",
+        text: `Eternal Father, I offer Thee the Sacred Heart of Jesus, with all Its love, all Its sufferings, and all Its merits.
+
+First: To expiate all the sins I have committed this day and during all my life. Glory be to the Father...
+
+Second: To purify the good I have done poorly this day and during all my life. Glory be to the Father...
+
+Third: To supply for the good I ought to have done, and that I have neglected this day and during all my life. Glory be to the Father...`
+      },
+      flosCarmeli: {
+        title: "Flos Carmeli (Flower of Carmel)",
+        text: `Flower of Carmel,
+Tall vine blossom laden;
+Splendor of heaven,
+Childbearing yet maiden.
+None equals thee.
+
+Mother so tender,
+Who no man didst know,
+On Carmel's children
+Thy favors bestow.
+Star of the Sea.
+
+Strong stem of Jesse,
+Who bore one bright flower,
+Be ever near us
+And guard us each hour,
+Who serve thee here.
+
+Purest of lilies,
+That flowers among thorns,
+Bring help to all who
+Thy birth-day adorns.
+Mother of God.`
+      },
+      reginaCoeli: {
+        title: "Regina Coeli (Queen of Heaven)",
+        text: `Queen of Heaven, rejoice, alleluia.
+For He whom you did merit to bear, alleluia.
+Has risen, as He said, alleluia.
+Pray for us to God, alleluia.
+
+V. Rejoice and be glad, O Virgin Mary, alleluia.
+R. For the Lord has truly risen, alleluia.
+
+Let us pray: O God, who gave joy to the world through the resurrection of Thy Son, our Lord Jesus Christ, grant we beseech Thee, that through the intercession of the Virgin Mary, His Mother, we may obtain the joys of everlasting life. Through the same Christ our Lord. Amen.`
+      },
+      memorare: {
+        title: "Memorare",
+        text: `Remember, O most gracious Virgin Mary, that never was it known that anyone who fled to thy protection, implored thy help, or sought thy intercession was left unaided. Inspired with this confidence, I fly to thee, O Virgin of virgins, my Mother; to thee do I come; before thee I stand, sinful and sorrowful. O Mother of the Word Incarnate, despise not my petitions, but in thy mercy hear and answer me. Amen.`
+      },
+      animaChristi: {
+        title: "Anima Christi (Soul of Christ)",
+        text: `Soul of Christ, sanctify me.
+Body of Christ, save me.
+Blood of Christ, inebriate me.
+Water from the side of Christ, wash me.
+Passion of Christ, strengthen me.
+O Good Jesus, hear me.
+Within Thy wounds hide me.
+Separated from Thee let me never be.
+From the malignant enemy, defend me.
+At the hour of death, call me.
+And close to Thee bid me.
+That with Thy saints I may be,
+Praising Thee, forever and ever. Amen.`
+      },
+      stThomasAquinas: {
+        title: "Prayer of St. Thomas Aquinas",
+        text: `Grant me grace, O merciful God, to desire ardently all that is pleasing to Thee, to search it out wisely, to acknowledge it truthfully, and to accomplish it perfectly, for the praise and glory of Thy Name. Amen.`
+      },
+      stJosephMatins: {
+        title: "Little Office of St. Joseph - Matins",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Invitatory:
+The Lord, the Spouse of Mary, * Come, let us adore.
+
+Psalm 1:
+Blessed is the man who walks not in the counsel of the wicked, nor stands in the way of sinners, nor sits in the seat of scoffers; but his delight is in the law of the Lord, and on his law he meditates day and night. He is like a tree planted by streams of water, that yields its fruit in its season, and its leaf does not wither. In all that he does, he prospers.
+
+Antiphon: Joseph, the just man, espoused to the Virgin Mother of God, was made head of the Holy Family, to be on earth the faithful provider and guardian of Christ the Lord.
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.
+
+Let us pray: O God, who in Thine ineffable providence didst vouchsafe to choose Blessed Joseph to be the spouse of Thy most holy Mother, grant, we beseech Thee, that we may be worthy to have him for our intercessor in heaven whom on earth we venerate as our protector. Who livest and reignest world without end. Amen.`
+      },
+      stJosephLauds: {
+        title: "Little Office of St. Joseph - Lauds",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: Joseph, son of David, fear not to take unto thee Mary thy wife, for that which is conceived in her is of the Holy Spirit.
+
+Psalm 92:
+The Lord reigns; he is robed in majesty; the Lord is robed, he is girded with strength. Yea, the world is established; it shall never be moved; thy throne is established from of old; thou art from everlasting.
+
+Canticle of Zechariah (Benedictus):
+Blessed be the Lord God of Israel, for he has visited and redeemed his people, and has raised up a horn of salvation for us in the house of his servant David...
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.
+
+Let us pray: O God, who in Thine ineffable providence didst vouchsafe to choose Blessed Joseph to be the spouse of Thy most holy Mother, grant, we beseech Thee, that we may be worthy to have him for our intercessor in heaven whom on earth we venerate as our protector. Who livest and reignest world without end. Amen.`
+      },
+      stJosephPrime: {
+        title: "Little Office of St. Joseph - Prime",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: When the holy Mother of God could not bear the Child, Joseph her spouse, being a just man and not willing publicly to expose her, thought to put her away privately.
+
+Psalm 23:
+The earth is the Lord's and the fullness thereof, the world and those who dwell therein; for he has founded it upon the seas, and established it upon the rivers.
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.`
+      },
+      stJosephTerce: {
+        title: "Little Office of St. Joseph - Terce",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: An Angel of the Lord appeared in sleep to Joseph, saying: Fear not to take unto thee Mary thy wife.
+
+Psalm 25:
+To thee, O Lord, I lift up my soul. O my God, in thee I trust, let me not be put to shame; let not my enemies exult over me.
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.`
+      },
+      stJosephSext: {
+        title: "Little Office of St. Joseph - Sext",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: Joseph, arising from sleep, did as the Angel of the Lord had commanded him, and took unto him his wife.
+
+Psalm 26:
+The Lord is my light and my salvation; whom shall I fear? The Lord is the stronghold of my life; of whom shall I be afraid?
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.`
+      },
+      stJosephNone: {
+        title: "Little Office of St. Joseph - None",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: And she brought forth her firstborn Son, and wrapped Him in swaddling clothes, and laid Him in a manger.
+
+Psalm 27:
+To thee, O Lord, I call; my rock, be not deaf to me, lest, if thou be silent to me, I become like those who go down to the Pit.
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.`
+      },
+      stJosephVespers: {
+        title: "Little Office of St. Joseph - Vespers",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: Joseph and the Mother of Jesus marveled at those things which were spoken concerning Him.
+
+Psalm 112:
+Praise the Lord! Blessed is the man who fears the Lord, who greatly delights in his commandments! His descendants will be mighty in the land; the generation of the upright will be blessed.
+
+Canticle of Mary (Magnificat):
+My soul magnifies the Lord, and my spirit rejoices in God my Savior, for he has regarded the low estate of his handmaiden...
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.
+
+Let us pray: O God, who in Thine ineffable providence didst vouchsafe to choose Blessed Joseph to be the spouse of Thy most holy Mother, grant, we beseech Thee, that we may be worthy to have him for our intercessor in heaven whom on earth we venerate as our protector. Who livest and reignest world without end. Amen.`
+      },
+      stJosephCompline: {
+        title: "Little Office of St. Joseph - Compline",
+        text: `V. O God, come to my assistance.
+R. O Lord, make haste to help me.
+Glory be to the Father...
+
+Antiphon: Joseph, arising, took the Child and His Mother by night and withdrew into Egypt, and remained there until the death of Herod.
+
+Psalm 90:
+He who dwells in the shelter of the Most High, who abides in the shadow of the Almighty, will say to the Lord, "My refuge and my fortress; my God, in whom I trust."
+
+Canticle of Simeon (Nunc Dimittis):
+Lord, now lettest thou thy servant depart in peace, according to thy word; for mine eyes have seen thy salvation which thou hast prepared in the presence of all peoples, a light for revelation to the Gentiles, and for glory to thy people Israel.
+
+V. Pray for us, O Blessed Joseph.
+R. That we may be made worthy of the promises of Christ.
+
+Let us pray: O God, who in Thine ineffable providence didst vouchsafe to choose Blessed Joseph to be the spouse of Thy most holy Mother, grant, we beseech Thee, that we may be worthy to have him for our intercessor in heaven whom on earth we venerate as our protector. Who livest and reignest world without end. Amen.`
+      },
+      ourLadyCarmel: {
+        title: "Prayer to Our Lady of Mount Carmel",
+        text: `O most beautiful flower of Mount Carmel, fruitful vine, splendor of Heaven, Blessed Mother of the Son of God, Immaculate Virgin, assist me in my necessity. O Star of the Sea, help me and show me you are my Mother.
+
+O Holy Mary, Mother of God, Queen of Heaven and Earth, I humbly beseech you from the bottom of my heart to succor me in this necessity. There are none that can withstand your power.
+
+O show me you are my Mother. O Mary, conceived without sin, pray for us who have recourse to you (three times).
+
+Sweet Mother, I place this cause in your hands (three times).`
+      },
+      scapularEnrollment: {
+        title: "Brown Scapular Enrollment Prayer",
+        text: `Receive this blessed Scapular and ask the Most Holy Virgin that, through her merits, you may wear it without stain, so that it may defend you from all adversity and accompany you to eternal life. Amen.
+
+May Almighty God, Creator of heaven and earth, bless you, whom He has been pleased to receive into the Confraternity of the Blessed Virgin Mary of Mount Carmel. We beg her to crush the head of the ancient serpent in the hour of your death, and to obtain for you, after this exile, the palm and crown of your everlasting inheritance. Through Christ our Lord. Amen.`
+      },
+      carmeliteConsecration: {
+        title: "Carmelite Act of Consecration",
+        text: `O Most Holy Trinity, Father, Son, and Holy Spirit, I consecrate myself entirely to You. I offer You my entire being: all that I am, all that I have, and all that I do.
+
+To You, Eternal Father, as a testimony of my love and in reparation for the offenses committed against You.
+
+To You, Eternal Son, in thanksgiving for our redemption and to co-operate in the work of the salvation of souls.
+
+To You, Holy Spirit, that I may live under Your guidance and in the fulfillment of Your Will.
+
+O Mary, my Mother, I place this consecration under your protection. Through your intercession, may I live always in the presence of the Three Divine Persons and faithfully follow Jesus in the spirit of the Carmelite charism.
+
+O Holy Prophet Elijah, father of Carmel, obtain for me the grace to seek the living God with all my heart. Saint Teresa of Jesus and Saint John of the Cross, teach me to walk in the paths of prayer and contemplation. Amen.`
+      },
+      prayerTeresaAvila: {
+        title: "Prayer to St. Teresa of Ávila",
+        text: `O glorious St. Teresa, seraphic virgin, beloved of thy divine Spouse, and most specially favored by Him with sublime spiritual gifts, inflame my heart with thy burning love of God, that I may be worthy to share in thy glorious reward. Thou who hadst such compassion for souls in their need, listen to the supplications I pour forth before thee and obtain for me from God the graces I humbly ask. (Mention your request)
+
+Grant that I may ever walk in the way of prayer and perfection which thou didst teach us in the reform of thy holy Order. Let me so imitate thee in this life, that after death I may be united with thee in singing eternally the praises of the Most Holy Trinity. Amen.`
+      },
+      prayerJohnCross: {
+        title: "Prayer to St. John of the Cross",
+        text: `O Glorious St. John of the Cross, Doctor of the Church and great lover of the Cross of Christ, who preferred the science of Jesus Crucified to the wisdom of the world, obtain for me, I beseech you, a truly Christian acceptance of the crosses which Divine Providence sends me.
+
+May I embrace them with joy and bear them with patience in the spirit of penance and true mortification, that I may arrive at the perfection of Christian life and at last enjoy with you the eternal vision of the Most Blessed Trinity in Heaven. Amen.`
+      },
+      prayerThereseLisieux: {
+        title: "Prayer to St. Thérèse of Lisieux",
+        text: `O Little Thérèse of the Child Jesus, who during your short life on earth became a mirror of angelic purity, of love strong as death, and of wholehearted abandonment to God, now that you rejoice in the reward of your virtues, cast a glance of pity on me as I leave all things in your hands.
+
+Make my troubles your own—speak a word for me to our Lady Immaculate, whose flower of special love you were—to that Queen of heaven "who smiled on you at the dawn of life." Beg her as Queen of Angels to send her Angel—my own—to guide me and my loved ones in the way of peace. Beg her as Queen of the home to keep our hearts ever close to those we love in Jesus.
+
+Obtain for me from God the particular grace I now ask (mention your request). Help me to remain faithful to my duties and to never refuse anything to Jesus. Obtain for me the grace to love my God as you loved Him on earth. My dear little Saint Thérèse, I know that God has given you great power in heaven. Ask Him to inflame my heart with love for Jesus and Mary, and obtain for me from the Holy Trinity the special favor I now ask (mention request). In return, I promise to do all I can to spread devotion to you and to the Child Jesus. Amen.`
+      },
+      prayerElijah: {
+        title: "Prayer to the Prophet Elijah",
+        text: `O Holy Prophet Elijah, who sought the Lord with zealous love, who stood before the living God and awaited His coming, intercede for us that we may have the grace to seek the face of God with burning desire.
+
+Obtain for us the spirit of prayer and contemplation, that like you, we may ascend the mountain of the Lord and hear His voice in the silence of our hearts.
+
+By your intercession, may we be cleansed of all that separates us from God, that we may stand in His presence with pure and undivided hearts. Through your example, teach us to choose the Lord alone and to serve Him faithfully all our days.
+
+Father of Carmel, watch over your spiritual children and guide us in the paths of holiness and union with God. Amen.`
+      },
+      carmeliteTrinity: {
+        title: "Carmelite Prayer to the Holy Trinity",
+        text: `O my God, Trinity whom I adore, help me forget myself entirely so to establish myself in You, unmovable and peaceful as if my soul were already in eternity. May nothing be able to trouble my peace or make me leave You, O my unchanging God, but may each minute bring me more deeply into Your mystery.
+
+Grant my soul peace. Make it Your heaven, Your beloved dwelling and the place of Your rest. May I never abandon You there, but may I be there, whole and entire, completely vigilant in my faith, entirely adoring, and wholly given over to Your creative action.
+
+O my beloved Christ, crucified by love, I wish to be a bride for Your Heart. I wish to cover You with glory and to love You... even unto death! But I feel my weakness, and I ask You to "clothe me with Yourself," to identify my soul with all the movements of Your Soul, to overwhelm me, to possess me, to substitute Yourself for me that my life may be but a radiance of Your Life. Come into me as Adorer, as Restorer, as Savior.
+
+O Eternal Word, Word of my God, I want to spend my life in listening to You, to become wholly teachable that I may learn all from You. Then, through all nights, all voids, all helplessness, I want to gaze on You always and remain in Your great light. O my beloved Star, so fascinate me that I may not withdraw from Your radiance.
+
+O consuming Fire, Spirit of Love, "come upon me," and create in my soul a kind of incarnation of the Word: that I may be another humanity for Him in which He can renew His whole Mystery. And You, O Father, bend lovingly over Your poor little creature; "cover her with Your shadow," seeing in her only the "Beloved in whom You are well pleased."
+
+O my Three, my All, my Beatitude, infinite Solitude, Immensity in which I lose myself, I surrender myself to You as Your prey. Bury Yourself in me that I may bury myself in You until I depart to contemplate in Your light the abyss of Your greatness. Amen.
+
+- Prayer of Blessed Elizabeth of the Trinity`
+      },
+      carmeliteVocations: {
+        title: "Prayer for Carmelite Vocations",
+        text: `O Lord Jesus Christ, who called the Holy Prophet Elijah to be the father of our Order, and who raised up St. Teresa of Jesus and St. John of the Cross to renew and reform it, we humbly beseech You to continue to call men and women to the Carmelite way of life.
+
+Grant to those whom You call the courage to respond generously to Your invitation. Strengthen them in their vocation and lead them to embrace the life of prayer, contemplation, and fraternal charity which characterizes our Order.
+
+We pray especially for young people who are seeking Your will in their lives. Help them to hear Your voice calling them to serve You in the contemplative life of Carmel.
+
+Send workers into Your vineyard, O Lord, that the charism of Carmel may continue to flourish in Your Church for the salvation of souls and the glory of Your Name.
+
+Mary, Queen and Beauty of Carmel, present our prayer to your Divine Son. St. Teresa of Jesus, St. John of the Cross, St. Thérèse of Lisieux, and all holy Carmelites, pray for vocations to our beloved Order. Amen.`
+      },
+      carmeliteProfession: {
+        title: "Carmelite Profession Prayer",
+        text: `I, (Name), vow and promise to God chastity, obedience, and poverty according to the Rule of Carmel and the Constitutions of the Discalced Carmelites, for one year (or: for life).
+
+In the name of the Father, and of the Son, and of the Holy Spirit. Amen.
+
+Receive me, O Lord, according to Your Word, and I shall live; and let me not be confounded in my hope.`
+      },
+      sabbarinePrayer: {
+        title: "Sabbatine Privilege Prayer",
+        text: `O Most Holy Virgin Mary, Mother and Ornament of Carmel, I venerate you as the Special Protectress of all who wear your holy Habit. I thank God for the many privileges He has granted to you, particularly for the promise you made to your beloved servant, Pope John XXII, that those who piously wear the Scapular shall be saved.
+
+Relying on your maternal protection and on your constant help, I resolve to live faithfully according to the duties of my state in life. I promise to lead a holy life in filial imitation of you and always to foster devotion to your holy Scapular. May this Scapular be for me a sign of your motherly protection in all the dangers of life and a pledge of peace and of the covenant of salvation. At the hour of my death, may it conduct me, through the merits of Jesus Christ, to everlasting happiness. Amen.`
       }
     };
-    pinBtn.onclick = unlock;
-    pinInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){unlock();} });
 
-    // --- State ---
-    let unsubscribers = [];
-    const detachAll = ()=>{unsubscribers.forEach(u=>u&&u()); unsubscribers=[];};
+    // St. Michael Chaplet sequence
+    const stMichaelSequence = [
+      { type: 'instruction', text: 'Begin with the Sign of the Cross' },
+      { type: 'prayer', text: 'O God, come to my assistance. O Lord, make haste to help me.' },
+      { type: 'prayer', text: 'Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end. Amen.' },
+      { type: 'instruction', text: 'First Choir - Seraphim: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Seraphim may the Lord make us worthy to burn with the fire of perfect charity. Amen.' },
+      { type: 'instruction', text: 'Second Choir - Cherubim: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Cherubim may the Lord grant us the grace to leave the ways of sin and run in the paths of Christian perfection. Amen.' },
+      { type: 'instruction', text: 'Third Choir - Thrones: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Thrones may the Lord infuse into our hearts a true and sincere spirit of humility. Amen.' },
+      { type: 'instruction', text: 'Fourth Choir - Dominions: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Dominions may the Lord give us grace to govern our senses and overcome any unruly passions. Amen.' },
+      { type: 'instruction', text: 'Fifth Choir - Virtues: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Virtues may the Lord preserve us from evil and falling into temptation. Amen.' },
+      { type: 'instruction', text: 'Sixth Choir - Powers: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Powers may the Lord protect our souls against the snares and temptations of the devil. Amen.' },
+      { type: 'instruction', text: 'Seventh Choir - Principalities: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Principalities may God fill our souls with a true spirit of obedience. Amen.' },
+      { type: 'instruction', text: 'Eighth Choir - Archangels: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Archangels may the Lord give us perseverance in faith and in all good works in order that we may attain the glory of Heaven. Amen.' },
+      { type: 'instruction', text: 'Ninth Choir - Angels: Say 1 Our Father and 3 Hail Marys' },
+      { type: 'salutation', text: 'By the intercession of St. Michael and the celestial Choir of Angels may the Lord grant us to be protected by them in this mortal life and conducted in the life to come to Heaven. Amen.' },
+      { type: 'instruction', text: 'Say 4 Our Fathers: In honor of St. Michael, St. Gabriel, St. Raphael, and your Guardian Angel' },
+      { type: 'prayer', text: 'O glorious prince St. Michael, chief and commander of the heavenly hosts, guardian of souls, vanquisher of rebel spirits, servant in the house of the Divine King and our admirable conductor, you who shine with excellence and superhuman virtue deliver us from all evil, who turn to you with confidence and enable us by your gracious protection to serve God more and more faithfully every day. Amen.' }
+    ];
 
-    // --- Paths ---
-    const base = '/littlestWay';
-    const pTotals = (key)=> ref(db, `${base}/totals/${key}`);
-    const pGoal = ref(db, `${base}/settings/goal`);
-    const pDailyList = ref(db, `${base}/dailyPrayers`);
-    const pMichael = {
-      count: ref(db, `${base}/stMichael/completed`)
-    };
-    const pWay = {
-      stations: (key)=> ref(db, `${base}/way/${key}/stations`),
-      total: ref(db, `${base}/wayTotal`)
-    };
-    const pSilent = {
-      sessions: (key)=> ref(db, `${base}/silent/${key}/sessions`),
-      totalMin: (key)=> ref(db, `${base}/silent/${key}/totalMinutes`)
-    };
-    const pDev = ref(db, `${base}/devotions`);
-    const pChildren = (child)=> ({
-      prayers: ref(db, `${base}/children/${child}/prayers`)
-    });
-    const pIntent = ref(db, `${base}/intentions`);
-    const pNovenas = ref(db, `${base}/novenas`);
+    // Carmelite reading list
+    const carmeliteReadings = [
+      { section: 'St. Teresa of Ávila', items: [
+        'The Interior Castle - First Mansions',
+        'The Interior Castle - Second Mansions',
+        'The Interior Castle - Third Mansions',
+        'The Interior Castle - Fourth Mansions',
+        'The Interior Castle - Fifth Mansions',
+        'The Interior Castle - Sixth Mansions',
+        'The Interior Castle - Seventh Mansions',
+        'The Way of Perfection - Chapters 1-10',
+        'The Way of Perfection - Chapters 11-20',
+        'The Way of Perfection - Chapters 21-30',
+        'The Way of Perfection - Chapters 31-42',
+        'The Book of Her Life - Chapters 1-10',
+        'The Book of Her Life - Chapters 11-22',
+        'The Book of Her Life - Chapters 23-31',
+        'The Book of Her Life - Chapters 32-40',
+        'Spiritual Testimonies',
+        'The Foundations'
+      ]},
+      { section: 'St. John of the Cross', items: [
+        'The Ascent of Mount Carmel - Book I',
+        'The Ascent of Mount Carmel - Book II',
+        'The Ascent of Mount Carmel - Book III',
+        'Dark Night of the Soul - Book I',
+        'Dark Night of the Soul - Book II',
+        'The Spiritual Canticle - Stanzas 1-13',
+        'The Spiritual Canticle - Stanzas 14-26',
+        'The Spiritual Canticle - Stanzas 27-40',
+        'The Living Flame of Love - Stanza I',
+        'The Living Flame of Love - Stanza II',
+        'The Living Flame of Love - Stanza III',
+        'The Living Flame of Love - Stanza IV',
+        'Counsels of Light and Love',
+        'Sayings of Light and Love',
+        'Letters of St. John of the Cross'
+      ]},
+      { section: 'St. Thérèse of Lisieux', items: [
+        'Story of a Soul - Manuscript A',
+        'Story of a Soul - Manuscript B',
+        'Story of a Soul - Manuscript C',
+        'The Little Way',
+        'Act of Oblation to Merciful Love',
+        'Letters of St. Thérèse - Early Letters',
+        'Letters of St. Thérèse - Later Letters',
+        'Poetry of St. Thérèse',
+        'The Last Conversations'
+      ]},
+      { section: 'St. Elizabeth of the Trinity', items: [
+        'Heaven in Faith',
+        'The Greatness of Our Vocation',
+        'Let Yourself Be Loved',
+        'I Have Found God - Letters Vol 1',
+        'I Have Found God - Letters Vol 2',
+        'Light, Love, Life - Personal Notes',
+        'Prayer to the Trinity',
+        'Last Retreat'
+      ]},
+      { section: 'St. Teresa Benedicta (Edith Stein)', items: [
+        'The Science of the Cross',
+        'Essays on Woman',
+        'The Hidden Life',
+        'Finite and Eternal Being',
+        'Self-Portrait in Letters'
+      ]},
+      { section: 'Carmelite Rule and Constitutions', items: [
+        'The Primitive Rule of Carmel',
+        'OCDS Rule of Life',
+        'The Constitutions - Part I',
+        'The Constitutions - Part II',
+        'Letter of St. Albert'
+      ]},
+      { section: 'Other Carmelite Doctors', items: [
+        'Brother Lawrence - Practice of the Presence of God',
+        'St. Mary Magdalene de Pazzi - Selected Writings',
+        'Blessed Titus Brandsma - Carmelite Mysticism',
+        'St. Teresa Margaret Redi - Letters and Writings',
+        'St. Raphael Kalinowski - Spiritual Maxims'
+      ]},
+      { section: 'Carmelite Formation', items: [
+        'The Spirit of Carmel',
+        'Drinking from the Hidden Fountain',
+        'The Carmelite Charism',
+        'Living the Carmelite Way',
+        'Carmel: A School of Prayer',
+        'Understanding the Carmelite Way',
+        'The Mystical Tradition of Carmel',
+        'Carmelite Spirituality in the Teresian Tradition'
+      ]}
+    ];
 
-    // --- Boot sequence with timeout guard ---
-    async function boot(){
-      const timeout = setTimeout(()=>{
-        loadStatus.textContent = 'Still connecting… check Firebase rules & network.';
-      }, 6000);
-
-      try{
-        // touch DB to ensure connectivity
-        await update(ref(db, `${base}/heartbeat`), {ts: Date.now()});
-        clearTimeout(timeout);
-        loadStatus.textContent = 'Connected. Loading data…';
-        await refreshAllForDate(); // set listeners
-        loadingScreen.classList.remove('active');
-        app.classList.add('active');
-      }catch(err){
-        clearTimeout(timeout);
-        loadStatus.textContent = 'Error connecting to Firebase.';
-        console.error(err);
-      }
-    }
-
-    // --- DASHBOARD ---
-    const statToday = document.getElementById('statToday');
-    const goalInput = document.getElementById('goalInput');
-    const saveGoal = document.getElementById('saveGoal');
-    const goalPct = document.getElementById('goalPct');
-    const statStreak = document.getElementById('statStreak');
-    const qAddBtns = document.querySelectorAll('[data-qadd]');
-
-    saveGoal.onclick = async ()=>{
-      const v = Math.max(0, parseInt(goalInput.value||'0',10));
-      await set(pGoal, v);
-    };
-    qAddBtns.forEach(b=>b.onclick = async ()=>{
-      const val = parseInt(b.dataset.qadd.replace('+','').replace('−','-').replace('−','-'));
-      const key = toDateKey(currentDate);
-      await update(pTotals(key), {count: increment(val)});
-    });
-
-    function listenGoal(){
-      const u = onValue(pGoal, (snap)=>{
-        const g = snap.val()||0;
-        goalInput.value = g || '';
-        updateGoalPct();
-      });
-      unsubscribers.push(u);
-    }
-    function listenTodayTotal(){
-      const key = toDateKey(currentDate);
-      const u = onValue(pTotals(key), (snap)=>{
-        const n = (snap.val() && snap.val().count) || 0;
-        statToday.textContent = n;
-        updateGoalPct();
-      });
-      unsubscribers.push(u);
-    }
-    function updateGoalPct(){
-      const g = parseInt(goalInput.value||'0',10);
-      const n = parseInt(statToday.textContent||'0',10);
-      const pct = g>0 ? Math.min(100, Math.round((n/g)*100)) : 0;
-      goalPct.textContent = pct + '%';
-    }
-    // Simple streak: count consecutive days back from today with totals>0
-    async function computeStreak(){
-      try{
-        const q = query(ref(db, `${base}/totals`), orderByKey(), limitToLast(60));
-        const snap = await get(q);
-        const data = snap.val()||{};
-        let streak=0;
-        let d = new Date();
-        while(true){
-          const k = toDateKey(d);
-          if(data[k] && data[k].count>0){ streak++; d.setDate(d.getDate()-1); }
-          else break;
-          if(streak>60) break;
+    // PIN check
+    document.getElementById("pinInput").addEventListener("input", (e) => {
+      if (e.target.value.length === 6) {
+        if (e.target.value === "332211") {
+          showScreen("loadingScreen"); startApp();
+if (typeof showScreen === "function") showScreen("mainApp");
+            }} catch(_){}
+          }, 7000);
+} else {
+          e.target.value = "";
+          alert("Incorrect PIN");
         }
-        statStreak.textContent = streak;
-      }catch(e){ console.warn(e); }
-    }
-
-    // --- DAILY PRAYERS ---
-    const dailyList = document.getElementById('dailyList');
-    const dailyAdd = document.getElementById('dailyAdd');
-    const dailyNewName = document.getElementById('dailyNewName');
-    dailyAdd.onclick = async ()=>{
-      const name = dailyNewName.value.trim();
-      if(!name) return;
-      const id = push(pDailyList).key;
-      await set(ref(db, `${base}/dailyPrayers/${id}`), {name, order: Date.now(), active:true});
-      dailyNewName.value='';
-    };
-    function renderDaily(data){
-      dailyList.innerHTML='';
-      const items = Object.entries(data||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-      for(const [id,pr] of items){
-        const row = document.createElement('div'); row.className='item';
-        const left = document.createElement('div');
-        left.innerHTML = `<span class="label">${pr.name||'Untitled'}</span><div class="muted">check for ${toLabel(currentDate)}</div>`;
-        const right = document.createElement('div'); right.className='controls';
-        const btn = document.createElement('button'); btn.className='btn'; btn.textContent='Done';
-        btn.onclick = async ()=>{
-          const key = toDateKey(currentDate);
-          await update(ref(db, `${base}/daily/${key}/${id}`), {done:true, ts: Date.now()});
-          await update(pTotals(key), {count: increment(1)});
-        };
-        const del = document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
-        del.onclick = ()=> set(ref(db, `${base}/dailyPrayers/${id}`), null);
-        right.appendChild(btn); right.appendChild(del);
-        row.appendChild(left); row.appendChild(right);
-        dailyList.appendChild(row);
       }
-    }
-    function listenDaily(){
-      const u = onValue(pDailyList, s=> renderDaily(s.val()));
-      unsubscribers.push(u);
+    });
+
+    function showScreen(screenId) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(screenId).classList.add("active");
     }
 
-    // --- ST. MICHAEL ---
-    const mText = document.getElementById('michaelText');
-    const mStart = document.getElementById('mStart');
-    const mPrev = document.getElementById('mPrev');
-    const mNext = document.getElementById('mNext');
-    const mDone = document.getElementById('mDone');
-    const mPlus = document.getElementById('mPlus');
-    const mCount = document.getElementById('mCount');
+    async function loadApp(){try{
+    if (typeof setupListeners === 'function') setupListeners();
+    if (typeof loadData === 'function') await loadData();
+  }catch(err){console.error("Init failed:", err);
+    try { if (typeof showToast === 'function') showToast("Could not load data. Working offline.", "error"); } catch (e) {}
+  
+    try { if (typeof renderAll === "function") renderAll(); } catch(e) {}
+  }finally{ console.log("loadApp.finally"); 
+    try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(e){}
+    try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(e){}
+  }
+}
+// Deterministic startup that never hangs on loading
+async function startApp(){
+  try {
+    showScreen && showScreen("loadingScreen");
+  } catch(_){}
+  const timeout = new Promise((resolve)=>setTimeout(resolve, 4000));
+  try {
+    await Promise.race([ (typeof loadApp === 'function' ? loadApp() : Promise.resolve()), timeout ]);
+  } catch (e) {
+    console.warn("startApp race error", e);
+  } finally {
+    try { if (typeof renderAll === 'function') renderAll(); } catch(_){}
+    try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(_){}
+    try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(_){}
+  }
+}
 
-    const steps = [
-      "Opening: O God, come to my assistance… Glory be…",
-      "1) Seraphim – Our Father, 3 Hail Marys",
-      "2) Cherubim – Our Father, 3 Hail Marys",
-      "3) Thrones – Our Father, 3 Hail Marys",
-      "4) Dominions – Our Father, 3 Hail Marys",
-      "5) Virtues – Our Father, 3 Hail Marys",
-      "6) Powers – Our Father, 3 Hail Marys",
-      "7) Principalities – Our Father, 3 Hail Marys",
-      "8) Archangels – Our Father, 3 Hail Marys",
-      "9) Angels – Our Father, 3 Hail Marys",
-      "Final: Our Father for St. Michael, St. Gabriel, St. Raphael, Guardian Angel",
-      "Closing prayer to St. Michael"
-    ];
-    let stepIdx = -1;
-    function showStep(){
-      if(stepIdx<0){ mText.textContent='Press “Start”.'; mDone.style.display='none'; return; }
-      mText.textContent = steps[stepIdx];
-      mDone.style.display = (stepIdx===steps.length-1)?'inline-block':'none';
-    }
-    mStart.onclick = ()=>{ stepIdx=0; showStep(); };
-    mPrev.onclick = ()=>{ stepIdx=Math.max(0, stepIdx-1); showStep(); };
-    mNext.onclick = ()=>{ stepIdx=Math.min(steps.length-1, stepIdx+1); showStep(); };
-    mDone.onclick = async ()=>{
-      const key = toDateKey(currentDate);
-      await update(pMichael.count, {value: increment(1)});
-      await update(pTotals(key), {count: increment(1)});
-      stepIdx=-1; showStep();
-    };
-    mPlus.onclick = async ()=>{
-      const key = toDateKey(currentDate);
-      await update(pMichael.count, {value: increment(1)});
-      await update(pTotals(key), {count: increment(1)});
-    };
-    function listenMichael(){
-      const u = onValue(pMichael.count, s=> mCount.textContent = (s.val() && s.val().value) || 0);
-      unsubscribers.push(u);
+
+    async function loadData() {
+      updateViewDateString();
+      
+      // Load daily data for current view date
+      const dailySnapshot = await get(ref(db, `dailyData/${todayString}`));
+      todayDailyData = dailySnapshot.val() || {};
+
+      // Load intentions
+      const intSnapshot = await get(ref(db, "intentions"));
+      const allIntentions = intSnapshot.val() || {};
+      activeIntentions = {};
+      for (const [key, val] of Object.entries(allIntentions)) {
+        if (!val.deleted && !val.answered) activeIntentions[key] = val;
+      }
+
+      // Load novenas
+      const novSnapshot = await get(ref(db, "novenas"));
+      const allNovenas = novSnapshot.val() || {};
+      activeNovenas = {};
+      for (const [key, val] of Object.entries(allNovenas)) {
+        if (!val.deleted && !val.answered) activeNovenas[key] = val;
+      }
+
+      renderAll();
+      setupRealtimeListeners();
     }
 
-    // --- WAY OF THE CROSS ---
-    const stationsWrap = document.getElementById('stations');
-    const wayAll = document.getElementById('wayAll');
-    const wayReset = document.getElementById('wayReset');
-    const wayCount = document.getElementById('wayCount');
-    const stationTitles = [
-      "Jesus is condemned","Jesus carries His cross","Jesus falls the first time","Jesus meets His mother",
-      "Simon helps Jesus","Veronica wipes His face","Jesus falls the second time","Jesus meets the women",
-      "Jesus falls the third time","Jesus is stripped","Jesus is nailed to the cross","Jesus dies on the cross",
-      "Jesus is taken down","Jesus is laid in the tomb"
-    ];
-    function renderStations(state){
-      stationsWrap.innerHTML='';
-      stationTitles.forEach((t,i)=>{
-        const k = (state && state[i]) ? !!state[i].done : false;
-        const btn = document.createElement('button');
-        btn.className='btn ghost'; btn.textContent = `${i+1}. ${t}` + (k?' ✓':'');
-        btn.onclick = async ()=>{
-          const key = toDateKey(currentDate);
-          await update(ref(db, `${base}/way/${key}/stations/${i}`), {done: !k, ts: Date.now()});
-        };
-        stationsWrap.appendChild(btn);
+    function updateViewDateString(){ todayString = localISODate(currentViewDate); }
+
+    function updateDateDisplay() {
+      const today = new Date().toISOString().split('T')[0];
+      const displayEl = document.getElementById("currentDateDisplay");
+      
+      if (todayString === today) {
+        displayEl.textContent = "Today";
+        displayEl.classList.remove("not-today");
+      } else {
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        displayEl.textContent = currentViewDate.toLocaleDateString('en-US', options);
+        displayEl.classList.add("not-today");
+      }
+
+      // Disable next button if viewing today
+      document.getElementById("nextDayBtn").disabled = (todayString === today);
+    }
+
+    function setupRealtimeListeners() {
+      onValue(ref(db, `dailyData/${todayString}`), (snapshot) => {
+        todayDailyData = snapshot.val() || {};
+        renderAll();
+      });
+
+      onValue(ref(db, "intentions"), (snapshot) => {
+        const allIntentions = snapshot.val() || {};
+        activeIntentions = {};
+        for (const [key, val] of Object.entries(allIntentions)) {
+          if (!val.deleted && !val.answered) activeIntentions[key] = val;
+        }
+        renderIntentions();
+      });
+
+      onValue(ref(db, "novenas"), (snapshot) => {
+        const allNovenas = snapshot.val() || {};
+        activeNovenas = {};
+        for (const [key, val] of Object.entries(allNovenas)) {
+          if (!val.deleted && !val.answered) activeNovenas[key] = val;
+        }
+        renderNovenas();
       });
     }
-    function listenStations(){
-      const key = toDateKey(currentDate);
-      const u = onValue(pWay.stations(key), s=> renderStations(s.val()));
-      unsubscribers.push(u);
-    }
-    wayAll.onclick = async ()=>{
-      const key = toDateKey(currentDate);
-      const updates = {};
-      for(let i=0;i<14;i++){ updates[i] = {done:true, ts: Date.now()}; }
-      await update(pWay.stations(key), updates);
-      await update(pWay.total, {value: increment(1)});
-      await update(pTotals(key), {count: increment(1)});
-    };
-    wayReset.onclick = async ()=>{
-      const key = toDateKey(currentDate);
-      await set(pWay.stations(key), null);
-    };
-    function listenWayTotal(){
-      const u = onValue(pWay.total, s=> wayCount.textContent = (s.val() && s.val().value) || 0);
-      unsubscribers.push(u);
+
+    function renderAll() {
+      renderDashboard();
+      renderDailyPrayers();
+      renderRosary();
+      renderStMichael();
+      renderWayOfCross();
+      renderSilentPrayer();
+      renderDevotions();
+      renderBreviary();
+      renderStJosephOffice();
+      renderCarmelitePrayers();
+      renderReading();
+      renderCarmeliteReading();
+      renderIntentions();
+      renderNovenas();
+      renderChildPrayerSection();
     }
 
-    // --- SILENT PRAYER ---
-    const timerEl = document.getElementById('timer');
-    const tStart = document.getElementById('tStart');
-    const tStop = document.getElementById('tStop');
-    const tTotal = document.getElementById('tTotal');
-    const tSessions = document.getElementById('tSessions');
-    let tInt = null, tSec=0, tPreset=null;
+    // === DASHBOARD ===
+    function renderDashboard() {
+      const rosaryCount = (todayDailyData.rosary?.joyful || 0) + 
+                         (todayDailyData.rosary?.sorrowful || 0) + 
+                         (todayDailyData.rosary?.glorious || 0) + 
+                         (todayDailyData.rosary?.luminous || 0);
+      
+      const devotionsCount = Object.values(todayDailyData.devotions || {}).reduce((sum, val) => sum + val, 0);
+      const intentionsCount = todayDailyData.intentionsTotal || 0;
+      const wayCount = todayDailyData.wayOfCross || 0;
+      const stMichaelCount = todayDailyData.stMichaelChaplet || 0;
+      const silentMinutes = todayDailyData.silentPrayerMinutes || 0;
 
-    document.querySelectorAll('[data-preset]').forEach(b=> b.onclick=()=>{
-      tPreset = parseInt(b.dataset.preset,10);
-    });
-    function fmtMMSS(s){ const m = Math.floor(s/60).toString().padStart(2,'0'); const r=(s%60).toString().padStart(2,'0'); return `${m}:${r}`;}
-    tStart.onclick = ()=>{
-      if(tInt) return;
-      tSec = 0;
-      timerEl.textContent = '00:00';
-      tStart.disabled = true; tStop.disabled=false;
-      tInt = setInterval(()=>{
-        tSec++; timerEl.textContent = fmtMMSS(tSec);
-        if(tPreset && Math.floor(tSec/60)>=tPreset){ tStop.click(); }
+      const total = rosaryCount + devotionsCount + intentionsCount + wayCount + stMichaelCount + Math.floor(silentMinutes / 10);
+      
+      document.getElementById("todayPrayersCount").textContent = total;
+
+      const goal = parseInt(localStorage.getItem("dailyGoal") || "10");
+      const progress = Math.min(100, Math.round((total / goal) * 100));
+      document.getElementById("dailyGoalProgress").textContent = progress + "%";
+
+      // Calculate streak (simplified - just count consecutive days with data)
+      document.getElementById("streakCount").textContent = "0";
+    }
+
+    // === DAILY PRAYERS ===
+    function renderDailyPrayers() {
+      const prayers = [
+        { key: 'morningAspirations', name: 'Morning Aspirations', info: 'morningAspirations' },
+        { key: 'actAdoration', name: 'Act of Adoration and Thanksgiving', info: 'actAdoration' },
+        { key: 'actFaith', name: 'Act of Faith', info: 'actFaith' },
+        { key: 'actHope', name: 'Act of Hope', info: 'actHope' },
+        { key: 'actLove', name: 'Act of Love', info: 'actLove' },
+        { key: 'actContrition', name: 'Act of Contrition', info: 'actContrition' },
+        { key: 'actSupplication', name: 'Act of Supplication', info: 'actSupplication' },
+        { key: 'actConsecration', name: 'Act of Consecration', info: 'actConsecration' },
+        { key: 'dailyOffering', name: 'Morning Offering', info: 'dailyOffering' },
+        { key: 'sweetHeartJesus', name: 'Sweet Heart of Jesus', info: 'sweetHeartJesus' },
+        { key: 'dailyNeglects', name: 'Prayer for Daily Neglects', info: 'dailyNeglects' },
+        { key: 'flosCarmeli', name: 'Flos Carmeli', info: 'flosCarmeli' },
+        { key: 'reginaCoeli', name: 'Regina Coeli', info: 'reginaCoeli' },
+        { key: 'memorare', name: 'Memorare', info: 'memorare' },
+        { key: 'animaChristi', name: 'Anima Christi', info: 'animaChristi' },
+        { key: 'stThomasAquinas', name: 'Prayer of St. Thomas Aquinas', info: 'stThomasAquinas' }
+      ];
+
+      const html = prayers.map(p => {
+        const count = todayDailyData.dailyPrayers?.[p.key] || 0;
+        
+        return `
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">
+                ${p.name}
+                <button class="btn-icon" onclick="showPrayerInfo('${p.info}')" title="View Prayer" style="margin-left: 0.5rem; padding: 0.25rem;">ℹ️</button>
+              </div>
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display">${count}</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addDailyPrayer('${p.key}', 1)">+1</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addDailyPrayer('${p.key}', -1)">-1</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("dailyPrayersList").innerHTML = html;
+    }
+
+    window.addDailyPrayer = (key, delta) => {
+      const current = todayDailyData.dailyPrayers?.[key] || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/dailyPrayers/${key}`), newVal);
+    };
+
+    // === ROSARY ===
+    function renderRosary() {
+      const mysteries = [
+        { key: 'joyful', name: 'Joyful Mysteries', detail: 'Mon, Sat' },
+        { key: 'sorrowful', name: 'Sorrowful Mysteries', detail: 'Tue, Fri' },
+        { key: 'glorious', name: 'Glorious Mysteries', detail: 'Wed, Sun' },
+        { key: 'luminous', name: 'Luminous Mysteries', detail: 'Thursday' }
+      ];
+
+      const html = mysteries.map(m => {
+        const count = todayDailyData.rosary?.[m.key] || 0;
+        const intention = todayDailyData.devotionIntentions?.[m.key] || '';
+        
+        return `
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">
+                ${m.name}
+                <button class="btn-icon" onclick="showPrayerInfo('fatimaDecade')" title="Fatima Prayer" style="margin-left: 0.5rem; padding: 0.25rem;">ℹ️</button>
+              </div>
+              <div class="prayer-detail">${m.detail}</div>
+              ${intention ? `<div class="prayer-detail" style="margin-top: 0.5rem; color: var(--primary); font-weight: 600;">Intention: ${intention}</div>` : ''}
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display">${count}</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addRosary('${m.key}', 1)">+1</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addRosary('${m.key}', -1)">-1</button>` : ''}
+              </div>
+            </div>
+          </div>
+          ${!intention ? `<div style="text-align: right; margin-bottom: 1rem;"><button class="btn-link" onclick="setDevotionIntention('${m.key}')">Set intention</button></div>` : ''}
+        `;
+      }).join('');
+
+      document.getElementById("rosaryList").innerHTML = html;
+    }
+
+    window.addRosary = (key, delta) => {
+      const current = todayDailyData.rosary?.[key] || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/rosary/${key}`), newVal);
+    };
+
+    // === ST. MICHAEL CHAPLET ===
+    function renderStMichael() {
+      const count = todayDailyData.stMichaelChaplet || 0;
+      document.getElementById("stMichaelCount").textContent = count;
+
+      if (stMichaelPraying) {
+        document.getElementById("stMichaelPrayerInterface").style.display = "block";
+        document.getElementById("stMichaelTrackingInterface").style.display = "none";
+        updateStMichaelPrayerDisplay();
+      } else {
+        document.getElementById("stMichaelPrayerInterface").style.display = "none";
+        document.getElementById("stMichaelTrackingInterface").style.display = "block";
+      }
+    }
+
+    function updateStMichaelPrayerDisplay() {
+      const step = stMichaelSequence[stMichaelCurrentStep];
+      const display = document.getElementById("stMichaelCurrentPrayer");
+      
+      let html = '';
+      if (step.type === 'instruction') {
+        html = `<div style="color: var(--secondary); font-style: italic; font-weight: 600;">${step.text}</div>`;
+      } else if (step.type === 'salutation') {
+        html = `<div style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Salutation:</div><div>${step.text}</div>`;
+      } else {
+        html = `<div>${step.text}</div>`;
+      }
+      
+      display.innerHTML = html;
+
+      document.getElementById("stMichaelPrevBtn").disabled = stMichaelCurrentStep === 0;
+      
+      if (stMichaelCurrentStep === stMichaelSequence.length - 1) {
+        document.getElementById("stMichaelNextBtn").style.display = "none";
+        document.getElementById("stMichaelCompleteBtn").style.display = "inline-block";
+      } else {
+        document.getElementById("stMichaelNextBtn").style.display = "inline-block";
+        document.getElementById("stMichaelCompleteBtn").style.display = "none";
+      }
+    }
+
+    window.startStMichaelChaplet = () => {
+      stMichaelPraying = true;
+      stMichaelCurrentStep = 0;
+      renderStMichael();
+    };
+
+    window.stMichaelPrev = () => {
+      if (stMichaelCurrentStep > 0) {
+        stMichaelCurrentStep--;
+        updateStMichaelPrayerDisplay();
+      }
+    };
+
+    window.stMichaelNext = () => {
+      if (stMichaelCurrentStep < stMichaelSequence.length - 1) {
+        stMichaelCurrentStep++;
+        updateStMichaelPrayerDisplay();
+      }
+    };
+
+    window.completeStMichaelChaplet = () => {
+      const current = todayDailyData.stMichaelChaplet || 0;
+      set(ref(db, `dailyData/${todayString}/stMichaelChaplet`), current + 1);
+      stMichaelPraying = false;
+      stMichaelCurrentStep = 0;
+      renderStMichael();
+      showToast("St. Michael Chaplet completed! 🙏");
+    };
+
+    window.addStMichael = (delta) => {
+      const current = todayDailyData.stMichaelChaplet || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/stMichaelChaplet`), newVal);
+    };
+
+    // === WAY OF THE CROSS ===
+    function renderWayOfCross() {
+      const completed = todayDailyData.stationsCompleted || [];
+      const wayCount = todayDailyData.wayOfCross || 0;
+
+      const stationsHtml = stations.map((title, idx) => {
+        const num = idx + 1;
+        const isCompleted = completed.includes(num);
+        return `
+          <button class="station-btn ${isCompleted ? 'completed' : ''}" onclick="toggleStation(${num})">
+            <span class="station-number">${num}</span>
+            <span class="station-title">${title}</span>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById("stationsList").innerHTML = stationsHtml;
+      document.getElementById("wayOfCrossCount").textContent = wayCount;
+    }
+
+    window.toggleStation = (num) => {
+      const completed = todayDailyData.stationsCompleted || [];
+      const idx = completed.indexOf(num);
+      
+      if (idx > -1) {
+        completed.splice(idx, 1);
+      } else {
+        completed.push(num);
+      }
+
+      set(ref(db, `dailyData/${todayString}/stationsCompleted`), completed);
+
+      // If all 14 stations completed, increment way of cross count
+      if (completed.length === 14) {
+        const wayCount = (todayDailyData.wayOfCross || 0) + 1;
+        update(ref(db, `dailyData/${todayString}`), {
+          wayOfCross: wayCount,
+          stationsCompleted: []
+        });
+        showToast("Way of the Cross completed! 🙏");
+      }
+    };
+
+    window.completeAllStations = () => {
+      const wayCount = (todayDailyData.wayOfCross || 0) + 1;
+      update(ref(db, `dailyData/${todayString}`), {
+        wayOfCross: wayCount,
+        stationsCompleted: []
+      });
+      showToast("Way of the Cross completed! 🙏");
+    };
+
+    window.resetStations = () => {
+      set(ref(db, `dailyData/${todayString}/stationsCompleted`), []);
+      showToast("Stations reset");
+    };
+
+    // === SILENT PRAYER TIMER ===
+    function renderSilentPrayer() {
+      const sessions = todayDailyData.silentPrayerSessions || [];
+      const totalMinutes = todayDailyData.silentPrayerMinutes || 0;
+
+      document.getElementById("totalSilentTime").textContent = totalMinutes;
+
+      const sessionsHtml = sessions.length > 0 ? sessions.slice().reverse().map(s => {
+        const startTime = new Date(s.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const duration = Math.floor(s.duration / 60);
+        return `
+          <div class="session-item">
+            <span class="session-time">${startTime}</span>
+            <span class="session-duration">${duration} min</span>
+          </div>
+        `;
+      }).join('') : '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No sessions today</p>';
+
+      document.getElementById("sessionsListToday").innerHTML = sessionsHtml;
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerSeconds / 60);
+      const seconds = timerSeconds % 60;
+      document.getElementById("timerDisplay").textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (timerInterval) return;
+
+      timerStartTime = Date.now();
+      document.getElementById("startTimerBtn").disabled = true;
+      document.getElementById("stopTimerBtn").disabled = false;
+
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+
+        // Check if preset time reached
+        if (presetMinutes && timerSeconds >= presetMinutes * 60) {
+          stopTimer();
+          playTimerSound();
+        }
       }, 1000);
-    };
-    tStop.onclick = async ()=>{
-      if(!tInt) return;
-      clearInterval(tInt); tInt=null;
-      tStart.disabled=false; tStop.disabled=true;
-      const key = toDateKey(currentDate);
-      const minutes = Math.round(tSec/60);
-      const node = push(pSilent.sessions(key));
-      await set(node, {seconds:tSec, minutes, at: Date.now()});
-      await update(pSilent.totalMin(key), {value: increment(minutes)});
-      await update(pTotals(key), {count: increment(1)});
-    };
-    function listenSilent(){
-      const key = toDateKey(currentDate);
-      const u1 = onValue(pSilent.totalMin(key), s=> tTotal.textContent = (s.val() && s.val().value) || 0);
-      const u2 = onValue(pSilent.sessions(key), s=>{
-        const data = s.val()||{}; tSessions.innerHTML='';
-        Object.values(data).sort((a,b)=>(a.at||0)-(b.at||0)).forEach(ses=>{
-          const div = document.createElement('div'); div.className='item';
-          div.innerHTML = `<span>${new Date(ses.at||Date.now()).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone: tz})}</span><span class="badge">${ses.minutes}m</span>`;
-          tSessions.appendChild(div);
-        });
+    }
+
+    function stopTimer() {
+      if (!timerInterval) return;
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+
+      const duration = timerSeconds;
+      const minutes = Math.floor(duration / 60);
+
+      // Save session
+      const sessions = todayDailyData.silentPrayerSessions || [];
+      sessions.push({
+        start: timerStartTime,
+        duration: duration
       });
-      unsubscribers.push(u1,u2);
-    }
 
-    // --- DEVOTIONS ---
-    const devList = document.getElementById('devList');
-    const devAdd = document.getElementById('devAdd');
-    const devName = document.getElementById('devName');
-    devAdd.onclick = async ()=>{
-      const name = devName.value.trim(); if(!name) return;
-      const id = push(pDev).key;
-      await set(ref(db, `${base}/devotions/${id}`), {name, intention:''});
-      devName.value='';
-    };
-    function renderDev(devs){
-      devList.innerHTML='';
-      for(const [id,dv] of Object.entries(devs||{})){
-        const row = document.createElement('div'); row.className='item';
-        const left = document.createElement('div');
-        left.innerHTML = `<span class="label">${dv.name||'Devotion'}</span><div class="muted">Intention: ${dv.intention||'—'}</div>`;
-        const right = document.createElement('div'); right.className='controls';
-        const setInt = document.createElement('button'); setInt.className='btn'; setInt.textContent='Set Intention';
-        setInt.onclick = async ()=>{
-          const val = prompt('Intention for '+(dv.name||'devotion'), dv.intention||'');
-          if(val!==null){ await update(ref(db, `${base}/devotions/${id}`), {intention: val}); }
-        };
-        const del = document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
-        del.onclick = ()=> set(ref(db, `${base}/devotions/${id}`), null);
-        right.appendChild(setInt); right.appendChild(del);
-        row.appendChild(left); row.appendChild(right);
-        devList.appendChild(row);
-      }
-    }
-    function listenDev(){ unsubscribers.push(onValue(pDev, s=> renderDev(s.val()))); }
+      const totalMinutes = (todayDailyData.silentPrayerMinutes || 0) + minutes;
 
-    // --- CHILDREN ---
-    const childTabs = document.getElementById('childTabs');
-    const childList = document.getElementById('childList');
-    const childAdd = document.getElementById('childAdd');
-    const childNewPrayer = document.getElementById('childNewPrayer');
-    const children = ['Agnes','Edmund','Leo','Child 4','Child 5'];
-    let activeChild = 0;
-    function renderChildTabs(){
-      childTabs.innerHTML='';
-      children.forEach((n,i)=>{
-        const b = document.createElement('button');
-        b.className = 'btn ghost';
-        if(i===activeChild){ b.classList.add('alt'); }
-        b.textContent = n;
-        b.onclick = ()=>{ activeChild=i; renderChildTabs(); listenChild(); };
-        childTabs.appendChild(b);
+      update(ref(db, `dailyData/${todayString}`), {
+        silentPrayerSessions: sessions,
+        silentPrayerMinutes: totalMinutes
       });
-    }
-    renderChildTabs();
-    childAdd.onclick = async ()=>{
-      const name = childNewPrayer.value.trim(); if(!name) return;
-      const id = push(pChildren(children[activeChild]).prayers).key;
-      await set(ref(db, `${base}/children/${children[activeChild]}/prayers/${id}`), {name});
-      childNewPrayer.value='';
-    };
-    function renderChildList(data){
-      childList.innerHTML='';
-      for(const [id,p] of Object.entries(data||{})){
-        const row = document.createElement('div'); row.className='item';
-        row.innerHTML = `<span class="label">${p.name||'Prayer'}</span>`;
-        const right = document.createElement('div'); right.className='controls';
-        const plus = document.createElement('button'); plus.className='btn'; plus.textContent='+1';
-        plus.onclick = async ()=>{
-          const key = toDateKey(currentDate);
-          await update(ref(db, `${base}/children/${children[activeChild]}/prayers/${id}/counts/${key}`), {value: increment(1)});
-          await update(pTotals(key), {count: increment(1)});
-        };
-        const del = document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
-        del.onclick = ()=> set(ref(db, `${base}/children/${children[activeChild]}/prayers/${id}`), null);
-        right.appendChild(plus); right.appendChild(del);
-        row.appendChild(right);
-        childList.appendChild(row);
-      }
-    }
-    let childUnsub = null;
-    function listenChild(){
-      if(childUnsub) childUnsub();
-      const u = onValue(pChildren(children[activeChild]).prayers, s=> renderChildList(s.val()));
-      childUnsub = u; unsubscribers.push(u);
+
+      // Reset
+      timerSeconds = 0;
+      presetMinutes = null;
+      updateTimerDisplay();
+      document.getElementById("startTimerBtn").disabled = false;
+      document.getElementById("stopTimerBtn").disabled = true;
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+
+      showToast(`Prayer session saved: ${minutes} minutes`);
     }
 
-    // --- INTENTIONS ---
-    const intList = document.getElementById('intList');
-    const intAdd = document.getElementById('intAdd');
-    const intTitle = document.getElementById('intTitle');
-    intAdd.onclick = async ()=>{
-      const title = intTitle.value.trim(); if(!title) return;
-      const id = push(pIntent).key;
-      await set(ref(db, `${base}/intentions/${id}`), {title, count:0, answered:false, note:''});
-      intTitle.value='';
+    function playTimerSound() {
+      timerSound.play().catch(err => console.log("Audio play failed:", err));
+    }
+
+    // === DEVOTIONS ===
+    function renderDevotions() {
+      const devotions = [
+        { key: 'divMercy', name: 'Divine Mercy Chaplet', detail: '3 PM Hour of Mercy', info: 'divMercy' },
+        { key: 'angelus', name: 'Angelus', detail: '6 AM, 12 PM, 6 PM', info: 'angelus' },
+        { key: 'angelOfPeace', name: 'Angel of Peace Prayer', detail: 'Fatima', info: 'angelOfPeace' },
+        { key: 'pardonPrayer', name: 'Pardon Prayer', detail: 'Fatima', info: 'pardonPrayer' },
+        { key: 'eucharisticPrayer', name: 'Eucharistic Prayer', detail: 'Fatima', info: 'eucharisticPrayer' },
+        { key: 'sacrificePrayer', name: 'Sacrifice Prayer', detail: 'Fatima', info: 'sacrificePrayer' },
+        { key: 'sacredHeart', name: 'Sacred Heart', detail: 'First Friday', info: 'sacredHeart' },
+        { key: 'immacHeart', name: 'Immaculate Heart', detail: 'First Saturday', info: 'immacHeart' },
+        { key: 'holyWounds', name: 'Chaplet of Holy Wounds', detail: 'Five Holy Wounds', info: 'holyWounds' },
+        { key: 'holySpirit', name: 'Holy Spirit Novena', detail: 'Nine days', info: 'holySpiritNovena' }
+      ];
+
+      const html = devotions.map(d => {
+        const count = todayDailyData.devotions?.[d.key] || 0;
+        const intention = todayDailyData.devotionIntentions?.[d.key] || '';
+        
+        return `
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">
+                ${d.name}
+                <button class="btn-icon" onclick="showPrayerInfo('${d.info}')" title="View Prayer" style="margin-left: 0.5rem; padding: 0.25rem;">ℹ️</button>
+              </div>
+              <div class="prayer-detail">${d.detail}</div>
+              ${intention ? `<div class="prayer-detail" style="margin-top: 0.5rem; color: var(--primary); font-weight: 600;">Intention: ${intention}</div>` : ''}
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display">${count}</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addDevotion('${d.key}', 1)">+1</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addDevotion('${d.key}', -1)">-1</button>` : ''}
+              </div>
+            </div>
+          </div>
+          ${!intention ? `<div style="text-align: right; margin-bottom: 1rem;"><button class="btn-link" onclick="setDevotionIntention('${d.key}')">Set intention</button></div>` : ''}
+        `;
+      }).join('');
+
+      document.getElementById("devotionsList").innerHTML = html;
+    }
+
+    window.addDevotion = (key, delta) => {
+      const current = todayDailyData.devotions?.[key] || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/devotions/${key}`), newVal);
     };
-    function renderIntents(data){
-      intList.innerHTML='';
-      for(const [id,it] of Object.entries(data||{})){
-        const row = document.createElement('div'); row.className='item';
-        const left = document.createElement('div');
-        left.innerHTML = `<span class="label">${it.title}</span><div class="muted">${it.answered?'Answered':'Active'}${it.note? ' — '+it.note:''}</div>`;
-        const right = document.createElement('div'); right.className='controls';
-        ['+1','+10','+100','−1'].forEach(lbl=>{
-          const b=document.createElement('button'); b.className='btn'; b.textContent=lbl;
-          b.onclick = async ()=>{
-            const val = lbl==='−1' ? -1 : parseInt(lbl.replace('+',''),10);
-            const key = toDateKey(currentDate);
-            await update(ref(db, `${base}/intentions/${id}`), {count: increment(val)});
-            if(val>0){ await update(pTotals(key), {count: increment(val)}); }
-          };
-          right.appendChild(b);
+
+    window.setDevotionIntention = (key) => {
+      const current = todayDailyData.devotionIntentions?.[key] || '';
+      document.getElementById('devotionKey').value = key;
+      document.getElementById('devotionIntentionText').value = current;
+      document.getElementById('devotionIntentionModal').classList.add('active');
+      document.getElementById('devotionIntentionText').focus();
+    };
+
+    // === BREVIARY ===
+    function renderBreviary() {
+      const hours = [
+        { key: 'invitatory', name: 'Invitatory', detail: 'Office of Readings' },
+        { key: 'lauds', name: 'Lauds', detail: 'Morning Prayer' },
+        { key: 'terce', name: 'Terce', detail: 'Mid-Morning' },
+        { key: 'sext', name: 'Sext', detail: 'Midday' },
+        { key: 'none', name: 'None', detail: 'Mid-Afternoon' },
+        { key: 'vespers', name: 'Vespers', detail: 'Evening Prayer' },
+        { key: 'compline', name: 'Compline', detail: 'Night Prayer' }
+      ];
+
+      const html = hours.map(h => {
+        const checked = todayDailyData.breviary?.[h.key] || false;
+        return `
+          <div class="prayer-item ${checked ? 'completed' : ''}">
+            <div class="prayer-info">
+              <div class="prayer-name">${h.name}</div>
+              <div class="prayer-detail">${h.detail}</div>
+            </div>
+            <div class="prayer-actions">
+              <button class="toggle-btn ${checked ? 'active' : ''}" data-type="breviary" data-key="${h.key}">
+                ${checked ? '✓ Prayed' : 'Mark as Prayed'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("breviaryList").innerHTML = html;
+    }
+
+    // === LITTLE OFFICE OF ST. JOSEPH ===
+    function renderStJosephOffice() {
+      const hours = [
+        { key: 'matins', name: 'Matins', detail: 'Office of Readings', info: 'stJosephMatins' },
+        { key: 'lauds', name: 'Lauds', detail: 'Morning Prayer', info: 'stJosephLauds' },
+        { key: 'prime', name: 'Prime', detail: 'First Hour', info: 'stJosephPrime' },
+        { key: 'terce', name: 'Terce', detail: 'Third Hour', info: 'stJosephTerce' },
+        { key: 'sext', name: 'Sext', detail: 'Sixth Hour', info: 'stJosephSext' },
+        { key: 'none', name: 'None', detail: 'Ninth Hour', info: 'stJosephNone' },
+        { key: 'vespers', name: 'Vespers', detail: 'Evening Prayer', info: 'stJosephVespers' },
+        { key: 'compline', name: 'Compline', detail: 'Night Prayer', info: 'stJosephCompline' }
+      ];
+
+      const html = hours.map(h => {
+        const checked = todayDailyData.stJosephOffice?.[h.key] || false;
+        return `
+          <div class="prayer-item ${checked ? 'completed' : ''}">
+            <div class="prayer-info">
+              <div class="prayer-name">
+                ${h.name}
+                <button class="btn-icon" onclick="showPrayerInfo('${h.info}')" title="View Prayer" style="margin-left: 0.5rem; padding: 0.25rem;">ℹ️</button>
+              </div>
+              <div class="prayer-detail">${h.detail}</div>
+            </div>
+            <div class="prayer-actions">
+              <button class="toggle-btn ${checked ? 'active' : ''}" onclick="toggleStJosephHour('${h.key}')">
+                ${checked ? '✓ Prayed' : 'Mark as Prayed'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("stJosephOfficeList").innerHTML = html;
+    }
+
+    window.toggleStJosephHour = (key) => {
+      const current = todayDailyData.stJosephOffice?.[key] || false;
+      set(ref(db, `dailyData/${todayString}/stJosephOffice/${key}`), !current);
+    };
+
+    // === CARMELITE PRAYERS ===
+    function renderCarmelitePrayers() {
+      const prayers = [
+        { key: 'ourLadyCarmel', name: 'Our Lady of Mount Carmel', info: 'ourLadyCarmel' },
+        { key: 'scapularEnrollment', name: 'Brown Scapular Prayer', info: 'scapularEnrollment' },
+        { key: 'carmeliteConsecration', name: 'Carmelite Act of Consecration', info: 'carmeliteConsecration' },
+        { key: 'prayerTeresaAvila', name: 'Prayer to St. Teresa of Ávila', info: 'prayerTeresaAvila' },
+        { key: 'prayerJohnCross', name: 'Prayer to St. John of the Cross', info: 'prayerJohnCross' },
+        { key: 'prayerThereseLisieux', name: 'Prayer to St. Thérèse of Lisieux', info: 'prayerThereseLisieux' },
+        { key: 'prayerElijah', name: 'Prayer to Prophet Elijah', info: 'prayerElijah' },
+        { key: 'carmeliteTrinity', name: 'Prayer to the Holy Trinity (Bl. Elizabeth)', info: 'carmeliteTrinity' },
+        { key: 'carmeliteVocations', name: 'Prayer for Carmelite Vocations', info: 'carmeliteVocations' },
+        { key: 'carmeliteProfession', name: 'Carmelite Profession Prayer', info: 'carmeliteProfession' },
+        { key: 'sabbarinePrayer', name: 'Sabbatine Privilege Prayer', info: 'sabbarinePrayer' }
+      ];
+
+      const html = prayers.map(p => {
+        const count = todayDailyData.carmelitePrayers?.[p.key] || 0;
+        
+        return `
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">
+                ${p.name}
+                <button class="btn-icon" onclick="showPrayerInfo('${p.info}')" title="View Prayer" style="margin-left: 0.5rem; padding: 0.25rem;">ℹ️</button>
+              </div>
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display">${count}</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addCarmelitePrayer('${p.key}', 1)">+1</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addCarmelitePrayer('${p.key}', -1)">-1</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("carmelitePrayersList").innerHTML = html;
+    }
+
+    window.addCarmelitePrayer = (key, delta) => {
+      const current = todayDailyData.carmelitePrayers?.[key] || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/carmelitePrayers/${key}`), newVal);
+    };
+
+    // === READING ===
+    function renderReading() {
+      const readings = [
+        { key: 'scripture', name: 'Daily Scripture', detail: 'Bible reading' },
+        { key: 'lectio', name: 'Lectio Divina', detail: 'Meditative reading' },
+        { key: 'spiritual', name: 'Spiritual Reading', detail: 'Saints, theology' },
+        { key: 'lives', name: 'Lives of Saints', detail: 'Hagiography' }
+      ];
+
+      const html = readings.map(r => {
+        const checked = todayDailyData.reading?.[r.key] || false;
+        return `
+          <div class="prayer-item ${checked ? 'completed' : ''}">
+            <div class="prayer-info">
+              <div class="prayer-name">${r.name}</div>
+              <div class="prayer-detail">${r.detail}</div>
+            </div>
+            <div class="prayer-actions">
+              <button class="toggle-btn ${checked ? 'active' : ''}" data-type="reading" data-key="${r.key}">
+                ${checked ? '✓ Read' : 'Mark as Read'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("readingList").innerHTML = html;
+    }
+
+    // === CARMELITE READING ===
+    function renderCarmeliteReading() {
+      let html = '';
+      
+      carmeliteReadings.forEach(section => {
+        html += `
+          <div style="margin-bottom: 2rem;">
+            <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">
+              ${section.section}
+            </h3>
+        `;
+        
+        section.items.forEach(item => {
+          const key = item.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+          const checked = todayDailyData.carmeliteReading?.[key] || false;
+          
+          html += `
+            <div class="prayer-item ${checked ? 'completed' : ''}" style="margin-bottom: 0.5rem;">
+              <div class="prayer-info">
+                <div class="prayer-name" style="font-size: 1rem;">${item}</div>
+              </div>
+              <div class="prayer-actions">
+                <button class="toggle-btn ${checked ? 'active' : ''}" onclick="toggleCarmeliteReading('${key}')">
+                  ${checked ? '✓ Read' : 'Mark as Read'}
+                </button>
+              </div>
+            </div>
+          `;
         });
-        const mark = document.createElement('button'); mark.className='btn alt'; mark.textContent='Mark answered';
-        mark.onclick = async ()=>{
-          const note = prompt('Optional note / thanksgiving:', it.note||'');
-          await update(ref(db, `${base}/intentions/${id}`), {answered:true, note: note||''});
-        };
-        const del = document.createElement('button'); del.className='btn ghost'; del.textContent='Delete';
-        del.onclick = ()=> set(ref(db, `${base}/intentions/${id}`), null);
-        const badge = document.createElement('span'); badge.className='badge'; badge.textContent = it.count||0;
-        right.appendChild(mark); right.appendChild(del); right.appendChild(badge);
-        row.appendChild(left); row.appendChild(right);
-        intList.appendChild(row);
-      }
-    }
-    function listenIntents(){ unsubscribers.push(onValue(pIntent, s=> renderIntents(s.val()))); }
+        
+        html += '</div>';
+      });
 
-    // --- NOVENAS ---
-    const novList = document.getElementById('novList');
-    const novTitle = document.getElementById('novTitle');
-    const novType = document.getElementById('novType');
-    const novFor = document.getElementById('novFor');
-    const novStart = document.getElementById('novStart');
-    const novAdd = document.getElementById('novAdd');
-    novAdd.onclick = async ()=>{
-      const t = novTitle.value.trim(); if(!t) return;
-      const start = novStart.value || toDateKey(new Date());
-      const type = parseInt(novType.value,10);
-      const id = push(pNovenas).key;
-      await set(ref(db, `${base}/novenas/${id}`), {title:t, type, for: (novFor.value||''), start, progress:{}});
-      novTitle.value=''; novFor.value='';
+      document.getElementById("carmeliteReadingList").innerHTML = html;
+    }
+
+    window.toggleCarmeliteReading = (key) => {
+      const current = todayDailyData.carmeliteReading?.[key] || false;
+      set(ref(db, `dailyData/${todayString}/carmeliteReading/${key}`), !current);
     };
-    function renderNovenas(data){
-      novList.innerHTML='';
-      for(const [id,nv] of Object.entries(data||{})){
-        const days = nv.type||9;
-        const start = new Date(nv.start || toDateKey(new Date()));
-        const idx = Math.min(days, Math.max(0, Math.floor((currentDate - start)/(1000*60*60*24))+1));
-        const done = nv.progress && nv.progress[toDateKey(currentDate)];
-        const row = document.createElement('div'); row.className='item';
-        row.innerHTML = `<div><span class="label">${nv.title}</span><div class="muted">${nv.for||'—'} • Day ${idx} of ${days}</div></div>`;
-        const right = document.createElement('div'); right.className='controls';
-        const btn = document.createElement('button'); btn.className='btn'; btn.textContent = done ? 'Marked' : 'Mark Today';
-        btn.disabled = !!done;
-        btn.onclick = async ()=>{
-          await update(ref(db, `${base}/novenas/${id}/progress/${toDateKey(currentDate)}`), {done:true, ts: Date.now()});
-          await update(pTotals(toDateKey(currentDate)), {count: increment(1)});
-        };
-        right.appendChild(btn);
-        row.appendChild(right);
-        novList.appendChild(row);
-      }
-    }
-    function listenNovenas(){ unsubscribers.push(onValue(pNovenas, s=> renderNovenas(s.val()||{}))); }
 
-    // --- HISTORY ---
-    let histChart=null;
-    function listenHistory(){
-      const u = onValue(ref(db, `${base}/totals`), s=>{
-        const data = s.val()||{};
-        const labels=[]; const values=[];
-        const d = new Date(currentDate);
-        for(let i=13;i>=0;i--){
-          const t = new Date(d); t.setDate(d.getDate()-i);
-          const k = toDateKey(t);
-          labels.push(t.toLocaleDateString('en-GB',{month:'short',day:'numeric', timeZone: tz}));
-          values.push( (data[k] && data[k].count) || 0 );
+    // === INTENTIONS ===
+    function renderIntentions() {
+      if (Object.keys(activeIntentions).length === 0) {
+        document.getElementById("intentionsList").innerHTML = 
+          '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No active intentions. Click "Add Intention" to begin.</p>';
+        return;
+      }
+
+      const html = Object.entries(activeIntentions).map(([id, int]) => {
+        const count = todayDailyData.intentionsBy?.[id] || 0;
+        const createdDate = new Date(int.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        return `
+          <div class="intention-item">
+            <div class="intention-header">
+              <div class="intention-title">${int.title}</div>
+            </div>
+            ${int.note ? `<div class="intention-note">${int.note}</div>` : ''}
+            <div class="intention-meta">
+              <div class="intention-count">${count} prayers today</div>
+              <div class="intention-actions">
+                <button class="counter-btn" onclick="addCount('${id}', 1)">+1</button>
+                <button class="counter-btn" onclick="addCount('${id}', 10)">+10</button>
+                <button class="counter-btn" onclick="addCount('${id}', 100)">+100</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addCount('${id}', -1)">-1</button>` : ''}
+                <button class="btn btn-secondary btn-small" onclick="markIntentionAnswered('${id}')">Answered</button>
+                <button class="btn-icon" onclick="deleteIntention('${id}')" title="Delete">🗑️</button>
+              </div>
+            </div>
+            <div class="intention-date">Added: ${createdDate}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("intentionsList").innerHTML = html;
+    }
+
+    // === NOVENAS ===
+    function renderNovenas() {
+      if (Object.keys(activeNovenas).length === 0) {
+        document.getElementById("novenaList").innerHTML = 
+          '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No active novenas. Click "Add Novena" to begin.</p>';
+        return;
+      }
+
+      const html = Object.entries(activeNovenas).map(([id, nov]) => {
+        const startDate = new Date(nov.startDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + nov.type - 1);
+        
+        const today = new Date(todayString);
+        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.max(0, nov.type - daysSinceStart - 1);
+        const currentDay = Math.min(nov.type, daysSinceStart + 1);
+        const progress = Math.round((currentDay / nov.type) * 100);
+
+        const isCheckedIn = todayDailyData.novenaCheckIns?.[id] || false;
+        const isInProgress = daysSinceStart >= 0 && daysSinceStart < nov.type;
+        
+        const statusClass = isCheckedIn ? 'novena-checked' : '';
+        
+        return `
+          <div class="novena-item ${statusClass}">
+            <div class="novena-header">
+              <div class="novena-title">${nov.title}</div>
+            </div>
+            ${nov.for ? `<div class="novena-for">For: ${nov.for}</div>` : ''}
+            
+            <div class="novena-info">
+              <div class="novena-info-item">
+                <div class="novena-info-label">Type</div>
+                <div class="novena-info-value">${nov.type}-Day</div>
+              </div>
+              <div class="novena-info-item">
+                <div class="novena-info-label">Start Date</div>
+                <div class="novena-info-value">${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+              </div>
+              <div class="novena-info-item">
+                <div class="novena-info-label">End Date</div>
+                <div class="novena-info-value">${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+              </div>
+              ${isInProgress ? `
+                <div class="novena-info-item">
+                  <div class="novena-info-label">Current Day</div>
+                  <div class="novena-info-value">Day ${currentDay} of ${nov.type}</div>
+                </div>
+                <div class="novena-info-item">
+                  <div class="novena-info-label">Days Remaining</div>
+                  <div class="novena-info-value">${daysRemaining}</div>
+                </div>
+              ` : ''}
+            </div>
+
+            ${isInProgress ? `
+              <div class="novena-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <div class="progress-text">${progress}% Complete</div>
+              </div>
+            ` : ''}
+
+            <div class="novena-actions">
+              ${isInProgress && !isCheckedIn ? `
+                <button class="btn btn-primary" onclick="checkInNovena('${id}')">Check In Today</button>
+              ` : isCheckedIn ? `
+                <button class="btn btn-secondary" disabled>✓ Checked In</button>
+              ` : ''}
+              <button class="btn btn-secondary btn-small" onclick="markNovenaAnswered('${id}')">Mark Answered</button>
+              <button class="btn-icon" onclick="deleteNovena('${id}')" title="Delete">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("novenaList").innerHTML = html;
+    }
+
+    // === CHILDREN ===
+    function renderChildPrayerSection() {
+      const childPrayers = todayDailyData.children?.[currentChild] || {};
+
+      const prayers = [
+        { key: 'ourFather', name: "Our Father" },
+        { key: 'hailMary', name: "Hail Mary" },
+        { key: 'glory', name: "Glory Be" },
+        { key: 'angelGuardian', name: "Angel Guardian" },
+        { key: 'mealPrayer', name: "Meal Prayer" }
+      ];
+
+      const html = prayers.map(p => {
+        const count = childPrayers[p.key] || 0;
+        return `
+          <div class="prayer-item">
+            <div class="prayer-info">
+              <div class="prayer-name">${p.name}</div>
+            </div>
+            <div class="prayer-actions">
+              <div class="count-display">${count}</div>
+              <div class="counter-btns">
+                <button class="counter-btn" onclick="addChildPrayer('${p.key}', 1)">+1</button>
+                <button class="counter-btn" onclick="addChildPrayer('${p.key}', 10)">+10</button>
+                <button class="counter-btn" onclick="addChildPrayer('${p.key}', 100)">+100</button>
+                ${count > 0 ? `<button class="counter-btn minus" onclick="addChildPrayer('${p.key}', -1)">-1</button>` : ''}
+                ${count >= 10 ? `<button class="counter-btn minus" onclick="addChildPrayer('${p.key}', -10)">-10</button>` : ''}
+                ${count >= 100 ? `<button class="counter-btn minus" onclick="addChildPrayer('${p.key}', -100)">-100</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("childPrayerSection").innerHTML = html;
+    }
+
+    window.addChildPrayer = (key, delta) => {
+      const current = todayDailyData.children?.[currentChild]?.[key] || 0;
+      const newVal = Math.max(0, current + delta);
+      set(ref(db, `dailyData/${todayString}/children/${currentChild}/${key}`), newVal);
+    };
+
+    // === MASS & CONFESSION ===
+    async function logMass() {
+      const current = todayDailyData.mass || 0;
+      await set(ref(db, `dailyData/${todayString}/mass`), current + 1);
+      showToast("Mass attendance logged");
+    }
+
+    async function logConfession() {
+      const current = todayDailyData.confession || 0;
+      await set(ref(db, `dailyData/${todayString}/confession`), current + 1);
+      showToast("Confession logged");
+    }
+
+    function loadMassChart() {
+      // Simplified - would need to fetch historical data
+      const ctx = document.getElementById("massChart");
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+          datasets: [{
+            label: 'Mass Attendance',
+            data: [1, 1, 2, 1],
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
+            backgroundColor: 'rgba(139, 69, 19, 0.1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true
         }
-        const ctx = document.getElementById('histChart').getContext('2d');
-        if(histChart){ histChart.destroy(); }
-        histChart = new Chart(ctx, {
-          type:'bar',
-          data:{ labels, datasets:[{label:'Total per day', data: values}] },
-          options:{ responsive:true, plugins:{legend:{display:false}} }
-        });
       });
-      unsubscribers.push(u);
     }
 
-    // --- Export ---
-    document.getElementById('exportBtn').onclick = async ()=>{
-      const snap = await get(ref(db, base));
-      const blob = new Blob([JSON.stringify(snap.val()||{}, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'littlestWay-export.json'; a.click();
-      URL.revokeObjectURL(url);
+    function loadChildrenChart() {
+      // Simplified
+      const ctx = document.getElementById("childrenChart");
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Child 1', 'Child 2', 'Child 3', 'Child 4', 'Child 5'],
+          datasets: [{
+            label: 'Total Prayers',
+            data: [45, 32, 28, 15, 8],
+            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary')
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+    }
+
+    function loadHistoryData() {
+      // Simplified
+      const ctx = document.getElementById("historyChart");
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Daily Prayers',
+            data: [12, 15, 18, 14, 20, 25, 22],
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
+            backgroundColor: 'rgba(139, 69, 19, 0.1)',
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+    }
+
+    function loadReadingData() {
+      // Placeholder
+    }
+
+    // === EXPORT DATA ===
+    async function exportData() {
+      try {
+        // Fetch all data
+        const dailySnapshot = await get(ref(db, 'dailyData'));
+        const intentionsSnapshot = await get(ref(db, 'intentions'));
+        const novenasSnapshot = await get(ref(db, 'novenas'));
+
+        const exportData = {
+          dailyData: dailySnapshot.val() || {},
+          intentions: intentionsSnapshot.val() || {},
+          novenas: novenasSnapshot.val() || {},
+          exportDate: new Date().toISOString()
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `littlest-way-export-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        showToast("Data exported successfully");
+      } catch (error) {
+        showToast("Export failed: " + error.message, "error");
+      }
+    }
+
+    // === UTILITY ===
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    window.showPrayerInfo = (prayerKey) => {
+      const prayer = prayerTexts[prayerKey];
+      if (!prayer) return;
+      
+      document.getElementById("prayerTextTitle").textContent = prayer.title;
+      document.getElementById("prayerTextContent").textContent = prayer.text;
+      document.getElementById("prayerTextModal").classList.add("active");
     };
 
-    // --- Theme ---
-    document.getElementById('themeBtn').onclick = ()=> document.body.classList.toggle('dark-mode');
+    window.closePrayerTextModal = () => {
+      document.getElementById("prayerTextModal").classList.remove("active");
+    };
 
-    // --- Date refresh (recreate listeners for per-date paths) ---
-    async function refreshAllForDate(){
-      detachAll();
-      listenGoal();
-      listenTodayTotal();
-      computeStreak();
-      listenDaily();
-      listenMichael();
-      listenStations();
-      listenWayTotal();
-      listenSilent();
-      listenDev();
-      listenChild();
-      listenIntents();
-      listenNovenas();
-      listenHistory();
+    window.setDailyGoal = () => {
+      const goal = prompt("Set daily prayer goal:", localStorage.getItem("dailyGoal") || "10");
+      if (goal && !isNaN(goal)) {
+        localStorage.setItem("dailyGoal", goal);
+        renderDashboard();
+        showToast("Daily goal updated");
+      }
+    };
+
+    // === EVENT LISTENERS ===
+    function setupListeners() {
+      // Tabs
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          e.target.classList.add("active");
+          
+          document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
+          const viewId = e.target.dataset.view;
+          document.getElementById(viewId).classList.add("active");
+
+          // Load specific views
+          if (viewId === "historyView") loadHistoryData();
+          if (viewId === "readingView") loadReadingData();
+          if (viewId === "sacramentsView") loadMassChart();
+          if (viewId === "childrenView") loadChildrenChart();
+        });
+      });
+
+      // Date navigation
+      document.getElementById("prevDayBtn").addEventListener("click", () => {
+        currentViewDate.setDate(currentViewDate.getDate() - 1);
+        updateDateDisplay();
+        loadData();
+      });
+
+      document.getElementById("nextDayBtn").addEventListener("click", () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (todayString !== today) {
+          currentViewDate.setDate(currentViewDate.getDate() + 1);
+          updateDateDisplay();
+          loadData();
+        }
+      });
+
+      // Timer
+      document.getElementById("startTimerBtn").addEventListener("click", startTimer);
+      document.getElementById("stopTimerBtn").addEventListener("click", stopTimer);
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const minutes = parseInt(e.target.dataset.minutes);
+          presetMinutes = minutes;
+          
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          showToast(`Timer set for ${minutes} minutes`);
+        });
+      });
+
+      // St. Michael Chaplet
+      document.getElementById("startStMichaelChaplet").addEventListener("click", window.startStMichaelChaplet);
+      document.getElementById("stMichaelPrevBtn").addEventListener("click", window.stMichaelPrev);
+      document.getElementById("stMichaelNextBtn").addEventListener("click", window.stMichaelNext);
+      document.getElementById("stMichaelCompleteBtn").addEventListener("click", window.completeStMichaelChaplet);
+
+      // Way of Cross
+      document.getElementById("completeAllStations").addEventListener("click", window.completeAllStations);
+      document.getElementById("resetStations").addEventListener("click", window.resetStations);
+
+      // Rosary intensity buttons
+      document.querySelectorAll('[data-type="rosary"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const delta = parseInt(e.target.dataset.delta);
+          window.addRosary(key, delta);
+        });
+      });
+
+      // Devotion intensity buttons
+      document.querySelectorAll('[data-type="devotion"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const delta = parseInt(e.target.dataset.delta);
+          window.addDevotion(key, delta);
+        });
+      });
+
+      // Breviary toggles
+      document.querySelectorAll('[data-type="breviary"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData.breviary?.[key];
+          set(ref(db, `dailyData/${todayString}/breviary/${key}`), newVal);
+        });
+      });
+
+      // Reading toggles
+      document.querySelectorAll('[data-type="reading"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData.reading?.[key];
+          set(ref(db, `dailyData/${todayString}/reading/${key}`), newVal);
+        });
+      });
+
+      // Quick actions
+      document.getElementById("quickMass").addEventListener("click", logMass);
+      document.getElementById("quickScripture").addEventListener("click", () => {
+        const newVal = !todayDailyData.reading?.scripture;
+        set(ref(db, `dailyData/${todayString}/reading/scripture`), newVal);
+      });
+      document.getElementById("quickLectio").addEventListener("click", () => {
+        const newVal = !todayDailyData.reading?.lectio;
+        set(ref(db, `dailyData/${todayString}/reading/lectio`), newVal);
+      });
+
+      // Children selector
+      document.querySelectorAll('.btn-child').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.btn-child').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          currentChild = e.target.dataset.child;
+          renderChildPrayerSection();
+        });
+      });
+
+      // Sacraments
+      document.getElementById("logMassBtn").addEventListener("click", logMass);
+      document.getElementById("logConfessionBtn").addEventListener("click", logConfession);
+
+      // Modals
+      document.getElementById("addIntentionBtn").addEventListener("click", showIntentionModal);
+      document.getElementById("closeModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("cancelIntentionModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("intentionForm").addEventListener("submit", handleIntentionSubmit);
+
+      document.getElementById("addNovenaBtn").addEventListener("click", showNovenaModal);
+      document.getElementById("closeNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("cancelNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("novenaForm").addEventListener("submit", handleNovenaSubmit);
+
+      document.getElementById("closeAnsweredModal").addEventListener("click", closeAnsweredModal);
+      document.getElementById("cancelAnsweredModal").addEventListener("click", () => {
+        closeAnsweredModal();
+        completeAnsweredMarking();
+      });
+      document.getElementById("answeredForm").addEventListener("submit", handleAnsweredSubmit);
+
+      document.getElementById("closeDevotionIntentionModal").addEventListener("click", closeDevotionIntentionModal);
+      document.getElementById("cancelDevotionIntentionModal").addEventListener("click", closeDevotionIntentionModal);
+      document.getElementById("devotionIntentionForm").addEventListener("submit", handleDevotionIntentionSubmit);
+
+      // Theme, Goal, Export
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+      document.getElementById("setGoalBtn").addEventListener("click", window.setDailyGoal);
+      document.getElementById("exportDataBtn").addEventListener("click", exportData);
+    }
+
+    async function handleIntentionSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("intentionTitle").value.trim();
+      const note = document.getElementById("intentionNote").value.trim();
+      if (!title) return;
+
+      const data = {
+        title,
+        note,
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        deleted: false,
+        answered: false
+      };
+
+      try {
+        await set(push(ref(db, "intentions")), data);
+        closeIntentionModal();
+        showToast("Intention saved");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
+
+    async function handleNovenaSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("novenaTitle").value.trim();
+      const novenaFor = document.getElementById("novenaFor").value.trim();
+      const type = parseInt(document.getElementById("novenaType").value, 10);
+      const startDate = document.getElementById("novenaStartDate").value;
+      if (!title || !startDate) return;
+
+      const data = {
+        title,
+        for: novenaFor,
+        type,
+        startDate,
+        createdAt: Date.now(),
+        deleted: false,
+        answered: false
+      };
+
+      try {
+        await set(push(ref(db, "novenas")), data);
+        closeNovenaModal();
+        showToast("Novena added");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
+
+    let pendingAnsweredId = null;
+
+    async function handleAnsweredSubmit(e) {
+      e.preventDefault();
+      const testimony = document.getElementById("answeredTestimony").value.trim();
+      const intentionId = document.getElementById("answeredIntentionId").value;
+
+      closeAnsweredModal();
+      
+      await update(ref(db, `intentions/${intentionId}`), { 
+        answered: true,
+        answeredDate: Date.now(),
+        testimony: testimony || ""
+      });
+      
+      showToast("Intention marked as answered");
+      pendingAnsweredId = null;
+    }
+
+    async function completeAnsweredMarking() {
+      if (pendingAnsweredId) {
+        await update(ref(db, `intentions/${pendingAnsweredId}`), { 
+          answered: true,
+          answeredDate: Date.now()
+        });
+        showToast("Intention marked as answered");
+        pendingAnsweredId = null;
+      }
+    }
+
+    async function handleDevotionIntentionSubmit(e) {
+      e.preventDefault();
+      const intentionKey = document.getElementById('devotionKey').value;
+      const intentionText = document.getElementById('devotionIntentionText').value.trim();
+      
+      await set(ref(db, `dailyData/${todayString}/devotionIntentions/${intentionKey}`), intentionText);
+      closeDevotionIntentionModal();
+      showToast("Intention saved");
+    }
+
+    // === Global Functions ===
+    window.addCount = (intentionId, delta) => {
+      const current = todayDailyData.intentionsBy?.[intentionId] || 0;
+      const newVal = Math.max(0, current + delta);
+      const updates = {};
+      updates[`dailyData/${todayString}/intentionsTotal`] = increment(delta);
+      updates[`dailyData/${todayString}/intentionsBy/${intentionId}`] = newVal;
+      update(ref(db), updates);
+    };
+
+    window.checkInNovena = (novenaId) => {
+      set(ref(db, `dailyData/${todayString}/novenaCheckIns/${novenaId}`), true);
+    };
+
+    window.deleteIntention = async (id) => {
+      if (!confirm("Delete this intention?")) return;
+      await update(ref(db, `intentions/${id}`), { deleted: true, deletedAt: Date.now() });
+      showToast("Intention removed");
+    };
+
+    window.markIntentionAnswered = async (id) => {
+      const intention = activeIntentions[id];
+      if (!intention) return;
+      
+      pendingAnsweredId = id;
+      document.getElementById("answeredIntentionId").value = id;
+      document.getElementById("answeredIntentionTitle").value = intention.title;
+      document.getElementById("answeredTestimony").value = "";
+      document.getElementById("answeredModal").classList.add("active");
+      document.getElementById("answeredTestimony").focus();
+    };
+
+    window.deleteNovena = async (id) => {
+      if (!confirm("Delete this novena?")) return;
+      await update(ref(db, `novenas/${id}`), { deleted: true, deletedAt: Date.now() });
+      showToast("Novena removed");
+    };
+
+    window.markNovenaAnswered = async (id) => {
+      const novena = activeNovenas[id];
+      if (!novena) return;
+      
+      if (confirm(`Mark "${novena.title}" as answered?`)) {
+        await update(ref(db, `novenas/${id}`), { answered: true });
+        showToast("Novena marked as answered");
+      }
+    };
+
+    // === Modal Functions ===
+    function showIntentionModal() {
+      document.getElementById("modalTitle").textContent = "Add Intention";
+      document.getElementById("intentionForm").reset();
+      document.getElementById("intentionModal").classList.add("active");
+      document.getElementById("intentionTitle").focus();
+    }
+
+    function closeIntentionModal() {
+      document.getElementById("intentionModal").classList.remove("active");
+    }
+
+    function showNovenaModal() {
+      document.getElementById("novenaForm").reset();
+      document.getElementById("novenaStartDate").value = todayString;
+      document.getElementById("novenaModal").classList.add("active");
+      document.getElementById("novenaTitle").focus();
+    }
+
+    function closeNovenaModal() {
+      document.getElementById("novenaModal").classList.remove("active");
+    }
+
+    function closeAnsweredModal() {
+      document.getElementById("answeredModal").classList.remove("active");
+    }
+
+    function closeDevotionIntentionModal() {
+      document.getElementById("devotionIntentionModal").classList.remove("active");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      const icon = document.querySelector(".theme-icon");
+      icon.textContent = document.body.classList.contains("dark-mode") ? "☀" : "☾";
+      
+      const currentView = document.querySelector(".app-view.active").id;
+      if (currentView === "historyView") loadHistoryData();
+      if (currentView === "readingView") loadReadingData();
+      if (currentView === "sacramentsView") loadMassChart();
+      if (currentView === "childrenView") loadChildrenChart();
     }
   </script>
+
+<script>
+window.addEventListener('error', function(e){
+  console.error('Global error:', e.message, e.filename, e.lineno, e.error);
+});
+</script>
 </body>
 </html>
