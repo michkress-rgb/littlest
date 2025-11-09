@@ -5,7 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Littlest Way - Prayer Tracker</title>
   <meta name="theme-color" content="#5a3825" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js">
+    // === Inline Add Intention ===
+    function initInlineIntentionForm(){
+      const addBtn = document.getElementById('addIntentionBtn');
+      const form = document.getElementById('addIntentionInlineForm');
+      const save = document.getElementById('saveIntentionInline');
+      const cancel = document.getElementById('cancelIntentionInline');
+      const title = document.getElementById('intentionTitleInput');
+      if(!addBtn || !form || !save || !cancel || !title) return;
+      addBtn.addEventListener('click', ()=>{ form.style.display = form.style.display==='none'?'block':'none'; title.focus(); });
+      cancel.addEventListener('click', ()=>{ title.value=''; form.style.display='none'; });
+      save.addEventListener('click', async ()=>{
+        const t = title.value.trim(); if(!t) return;
+        const newRef = push(ref(db, `intentions`));
+        await set(newRef, { title: t, createdAt: Date.now() });
+        title.value=''; form.style.display='none';
+        try{ showToast('Intention added'); }catch(e){}
+        if (typeof loadData === 'function') await loadData();
+      });
+    }
+    
+</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1159,6 +1180,12 @@
   flex: 0 1 auto;
 }
 
+
+.section-title.littlest-way{font-size:2rem;color:#7a4b2b;letter-spacing:.03em}
+.section-subtitle.littlest-way{color:#7a4b2b99}
+.lw-controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.lw-count{font-size:1.6rem;font-weight:600;color:#7a4b2b;padding:0 .5rem}
+.btn-pill{border-radius:9999px;padding:.4rem .75rem}
 </style>
 </head>
 <body>
@@ -1525,6 +1552,11 @@
         <div class="card-header">
           <h2 class="card-title">💭 Prayer Intentions</h2>
           <button class="btn btn-primary" id="addIntentionBtn">+ Add Intention</button>
+<div id="addIntentionInlineForm" style="display:none;margin-top:.75rem;">
+  <input id="intentionTitleInput" class="input" placeholder="Name this intention" style="max-width:340px;">
+  <button class="btn" id="saveIntentionInline">Save</button>
+  <button class="btn btn-outline" id="cancelIntentionInline">Cancel</button>
+</div>
         </div>
         <div id="intentionsList"></div>
       </div>
@@ -2490,7 +2522,7 @@ async function startApp(){
     }
 
     function renderAll() {
-      renderDashboard();
+      renderDashboard(); renderLittlestWayCounter();
       renderDailyPrayers();
       renderRosary();
       renderStMichael();
@@ -2504,7 +2536,7 @@ async function startApp(){
       renderCarmeliteReading();
       renderIntentions();
       renderNovenas();
-      renderChildPrayerSection();
+      renderChildPrayerSection(); initInlineIntentionForm();
     }
 
     // === DASHBOARD ===
@@ -3122,6 +3154,24 @@ async function startApp(){
     };
 
     // === INTENTIONS ===
+    
+    // === LITTLEST WAY COUNTER ===
+    function getLWCount(){ return todayDailyData.littlestWayCount || 0; }
+    async function setLWCount(val){
+      const v = Math.max(0, Number(val)||0);
+      await set(ref(db, `dailyData/${todayString}/littlestWayCount`), v);
+    }
+    async function updateLittlestWayCount(delta){
+      const v = getLWCount();
+      await setLWCount(v + delta);
+      try{ showToast((delta>=0?"+":"") + delta + " — Littlest Way"); }catch(e){}
+      await loadData();
+    }
+    function renderLittlestWayCounter(){
+      const el = document.getElementById('lwCounterDisplay');
+      if(el) el.textContent = String(getLWCount());
+    }
+    
     function renderIntentions() {
       if (Object.keys(activeIntentions).length === 0) {
         document.getElementById("intentionsList").innerHTML = 
@@ -3433,7 +3483,7 @@ async function startApp(){
       const goal = prompt("Set daily prayer goal:", localStorage.getItem("dailyGoal") || "10");
       if (goal && !isNaN(goal)) {
         localStorage.setItem("dailyGoal", goal);
-        renderDashboard();
+        renderDashboard(); renderLittlestWayCounter();
         showToast("Daily goal updated");
       }
     };
