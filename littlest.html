@@ -26,6 +26,20 @@
       });
     }
     
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('a,button').forEach(el=>{
+    const t = (el.textContent||'').toLowerCase();
+    const id = (el.id||'').toLowerCase();
+    const href = (el.getAttribute('href')||'').toLowerCase();
+    if(t.includes('reading') || id.includes('reading') || href.includes('reading')){
+      el.addEventListener('click', (e)=>{
+        if(!e.defaultPrevented){
+          if (typeof showScreen === 'function') showScreen('readingView');
+        }
+      }, { passive:true });
+    }
+  });
+});
 </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
