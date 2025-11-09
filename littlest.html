@@ -2536,7 +2536,7 @@ async function startApp(){
       renderCarmeliteReading();
       renderIntentions();
       renderNovenas();
-      renderChildPrayerSection(); initInlineIntentionForm();
+      renderChildPrayerSection(); try{ if (typeof initInlineIntentionForm === "function") initInlineIntentionForm(); }catch(_){};
     }
 
     // === DASHBOARD ===
