@@ -1217,7 +1217,7 @@
         <button class="tab-btn" data-view="carmeliteView">Carmelite Reading</button>
         <button class="tab-btn" data-view="sacramentsView">Sacraments</button>
         <button class="tab-btn" data-view="childrenView">Children</button>
-        <button class="tab-btn" data-view="intentionsView">Intentions</button>
+        <button class="tab-btn" data-view="intentionsView">LITTLEST WAY</button>
         <button class="tab-btn" data-view="novenaView">Novenas</button>
         <button class="tab-btn" data-view="historyView">History</button>
       </div>
@@ -2545,7 +2545,8 @@ async function startApp(){
       // Update Scripture/Lectio badges from counts      if (lBadge) lBadge.textContent = String(lCount);
     
       
-      // Scripture/Lectio badges from counts
+      // Scripture/Lectio badges from counts      if (sBadge) sBadge.textContent = String(sCount);
+      if (lBadge) lBadge.textContent = String(lCount);
     
       
       const sCount = todayDailyData.reading?.scriptureCount || 0;
@@ -3247,7 +3248,7 @@ async function startApp(){
         { key: 'hailMary', name: "Hail Mary" },
         { key: 'glory', name: "Glory Be" },
         { key: 'angelGuardian', name: "Angel Guardian" },
-        { key: 'mealPrayer', name: "Meal Prayer" }
+        { key: 'mealPrayer', name: "Other Prayers Prayer" }
       ];
 
       const html = prayers.map(p => {
@@ -3538,18 +3539,28 @@ async function startApp(){
       // Quick actions
       document.getElementById("quickMass").addEventListener("click", logMass);
       document.getElementById("quickMassMinus").addEventListener("click", decMass);
+document.getElementById("quickScriptureMinus")?.addEventListener("click", async () => {
+  const current = (todayDailyData.reading?.scriptureCount||0);
+  const next = Math.max(0, current-1);
+  await set(ref(db, `dailyData/${todayString}/reading/scriptureCount`), next);
+  try{ showToast("Holy Scripture −1"); }catch(e){}
+});
+document.getElementById("quickLectioMinus")?.addEventListener("click", async () => {
+  const current = (todayDailyData.reading?.lectioCount||0);
+  const next = Math.max(0, current-1);
+  await set(ref(db, `dailyData/${todayString}/reading/lectioCount`), next);
+  try{ showToast("Lectio Divina −1"); }catch(e){}
+});
       document.getElementById("quickScripture").addEventListener("click", async () => {
-        const current = (todayDailyData.reading?.scriptureCount||0);
-        await set(ref(db, `dailyData/${todayString}/reading/scriptureCount`), current+1);
-        try{ showToast("Holy Scripture +1"); }catch(e){}
-        const b=document.getElementById("scriptureBadge"); if (b) b.textContent=String(current+1);
-      });
+  const current = (todayDailyData.reading?.scriptureCount||0);
+  await set(ref(db, `dailyData/${todayString}/reading/scriptureCount`), current+1);
+  try{ showToast("Holy Scripture +1"); }catch(e){}
+});
       document.getElementById("quickLectio").addEventListener("click", async () => {
-        const current = (todayDailyData.reading?.lectioCount||0);
-        await set(ref(db, `dailyData/${todayString}/reading/lectioCount`), current+1);
-        try{ showToast("Lectio Divina +1"); }catch(e){}
-        const b=document.getElementById("lectioBadge"); if (b) b.textContent=String(current+1);
-      });
+  const current = (todayDailyData.reading?.lectioCount||0);
+  await set(ref(db, `dailyData/${todayString}/reading/lectioCount`), current+1);
+  try{ showToast("Lectio Divina +1"); }catch(e){}
+});
 
       // Children selector
       
