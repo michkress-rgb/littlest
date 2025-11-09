@@ -3596,12 +3596,15 @@ async function startApp(){
         });
       });
 
-      // Reading toggles
-      document.querySelectorAll('[data-type="reading"]').forEach(btn => {
+      // Reading toggles (safe)
+      document.querySelectorAll('[data-type="reading"]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
-          const key = e.target.dataset.key;
-          const newVal = !todayDailyData.reading?.[key];
-          set(ref(db, `dailyData/${todayString}/reading/${key}`), newVal);
+          const key = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.key) ? e.currentTarget.dataset.key : null;
+          if(!key) return;
+          const rd = (todayDailyData && todayDailyData.reading) ? todayDailyData.reading : {};
+          const cur = !!rd[key];
+          const next = !cur;
+          set(ref(db, `dailyData/${todayString}/reading/${key}`), next);
         });
       });
 
