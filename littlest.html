@@ -1,8 +1,3 @@
-Here is the updated HTML file with both changes applied.
-
-I've moved the toast notification container so errors appear correctly on the PIN screen, and I've changed the PIN hint to be more generic.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,12 +5,14 @@ I've moved the toast notification container so errors appear correctly on the PI
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Littlest Way Counter</title>
     <meta name="theme-color" content="#6b46c1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
     <style>
-        /* Embedded CSS */
         :root {
             --primary: #6b46c1;
             --primary-dark: #553399;
             --secondary: #10b981;
+            --secondary-dark: #059669;
             --danger: #ef4444;
             --warning: #f59e0b;
             --bg-main: #f9fafb;
@@ -58,24 +55,16 @@ I've moved the toast notification container so errors appear correctly on the PI
             transition: background-color var(--transition-base), color var(--transition-base);
         }
 
-        .screen {
-            display: none;
-            min-height: 100vh;
-        }
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: block; }
 
-        .screen.active {
-            display: block;
-        }
-
-        /* PIN Screen */
+        /* --- PIN Screen (Unchanged) --- */
         #pinScreen {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
         }
-
         .pin-container {
             text-align: center;
             padding: var(--spacing-xl);
@@ -85,25 +74,9 @@ I've moved the toast notification container so errors appear correctly on the PI
             max-width: 400px;
             width: 90%;
         }
-
-        .pin-container h1 {
-            font-size: 2.5rem;
-            margin-bottom: var(--spacing-md);
-            color: var(--primary);
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            margin-bottom: var(--spacing-lg);
-            font-size: 1rem;
-        }
-
-        .pin-input-group {
-            display: flex;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
-        }
-
+        .pin-container h1 { font-size: 2.5rem; margin-bottom: var(--spacing-md); color: var(--primary); }
+        .subtitle { color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 1rem; }
+        .pin-input-group { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
         .pin-input-group input {
             flex: 1;
             padding: var(--spacing-md);
@@ -115,51 +88,16 @@ I've moved the toast notification container so errors appear correctly on the PI
             background: var(--bg-card);
             color: var(--text-primary);
         }
+        .pin-input-group input:focus { outline: none; border-color: var(--primary); }
+        .hint { color: var(--text-muted); font-size: 0.875rem; font-style: italic; }
 
-        .pin-input-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .btn {
-            padding: var(--spacing-md) var(--spacing-lg);
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .hint {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            font-style: italic;
-        }
-
-        /* Loading Screen */
+        /* --- Loading Screen (Unchanged) --- */
         #loadingScreen {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background: var(--bg-main);
         }
-
-        .loading-content {
-            text-align: center;
-        }
-
+        .loading-content { text-align: center; }
         .spinner {
             width: 50px;
             height: 50px;
@@ -169,39 +107,22 @@ I've moved the toast notification container so errors appear correctly on the PI
             animation: spin 1s linear infinite;
             margin: 0 auto var(--spacing-md);
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* App Header */
-        .app-header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
+        /* --- Buttons --- */
+        .btn {
             padding: var(--spacing-md) var(--spacing-lg);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 1px 3px var(--shadow);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
         }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .app-header h1 {
-            font-size: 1.5rem;
-            color: var(--primary);
-        }
-
-        .header-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-        }
-
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-secondary { background: var(--text-secondary); color: white; }
+        .btn-secondary:hover { background: var(--text-primary); }
         .btn-icon {
             background: transparent;
             border: none;
@@ -212,91 +133,140 @@ I've moved the toast notification container so errors appear correctly on the PI
             transition: background-color var(--transition-fast);
             color: var(--text-secondary);
         }
+        .btn-icon:hover { background: var(--border); }
 
-        .btn-icon:hover {
-            background: var(--border);
+        /* --- App Header & Navigation --- */
+        .app-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing-md) var(--spacing-lg) 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 3px var(--shadow);
         }
-
-        .quote-display {
-            text-align: center;
-            font-style: italic;
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .app-header h1 { font-size: 1.5rem; color: var(--primary); }
+        
+        .app-nav {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        .nav-link {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
             color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: var(--spacing-sm);
-            min-height: 1.5rem;
+            padding-bottom: var(--spacing-md);
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+        }
+        .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
 
-        /* Main Content */
+        /* --- App Views --- */
         .main-content {
             padding: var(--spacing-lg);
             max-width: 800px;
             margin: 0 auto;
             padding-bottom: 100px;
         }
+        .app-view { display: none; }
+        .app-view.active { display: block; }
 
+        .view-header {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+        .view-subheader {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+        }
+        .prayer-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        .prayer-section h3 {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        .prayer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: var(--spacing-sm);
+        }
+        .btn-toggle {
+            padding: var(--spacing-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+        .btn-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        .btn-toggle.active {
+            background: var(--secondary);
+            border-color: var(--secondary-dark);
+            color: white;
+        }
+        
+        /* --- Intentions View --- */
         .btn-add {
             width: 100%;
             margin-bottom: var(--spacing-lg);
             padding: var(--spacing-lg);
             font-size: 1.125rem;
         }
-
         .intentions-list {
             display: flex;
             flex-direction: column;
             gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-xl);
         }
-
-        .empty-state {
-            text-align: center;
-            padding: var(--spacing-xl);
-            color: var(--text-secondary);
-        }
-
-        .empty-state p:first-child {
-            font-size: 1.5rem;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        /* Intention Card */
         .intention-card {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
             padding: var(--spacing-lg);
             box-shadow: 0 2px 4px var(--shadow);
-            transition: all var(--transition-base);
             border: 1px solid var(--border);
+            opacity: 1;
+            transition: all var(--transition-base);
         }
-
-        .intention-card:hover {
-            box-shadow: 0 4px 8px var(--shadow);
-            transform: translateY(-2px);
+        .intention-card.answered {
+            opacity: 0.6;
+            background: var(--border);
         }
-
+        .intention-card.answered .intention-title {
+            text-decoration: line-through;
+        }
         .intention-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: var(--spacing-md);
         }
-
-        .intention-info {
-            flex: 1;
-        }
-
-        .intention-title {
-            font-size: 1.25rem;
-            margin-bottom: var(--spacing-xs);
-            color: var(--text-primary);
-        }
-
-        .intention-note {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin: 0;
-        }
-
+        .intention-title { font-size: 1.25rem; margin-bottom: var(--spacing-xs); }
+        .intention-note { font-size: 0.875rem; color: var(--text-secondary); margin: 0; }
+        .intention-actions { display: flex; gap: var(--spacing-xs); }
+        
         .intention-counter {
             text-align: center;
             padding: var(--spacing-md) 0;
@@ -304,29 +274,20 @@ I've moved the toast notification container so errors appear correctly on the PI
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
         }
-
         .counter-today {
             display: block;
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--primary);
             line-height: 1;
-            margin-bottom: var(--spacing-xs);
         }
-
-        .counter-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        .counter-label { font-size: 0.875rem; color: var(--text-muted); }
 
         .counting-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: var(--spacing-sm);
         }
-
         .btn-count {
             padding: var(--spacing-lg);
             font-size: 1.25rem;
@@ -334,99 +295,35 @@ I've moved the toast notification container so errors appear correctly on the PI
             border: 2px solid var(--border);
             background: var(--bg-card);
             color: var(--text-primary);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            min-height: 60px;
         }
+        .btn-count-1 { border-color: var(--secondary); color: var(--secondary); }
+        .btn-count-1:hover { background: var(--secondary); color: white; }
+        .btn-count-10 { border-color: var(--primary); color: var(--primary); }
+        .btn-count-10:hover { background: var(--primary); color: white; }
+        .btn-count-100 { border-color: var(--warning); color: var(--warning); }
+        .btn-count-100:hover { background: var(--warning); color: white; }
 
-        .btn-count:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow);
-        }
-
-        .btn-count-1 {
-            border-color: var(--secondary);
-            color: var(--secondary);
-        }
-
-        .btn-count-1:hover {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-count-10 {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-count-10:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-count-100 {
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-
-        .btn-count-100:hover {
-            background: var(--warning);
-            color: white;
-        }
-
-        /* Footer */
-        .app-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
-            padding: var(--spacing-lg);
-            box-shadow: 0 -2px 8px var(--shadow);
-        }
-
-        .global-counter {
+        .empty-state {
             text-align: center;
-            margin-bottom: var(--spacing-sm);
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
         }
 
-        .global-counter .counter-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        /* --- History View --- */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            background: var(--bg-card);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 2px 4px var(--shadow);
         }
 
-        .global-counter .counter-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: var(--spacing-xs) 0 0;
-        }
-
-        .keyboard-hints {
-            display: flex;
-            justify-content: center;
-            gap: var(--spacing-md);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .keyboard-hints span {
-            background: var(--border);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-sm);
-        }
-
-        /* Modal */
+        /* --- Modal (Unchanged) --- */
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg-overlay);
             z-index: 200;
             display: none;
@@ -434,11 +331,7 @@ I've moved the toast notification container so errors appear correctly on the PI
             justify-content: center;
             padding: var(--spacing-md);
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        .modal.active { display: flex; }
         .modal-content {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
@@ -448,7 +341,6 @@ I've moved the toast notification container so errors appear correctly on the PI
             overflow-y: auto;
             box-shadow: 0 20px 25px -5px var(--shadow-lg);
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -456,30 +348,16 @@ I've moved the toast notification container so errors appear correctly on the PI
             padding: var(--spacing-lg);
             border-bottom: 1px solid var(--border);
         }
-
-        .modal-header h2 {
-            font-size: 1.5rem;
-        }
-
-        .modal form {
-            padding: var(--spacing-lg);
-        }
-
+        .modal-header h2 { font-size: 1.5rem; }
+        .modal form { padding: var(--spacing-lg); }
         .form-group {
             display: flex;
             flex-direction: column;
             gap: var(--spacing-xs);
             margin-bottom: var(--spacing-md);
         }
-
-        .form-group label {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: var(--text-primary);
-        }
-
-        .form-group input,
-        .form-group textarea {
+        .form-group label { font-weight: 600; font-size: 0.875rem; }
+        .form-group input, .form-group textarea {
             padding: var(--spacing-md);
             border: 2px solid var(--border);
             border-radius: var(--radius-md);
@@ -488,39 +366,16 @@ I've moved the toast notification container so errors appear correctly on the PI
             background: var(--bg-card);
             color: var(--text-primary);
         }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
         .modal-actions {
             display: flex;
             gap: var(--spacing-sm);
             padding: var(--spacing-lg);
             border-top: 1px solid var(--border);
         }
+        .modal-actions .btn { flex: 1; }
 
-        .modal-actions .btn {
-            flex: 1;
-        }
-
-        .btn-secondary {
-            background: var(--text-secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--text-primary);
-        }
-
-        /* Toast */
+        /* --- Toast (Unchanged) --- */
         .toast-container {
             position: fixed;
             bottom: var(--spacing-lg);
@@ -532,7 +387,6 @@ I've moved the toast notification container so errors appear correctly on the PI
             gap: var(--spacing-sm);
             pointer-events: none;
         }
-
         .toast {
             background: var(--text-primary);
             color: white;
@@ -543,49 +397,20 @@ I've moved the toast notification container so errors appear correctly on the PI
             transform: translateY(100px);
             opacity: 0;
             transition: all var(--transition-base);
-            max-width: 90vw;
         }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast-success {
-            background: var(--secondary);
-        }
-
-        .toast-error {
-            background: var(--danger);
-        }
-
-        @media (max-width: 640px) {
-            .app-header h1 {
-                font-size: 1.25rem;
-            }
-            .counter-today {
-                font-size: 2rem;
-            }
-            .btn-count {
-                font-size: 1rem;
-                padding: var(--spacing-md);
-                min-height: 50px;
-            }
-        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-success { background: var(--secondary); }
+        .toast-error { background: var(--danger); }
     </style>
 </head>
 <body>
+    
     <div id="pinScreen" class="screen active">
         <div class="pin-container">
             <h1>🕊️ Littlest Way</h1>
             <p class="subtitle">Enter PIN to continue</p>
             <div class="pin-input-group">
-                <input type="password" 
-                       id="pinInput" 
-                       inputmode="numeric" 
-                       maxlength="6" 
-                       placeholder="Enter PIN"
-                       autocomplete="off">
+                <input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="Enter PIN" autocomplete="off">
                 <button id="pinSubmit" class="btn btn-primary">Unlock</button>
             </div>
             <p class="hint">Enter your 6-digit PIN</p>
@@ -595,7 +420,7 @@ I've moved the toast notification container so errors appear correctly on the PI
     <div id="loadingScreen" class="screen">
         <div class="loading-content">
             <div class="spinner"></div>
-            <p>Loading your counter...</p>
+            <p>Loading your prayers...</p>
         </div>
     </div>
 
@@ -609,31 +434,73 @@ I've moved the toast notification container so errors appear correctly on the PI
                     </button>
                 </div>
             </div>
-            <div id="quoteDisplay" class="quote-display"></div>
+            <nav class="app-nav">
+                <button class="nav-link active" data-view="todayView">Today</button>
+                <button class="nav-link" data-view="intentionsView">Intentions</button>
+                <button class="nav-link" data-view="historyView">History</button>
+            </nav>
         </header>
 
         <main class="main-content">
-            <button id="addIntentionBtn" class="btn btn-primary btn-add">
-                ➕ Add New Intention
-            </button>
+            <div id="todayView" class="app-view active">
+                <h2 class="view-header">Today's Prayers</h2>
+                <p class="view-subheader" id="todayDate">Loading date...</p>
 
-            <div id="intentionsList" class="intentions-list"></div>
+                <section class="prayer-section">
+                    <h3>Rosary</h3>
+                    <div class="prayer-grid" id="rosaryGrid">
+                        <button class="btn-toggle" data-type="rosary" data-key="joyful">Joyful</button>
+                        <button class="btn-toggle" data-type="rosary" data-key="luminous">Luminous</button>
+                        <button class="btn-toggle" data-type="rosary" data-key="sorrowful">Sorrowful</button>
+                        <button class="btn-toggle" data-type="rosary" data-key="glorious">Glorious</button>
+                    </div>
+                </section>
+
+                <section class="prayer-section">
+                    <h3>Devotions & Chaplets</h3>
+                    <div class="prayer-grid" id="devotionsGrid">
+                        <button class="btn-toggle" data-type="devotions" data-key="sevenSorrows">Seven Sorrows</button>
+                        <button class="btn-toggle" data-type="devotions" data-key="divineMercy">Divine Mercy</button>
+                        <button class="btn-toggle" data-type="devotions" data-key="holyFace">Holy Face</button>
+                        <button class="btn-toggle" data-type="devotions" data-key="holyWounds">Holy Wounds</button>
+                    </div>
+                </section>
+
+                <section class="prayer-section">
+                    <h3>Liturgy of the Hours</h3>
+                    <div class="prayer-grid" id="breviaryGrid">
+                        <button class="btn-toggle" data-type="breviary" data-key="matins">Matins</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="lauds">Lauds</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="terce">Terce</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="sext">Sext</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="none">None</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="vespers">Vespers</button>
+                        <button class="btn-toggle" data-type="breviary" data-key="compline">Compline</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="intentionsView" class="app-view">
+                <button id="addIntentionBtn" class="btn btn-primary btn-add">
+                    ➕ Add New Intention
+                </button>
+                
+                <h3 class="view-header">Total Intention Prayers Today: <span id="globalCount">0</span></h3>
+                <br>
+                <div id="intentionsList" class="intentions-list">
+                    </div>
+            </div>
+
+            <div id="historyView" class="app-view">
+                <h2 class="view-header">Prayer History</h2>
+                <p class="view-subheader">Intention prayers over the last 30 days</p>
+
+                <div class="chart-container">
+                    <canvas id="historyChart"></canvas>
+                </div>
+            </div>
         </main>
-
-        <footer class="app-footer">
-            <div class="global-counter">
-                <p class="counter-label">Global total today</p>
-                <p id="globalCount" class="counter-value">0</p>
-            </div>
-            <div class="keyboard-hints">
-                <span>1: +1</span>
-                <span>2: +10</span>
-                <span>3: +100</span>
-                <span>Z: Undo</span>
-            </div>
-        </footer>
-
-        </div>
+    </div>
 
     <div id="toastContainer" class="toast-container"></div>
 
@@ -646,18 +513,11 @@ I've moved the toast notification container so errors appear correctly on the PI
             <form id="intentionForm">
                 <div class="form-group">
                     <label for="intentionTitle">Title *</label>
-                    <input type="text" 
-                           id="intentionTitle" 
-                           required 
-                           maxlength="100"
-                           placeholder="e.g., For my family">
+                    <input type="text" id="intentionTitle" required maxlength="100" placeholder="e.g., For my family">
                 </div>
                 <div class="form-group">
                     <label for="intentionNote">Note (optional)</label>
-                    <textarea id="intentionNote" 
-                              rows="3" 
-                              maxlength="500"
-                              placeholder="Additional details..."></textarea>
+                    <textarea id="intentionNote" rows="3" maxlength="500" placeholder="Additional details..."></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="cancelModal">Cancel</button>
@@ -667,8 +527,9 @@ I've moved the toast notification container so errors appear correctly on the PI
         </div>
     </div>
 
+
     <script type="module">
-        // Firebase Config
+        // === Firebase Config ===
         const firebaseConfig = {
             apiKey: "AIzaSyC8h3coWuE2erx7QGQQkykproMDJsg3CUo",
             authDomain: "littlest-7ffe5.firebaseapp.com",
@@ -678,22 +539,25 @@ I've moved the toast notification container so errors appear correctly on the PI
             messagingSenderId: "97338367295",
             appId: "1:97338367295:web:5e1075caf990514a77078a"
         };
-
+        
+        // === App Constants ===
         const CORRECT_PIN = "332211";
-        const QUOTES = [
-            "Jesus, Mary, I love you. Save souls!",
-            "Small acts of love, done with great love.",
-            "Every little act of love counts in the eyes of God.",
-            "Transform every moment into an offering of love.",
-            "The Littlest Way: continuous acts of love for Jesus."
-        ];
+        const today = new Date();
+        const todayString = today.toISOString().slice(0, 10); // "YYYY-MM-DD"
+        
+        // === Firebase SDK Imports ===
+        // We'll import these inside functions to ensure they are loaded
+        let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
+        let getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByValue, orderByKey;
 
+        // === App State ===
         let app, auth, db, currentUser;
         let activeIntentions = {};
-        let todayCounts = { totals: { sum: 0 }, byIntention: {} };
-        let currentEditingIntention = null;
+        let todayDailyData = {};
+        let historyChart;
 
-        // PIN Screen Setup
+        // === 1. Initialization ===
+        
         document.getElementById('pinSubmit').addEventListener('click', handlePINSubmit);
         document.getElementById('pinInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handlePINSubmit();
@@ -701,69 +565,64 @@ I've moved the toast notification container so errors appear correctly on the PI
 
         async function handlePINSubmit() {
             const pin = document.getElementById('pinInput').value.trim();
-            console.log('PIN entered:', pin);
-            
             if (pin === CORRECT_PIN) {
-                console.log('✅ PIN correct');
                 showScreen('loadingScreen');
-                await initializeApp();
+                await initializeAppAndAuth();
             } else {
-                showToast('Incorrect PIN. Try: 332211', 'error');
+                showToast('Incorrect PIN.', 'error');
                 document.getElementById('pinInput').value = '';
             }
         }
 
-        async function initializeApp() {
+        async function initializeAppAndAuth() {
             try {
-                console.log('Loading Firebase...');
-                
-                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-                const { getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                const { getDatabase, ref, push, set, update, onValue, increment, get } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
-                
+                // Dynamically import Firebase modules
+                ({ initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'));
+                ({ getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js'));
+                ({ getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByKey } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js'));
+
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getDatabase(app);
-                
-                console.log('✅ Firebase initialized');
-                
-                // Sign in anonymously
-                await signInAnonymously(auth);
-                console.log('✅ Signed in anonymously');
-                
+
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUser = user;
-                        console.log('✅ User UID:', user.uid);
-                        setupApp(ref, push, set, update, onValue, increment, get);
+                        setupApp();
                     }
                 });
+
+                await signInAnonymously(auth);
                 
             } catch (error) {
-                console.error('❌ Error:', error);
+                console.error('❌ Firebase Init Error:', error);
+                showScreen('pinScreen');
                 showToast('Error loading app: ' + error.message, 'error');
             }
         }
 
-        function setupApp(ref, push, set, update, onValue, increment, get) {
+        function setupApp() {
             showScreen('appScreen');
+            document.getElementById('todayDate').textContent = today.toLocaleDateString(undefined, {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
             
-            // Setup UI
+            // Setup Listeners
             setupUIListeners();
-            loadIntentions(ref, onValue);
-            loadTodayCounts(ref, onValue);
-            rotateQuote();
-            setInterval(rotateQuote, 30000);
             
-            // Make functions global for onclick handlers
-            window.addCount = (id, delta) => addCount(id, delta, ref, push, set, update, increment);
-            window.editIntention = editIntention;
-            window.deleteIntention = (id) => deleteIntention(id, ref, update);
+            // Load Data
+            loadIntentions();
+            loadDailyData(todayString);
+            loadHistoryData();
         }
 
-        function loadIntentions(ref, onValue) {
+        // === 2. Data Loading ===
+
+        function loadIntentions() {
             const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
-            onValue(intentionsRef, (snapshot) => {
+            const orderedIntentionsRef = query(intentionsRef, orderByKey()); // Order by creation time
+
+            onValue(orderedIntentionsRef, (snapshot) => {
                 activeIntentions = {};
                 const data = snapshot.val() || {};
                 
@@ -772,48 +631,74 @@ I've moved the toast notification container so errors appear correctly on the PI
                         activeIntentions[id] = { ...intention, id };
                     }
                 }
-                
                 renderIntentions();
+                updateIntentionCounts(); // Update counts after rendering
             });
         }
 
-        function loadTodayCounts(ref, onValue) {
-            const today = new Date().toISOString().slice(0, 10);
-            const countsRef = ref(db, `users/${currentUser.uid}/counts/${today}`);
-            onValue(countsRef, (snapshot) => {
-                todayCounts = snapshot.val() || { totals: { sum: 0 }, byIntention: {} };
-                updateCounters();
+        function loadDailyData(dateString) {
+            const dailyDataRef = ref(db, `users/${currentUser.uid}/dailyData/${dateString}`);
+            onValue(dailyDataRef, (snapshot) => {
+                todayDailyData = snapshot.val() || {};
+                
+                // Update "Today" view toggles
+                updateToggleButtons('rosary', todayDailyData.rosary);
+                updateToggleButtons('devotions', todayDailyData.devotions);
+                updateToggleButtons('breviary', todayDailyData.breviary);
+                
+                // Update intention counts
+                updateIntentionCounts();
             });
         }
+        
+        async function loadHistoryData() {
+            const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
+            // Get data for the last 30 days, ordered by date (key)
+            const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
+            
+            const snapshot = await get(historyQuery);
+            const data = snapshot.val() || {};
+            
+            const labels = [];
+            const chartData = [];
+            
+            for (const [date, dailyData] of Object.entries(data)) {
+                labels.push(date);
+                chartData.push(dailyData.intentionsTotal || 0);
+            }
+            
+            renderHistoryChart(labels, chartData);
+        }
+
+        // === 3. UI Rendering & Updates ===
 
         function renderIntentions() {
             const container = document.getElementById('intentionsList');
             const list = Object.values(activeIntentions);
             
             if (list.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <p>✨ No intentions yet</p>
-                        <p>Add your first intention to start counting acts of love</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><p>✨ No intentions yet</p></div>`;
                 return;
             }
             
             container.innerHTML = list.map(intention => `
-                <div class="intention-card">
+                <div class="intention-card ${intention.answered ? 'answered' : ''}" data-id="${intention.id}">
                     <div class="intention-header">
                         <div class="intention-info">
                             <h3 class="intention-title">${escapeHtml(intention.title)}</h3>
                             ${intention.note ? `<p class="intention-note">${escapeHtml(intention.note)}</p>` : ''}
                         </div>
-                        <button class="btn-icon" onclick="window.editIntention('${intention.id}')" title="Edit">✏️</button>
+                        <div class="intention-actions">
+                            <button class="btn-icon" onclick="window.toggleAnswered('${intention.id}')" title="Mark as Answered">
+                                ${intention.answered ? '✅' : '✔️'}
+                            </button>
+                            <button class="btn-icon" onclick="window.editIntention('${intention.id}')" title="Edit">✏️</button>
+                            <button class="btn-icon" onclick="window.deleteIntention('${intention.id}')" title="Delete">🗑️</button>
+                        </div>
                     </div>
                     
                     <div class="intention-counter">
-                        <span class="counter-today" data-id="${intention.id}">
-                            ${todayCounts.byIntention?.[intention.id]?.sum || 0}
-                        </span>
+                        <span class="counter-today" data-counter-id="${intention.id}">0</span>
                         <span class="counter-label">today</span>
                     </div>
                     
@@ -826,101 +711,143 @@ I've moved the toast notification container so errors appear correctly on the PI
             `).join('');
         }
 
-        function updateCounters() {
-            document.getElementById('globalCount').textContent = todayCounts.totals?.sum || 0;
-            
+        function updateToggleButtons(type, data) {
+            if (!data) data = {};
+            document.querySelectorAll(`#${type}Grid .btn-toggle`).forEach(btn => {
+                const key = btn.dataset.key;
+                if (data[key]) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        function updateIntentionCounts() {
+            const byIntention = todayDailyData.intentionsBy || {};
+            let globalTotal = 0;
+
             Object.keys(activeIntentions).forEach(id => {
-                const el = document.querySelector(`[data-id="${id}"]`);
+                const count = byIntention[id] || 0;
+                globalTotal += count;
+                const el = document.querySelector(`[data-counter-id="${id}"]`);
                 if (el) {
-                    el.textContent = todayCounts.byIntention?.[id]?.sum || 0;
+                    el.textContent = count;
+                }
+            });
+            
+            document.getElementById('globalCount').textContent = globalTotal;
+        }
+
+        function renderHistoryChart(labels, data) {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            
+            if (historyChart) {
+                historyChart.destroy();
+            }
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const labelColor = isDark ? '#f9fafb' : '#1f2937';
+            
+            historyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Intention Prayers',
+                        data: data,
+                        backgroundColor: 'rgba(107, 70, 193, 0.7)',
+                        borderColor: 'rgba(107, 70, 193, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: labelColor }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
                 }
             });
         }
 
-        async function addCount(intentionId, delta, ref, push, set, update, increment) {
-            const today = new Date().toISOString().slice(0, 10);
-            
-            try {
-                const eventsRef = ref(db, `users/${currentUser.uid}/events`);
-                await set(push(eventsRef), {
-                    intentionId,
-                    delta,
-                    ts: Date.now(),
-                    date: today
-                });
-                
-                const updates = {};
-                updates[`users/${currentUser.uid}/counts/${today}/totals/sum`] = increment(delta);
-                updates[`users/${currentUser.uid}/counts/${today}/byIntention/${intentionId}/sum`] = increment(delta);
-                await update(ref(db), updates);
-                
-                showToast(`Added +${delta}`);
-            } catch (error) {
-                showToast('Error: ' + error.message, 'error');
-            }
-        }
-
-        function showIntentionModal(intentionId = null) {
-            currentEditingIntention = intentionId;
-            const modal = document.getElementById('intentionModal');
-            const title = document.getElementById('intentionTitle');
-            const note = document.getElementById('intentionNote');
-            
-            if (intentionId) {
-                const intention = activeIntentions[intentionId];
-                document.getElementById('modalTitle').textContent = 'Edit Intention';
-                title.value = intention.title;
-                note.value = intention.note || '';
-            } else {
-                document.getElementById('modalTitle').textContent = 'Add Intention';
-                title.value = '';
-                note.value = '';
-            }
-            
-            modal.classList.add('active');
-            title.focus();
-        }
-
-        function editIntention(id) {
-            showIntentionModal(id);
-        }
-
-        async function deleteIntention(id, ref, update) {
-            const intentionRef = ref(db, `users/${currentUser.uid}/intentions/${id}`);
-            await update(intentionRef, { deleted: true, deletedAt: Date.now() });
-            showToast('Intention removed');
-        }
+        // === 4. Event Handlers ===
 
         function setupUIListeners() {
+            // Tab Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const viewId = e.target.dataset.view;
+                    
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+                    document.getElementById(viewId).classList.add('active');
+                    
+                    // Re-load history data if switching to that tab
+                    if (viewId === 'historyView') {
+                        loadHistoryData();
+                    }
+                });
+            });
+            
+            // Toggle Buttons (Today View)
+            document.querySelectorAll('.btn-toggle').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const type = e.target.dataset.type; // "rosary", "devotions", "breviary"
+                    const key = e.target.dataset.key; // "joyful", "divineMercy", "lauds"
+                    
+                    const currentVal = todayDailyData[type]?.[key] || false;
+                    const newVal = !currentVal;
+                    
+                    const path = `users/${currentUser.uid}/dailyData/${todayString}/${type}/${key}`;
+                    set(ref(db, path), newVal);
+                    // The onValue listener will handle the UI update
+                });
+            });
+
+            // Intention Modal
             document.getElementById('addIntentionBtn').addEventListener('click', () => showIntentionModal());
             document.getElementById('closeModal').addEventListener('click', closeModal);
             document.getElementById('cancelModal').addEventListener('click', closeModal);
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
+            // Intention Form
             document.getElementById('intentionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
                 const title = document.getElementById('intentionTitle').value.trim();
                 const note = document.getElementById('intentionNote').value.trim();
-                
                 if (!title) return;
-                
-                const { ref, push, set, update } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
-                
+
+                const intentionData = {
+                    title,
+                    note,
+                    createdAt: Date.now()
+                };
+
                 try {
-                    if (currentEditingIntention) {
-                        const intentionRef = ref(db, `users/${currentUser.uid}/intentions/${currentEditingIntention}`);
-                        await update(intentionRef, { title, note, updatedAt: Date.now() });
+                    if (window.currentEditingIntention) {
+                        const path = `users/${currentUser.uid}/intentions/${window.currentEditingIntention}`;
+                        await update(ref(db, path), { title, note, updatedAt: Date.now() });
                     } else {
-                        const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
-                        await set(push(intentionsRef), {
-                            title,
-                            note,
-                            deleted: false,
-                            createdAt: Date.now()
-                        });
+                        const path = `users/${currentUser.uid}/intentions`;
+                        await set(push(ref(db, path)), { ...intentionData, deleted: false, answered: false });
                     }
-                    
                     closeModal();
                     showToast('Intention saved');
                 } catch (error) {
@@ -928,46 +855,74 @@ I've moved the toast notification container so errors appear correctly on the PI
                 }
             });
             
-            document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (!document.getElementById('appScreen').classList.contains('active')) return;
-                
-                const list = Object.values(activeIntentions);
-                if (list.length === 0) return;
-                
-                const firstId = list[0].id;
-                
-                switch(e.key) {
-                    case '1':
-                        e.preventDefault();
-                        window.addCount(firstId, 1);
-                        break;
-                    case '2':
-                        e.preventDefault();
-                        window.addCount(firstId, 10);
-                        break;
-                    case '3':
-                        e.preventDefault();
-                        window.addCount(firstId, 100);
-                        break;
-                }
-            });
+            // Theme Toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        }
+
+        // === 5. Global Functions (attached to window) ===
+        
+        window.addCount = (intentionId, delta) => {
+            const updates = {};
+            // Increment total for the day
+            updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsTotal`] = increment(delta);
+            // Increment total for that specific intention
+            updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsBy/${intentionId}`] = increment(delta);
+            
+            update(ref(db), updates);
+            // The onValue listener will handle the UI update
+        };
+
+        window.currentEditingIntention = null;
+        window.editIntention = (id) => {
+            const intention = activeIntentions[id];
+            if (!intention) return;
+            window.currentEditingIntention = id;
+            
+            document.getElementById('modalTitle').textContent = 'Edit Intention';
+            document.getElementById('intentionTitle').value = intention.title;
+            document.getElementById('intentionNote').value = intention.note || '';
+            document.getElementById('intentionModal').classList.add('active');
+            document.getElementById('intentionTitle').focus();
+        };
+
+        window.deleteIntention = async (id) => {
+            if (!confirm('Are you sure you want to delete this intention?')) return;
+            
+            const path = `users/${currentUser.uid}/intentions/${id}`;
+            await update(ref(db, path), { deleted: true, deletedAt: Date.now() });
+            showToast('Intention removed');
+        };
+        
+        window.toggleAnswered = async (id) => {
+            const intention = activeIntentions[id];
+            if (!intention) return;
+            
+            const newVal = !intention.answered;
+            const path = `users/${currentUser.uid}/intentions/${id}`;
+            await update(ref(db, path), { answered: newVal });
+            showToast(newVal ? 'Intention marked as answered' : 'Intention marked as active');
+        };
+
+        // === 6. Helper Functions ===
+
+        function showIntentionModal() {
+            window.currentEditingIntention = null;
+            document.getElementById('modalTitle').textContent = 'Add Intention';
+            document.getElementById('intentionForm').reset();
+            document.getElementById('intentionModal').classList.add('active');
+            document.getElementById('intentionTitle').focus();
         }
 
         function closeModal() {
             document.getElementById('intentionModal').classList.remove('active');
-            currentEditingIntention = null;
         }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             const icon = document.querySelector('.theme-icon');
             icon.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        }
-
-        function rotateQuote() {
-            const display = document.getElementById('quoteDisplay');
-            display.textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            // Re-render chart with new colors
+            loadHistoryData();
         }
 
         function showScreen(id) {
@@ -993,7 +948,7 @@ I've moved the toast notification container so errors appear correctly on the PI
             div.textContent = text;
             return div.innerHTML;
         }
+
     </script>
 </body>
 </html>
-```
