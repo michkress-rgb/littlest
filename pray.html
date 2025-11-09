@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
-        /* --- 1. NEW "VICTORIAN SEPIA" THEME --- */
+        /* --- 1. "VICTORIAN SEPIA" THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap');
         
         :root {
@@ -22,7 +22,7 @@
             --bg-card: #ffffff;
             --bg-overlay: rgba(58, 58, 58, 0.6);
             --text-primary: #3a3a3a; /* Dark Gray */
-            --text-secondary: #6s6s6s;
+            --text-secondary: #6a6a6a;
             --text-muted: #8d8d8d;
             --border: #dcd1c0; /* Light Sepia */
             --shadow: rgba(0, 0, 0, 0.08);
@@ -44,7 +44,7 @@
             --primary: #b4915a; /* Use gold as primary in dark mode */
             --primary-dark: #a17f4a;
             --secondary: #8ab08a;
-            --secondary-dark: #6s9c6s;
+            --secondary-dark: #6a9c6a;
             --warning: #b4915a;
             --bg-main: #2a2a2a;
             --bg-card: #3a3a3a;
@@ -748,7 +748,7 @@
 
 
     <script type="module">
-        // === 2. THIS IS THE FULL FIREBASE LOGIC ===
+        // === This is the full, correct Firebase logic ===
         
         // === Firebase Config ===
         const firebaseConfig = {
@@ -799,7 +799,7 @@
 
         async function initializeAppAndAuth() {
             try {
-                // This is the part that was missing from your snippet
+                // Dynamically import Firebase
                 ({ initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'));
                 ({ getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js'));
                 ({ getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByKey } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js'));
@@ -818,13 +818,11 @@
                     }
                 });
                 
-                // This signs you in to Firebase so you can read/write data
                 await signInAnonymously(auth); 
                 
             } catch (error) {
                 console.error('❌ Firebase Init Error:', error);
-                // This error happens if you open the file as `file:///`
-                showToast('Error loading app. Try a local server.', 'error');
+                showToast('Error loading app. Run from a server.', 'error');
                 showScreen('pinScreen'); // Go back to PIN screen on error
             }
         }
@@ -837,7 +835,6 @@
             document.getElementById('novenaStartDate').value = todayString;
             
             setupUIListeners();
-            // These functions load data FROM Firebase
             loadUserSettings(); 
             loadIntentions();
             loadNovenas();
@@ -866,7 +863,6 @@
             onValue(orderedIntentionsRef, (snapshot) => {
                 activeIntentions = {};
                 const data = snapshot.val() || {};
-                console.log("Loaded intentions:", data);
                 
                 for (const [id, intention] of Object.entries(data)) {
                     if (!intention.deleted) {
@@ -885,7 +881,6 @@
             onValue(orderedNovenasRef, (snapshot) => {
                 activeNovenas = {};
                 const data = snapshot.val() || {};
-                console.log("Loaded novenas:", data);
                 
                 for (const [id, novena] of Object.entries(data)) {
                     if (!novena.deleted) {
@@ -900,7 +895,6 @@
             const dailyDataRef = ref(db, `users/${currentUser.uid}/dailyData/${dateString}`);
             onValue(dailyDataRef, (snapshot) => {
                 todayDailyData = snapshot.val() || {};
-                console.log("Loaded daily data:", todayDailyData);
                 
                 updateToggleButtons('rosary', todayDailyData.rosary);
                 updateToggleButtons('devotions', todayDailyData.devotions);
@@ -1088,7 +1082,6 @@
             document.getElementById('goalProgressFill').style.width = `${percent}%`;
         }
 
-        // UPDATED to be a stacked bar chart
         function renderHistoryChart(labels, intentionData, devotionData, hourData) {
             const ctx = document.getElementById('historyChart').getContext('2d');
             if (historyChart) historyChart.destroy();
@@ -1097,10 +1090,9 @@
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
             const labelColor = isDark ? '#f5f1e8' : '#3a3a3a';
             
-            // New theme colors
             const primaryColor = isDark ? 'rgba(180, 145, 90, 0.7)' : 'rgba(90, 56, 37, 0.7)';
             const secondaryColor = isDark ? 'rgba(138, 176, 138, 0.7)' : 'rgba(90, 125, 90, 0.7)';
-            const warningColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(180, 145, 90, 0.7)'; // Lighter gold
+            const warningColor = isDark ? 'rgba(220, 209, 192, 0.7)' : 'rgba(180, 145, 90, 0.7)';
             
             historyChart = new Chart(ctx, {
                 type: 'bar',
@@ -1174,7 +1166,6 @@
                     const type = e.target.dataset.type;
                     const key = e.target.dataset.key;
                     const newVal = !todayDailyData[type]?.[key];
-                    // THIS WRITES TO FIREBASE
                     const path = `users/${currentUser.uid}/dailyData/${todayString}/${type}/${key}`;
                     set(ref(db, path), newVal);
                 });
@@ -1209,11 +1200,9 @@
 
             try {
                 if (window.currentEditingIntention) {
-                    // THIS WRITES TO FIREBASE
                     const path = `users/${currentUser.uid}/intentions/${window.currentEditingIntention}`;
                     await update(ref(db, path), intentionData);
                 } else {
-                    // THIS WRITES TO FIREBASE
                     await set(push(ref(db, `users/${currentUser.uid}/intentions`)), {
                         ...intentionData,
                         createdAt: Date.now(),
@@ -1248,7 +1237,6 @@
             };
             
             try {
-                // THIS WRITES TO FIREBASE
                 await set(push(ref(db, `users/${currentUser.uid}/novenas`)), novenaData);
                 closeNovenaModal();
                 showToast('Novena added');
@@ -1261,14 +1249,12 @@
         
         window.addCount = (intentionId, delta) => {
             const updates = {};
-            // THIS WRITES TO FIREBASE
             updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsTotal`] = increment(delta);
             updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsBy/${intentionId}`] = increment(delta);
             update(ref(db), updates);
         };
         
         window.checkInNovena = (novenaId) => {
-            // THIS WRITES TO FIREBASE
             const path = `users/${currentUser.uid}/dailyData/${todayString}/novenaCheckIns/${novenaId}`;
             set(ref(db, path), true);
         };
@@ -1277,7 +1263,10 @@
             const currentGoal = globalSettings.dailyGoal;
             const newGoal = prompt('Set your new daily intention prayer goal:', currentGoal);
             
-            if (newGoal === null || newGoal.trim() === '') return;
+            if (newGoal === null || newGoal.trim() === '') {
+                return; // User cancelled
+            }
+            
             const goalNum = parseInt(newGoal, 10);
             
             if (isNaN(goalNum) || goalNum < 1) {
@@ -1286,11 +1275,11 @@
             }
             
             try {
-                // THIS WRITES TO FIREBASE
                 await set(ref(db, `users/${currentUser.uid}/settings/dailyGoal`), goalNum);
                 showToast('Goal updated!');
             } catch (error) {
-                showToast('Error updating goal: 'D + error.message, 'error');
+                // === THIS IS THE BUG FIX ===
+                showToast('Error updating goal: ' + error.message, 'error');
             }
         };
 
@@ -1308,7 +1297,6 @@
 
         window.deleteIntention = async (id) => {
             if (!confirm('Are you sure you want to delete this intention?')) return;
-            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { deleted: true, deletedAt: Date.now() });
             showToast('Intention removed');
         };
@@ -1317,14 +1305,12 @@
             const intention = activeIntentions[id];
             if (!intention) return;
             const newVal = !intention.answered;
-            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { answered: newVal });
             showToast(newVal ? 'Intention marked as answered' : 'Intention marked as active');
         };
         
         window.deleteNovena = async (id) => {
             if (!confirm('Are you sure you want to delete this novena?')) return;
-            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { deleted: true, deletedAt: Date.now() });
             showToast('Novena removed');
         };
@@ -1333,7 +1319,6 @@
             const novena = activeNovenas[id];
             if (!novena) return;
             const newVal = !novena.answered;
-            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { answered: newVal });
             showToast(newVal ? 'Novena marked as answered' : 'Novena marked as active');
         };
