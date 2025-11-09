@@ -2324,11 +2324,31 @@ Relying on your maternal protection and on your constant help, I resolve to live
       ]}
     ];
 
-    // PIN check
-    document.getElementById("pinInput").addEventListener("input", (e) => {
-      if (e.target.value.length === 6) {
-        if (e.target.value === "332211") {
-          showScreen("loadingScreen"); startApp();
+    // PIN check (cleaned)
+document.addEventListener('DOMContentLoaded', ()=>{
+  const pinInput = document.getElementById('pinInput');
+  const pinBtn = document.getElementById('pinSubmitBtn');
+  const REQUIRED_PIN = '332211';
+  function go(){
+    const v = (pinInput?.value||'').trim();
+    if(v === REQUIRED_PIN){
+      if (typeof showScreen === 'function'){
+        showScreen('loadingScreen');
+        setTimeout(()=>showScreen('mainApp'), 400);
+      }
+      if (typeof startApp === 'function') try{ startApp(); }catch(_){}
+    } else {
+      if (pinInput) pinInput.value = '';
+      alert('Incorrect PIN');
+    }
+  }
+  if(pinInput){
+    pinInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') go(); });
+  }
+  if(pinBtn){
+    pinBtn.addEventListener('click', go);
+  }
+});
 if (typeof showScreen === "function") showScreen("mainApp");
             }
           );
