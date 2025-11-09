@@ -141,9 +141,7 @@
       font-style: italic;
     }
 
-    .shake{animation:shake 0.15s linear 2}
-@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)}}
-/* === LOADING === */
+    /* === LOADING === */
     #loadingScreen.active {
       display: flex;
       align-items: center;
@@ -1142,8 +1140,8 @@
       <p class="pin-subtitle">A path of little prayers</p>
       <div class="pin-input-group">
         <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+<button id="pinSubmitBtn" class="btn btn-primary" type="button" style="margin-top:1rem">Enter</button>
       </div>
-      <button class="btn btn-primary" id="pinSubmitBtn" style="margin-top:1rem;" type="button">Enter</button>
       <p class="pin-hint">Enter your 6-digit PIN</p>
     </div>
   </div>
@@ -1680,54 +1678,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    // === PIN HANDLING ===
-    const pinScreen = document.getElementById('pinScreen');
-    const loadingScreen = document.getElementById('loadingScreen');
-    const mainApp = document.getElementById('mainApp');
-    const pinInput = document.getElementById('pinInput');
-    const pinSubmitBtn = document.getElementById('pinSubmitBtn');
-    const REQUIRED_PIN = '332211';
-
-    function showScreen(screenId){
-      // hide all screens then show one
-      for(const el of document.querySelectorAll('.screen')) el.classList.remove('active');
-      document.getElementById(screenId).classList.add('active');
-    }
-
-    function handlePinSubmit(){
-      const pin = (pinInput?.value || '').trim();
-      if(pin === REQUIRED_PIN){
-        showScreen('loadingScreen');
-        // small delay to feel responsive, then show app
-        setTimeout(()=>{
-          showScreen('mainApp');
-        }, 400);
-      }else{
-        // visual feedback
-        pinInput.classList.add('shake');
-        setTimeout(()=>pinInput.classList.remove('shake'), 500);
-        // toast
-        const t = document.createElement('div');
-        t.className = 'toast error';
-        t.textContent = 'Incorrect PIN';
-        document.body.appendChild(t);
-        setTimeout(()=>t.remove(), 1800);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const pinInputNow = document.getElementById('pinInput');
-      const pinSubmitNow = document.getElementById('pinSubmitBtn');
-      if(pinSubmitNow){
-        pinSubmitNow.addEventListener('click', handlePinSubmit);
-      }
-      if(pinInputNow){
-        pinInputNow.addEventListener('keydown', (e)=>{
-          if(e.key === 'Enter') handlePinSubmit();
-        });
-      }
-    });
-
     // Local YYYY-MM-DD (avoids UTC off-by-one)
     function localISODate(d=new Date()){
       const y=d.getFullYear();
@@ -2380,8 +2330,8 @@ Relying on your maternal protection and on your constant help, I resolve to live
         if (e.target.value === "332211") {
           showScreen("loadingScreen"); startApp();
 if (typeof showScreen === "function") showScreen("mainApp");
-            }} catch(_){}
-          }, 7000);
+            }
+          );
 } else {
           e.target.value = "";
           alert("Incorrect PIN");
@@ -3747,6 +3697,32 @@ async function startApp(){
 window.addEventListener('error', function(e){
   console.error('Global error:', e.message, e.filename, e.lineno, e.error);
 });
+
+// --- Safe PIN handlers appended ---
+(function(){
+  try{
+    const pinInputEl = document.getElementById("pinInput");
+    const pinButtonEl = document.getElementById("pinSubmitBtn");
+    const REQUIRED_PIN = "332211";
+    function submitPin(){
+      const v = (pinInputEl && pinInputEl.value ? pinInputEl.value : "").trim();
+      if(v === REQUIRED_PIN){
+        if (typeof showScreen === "function") {
+          showScreen("loadingScreen");
+          setTimeout(()=> showScreen("mainApp"), 400);
+        }
+      } else {
+        alert("Incorrect PIN");
+      }
+    }
+    if(pinInputEl){
+      pinInputEl.addEventListener("keydown", (e)=>{ if(e.key === "Enter") submitPin(); });
+    }
+    if(pinButtonEl){
+      pinButtonEl.addEventListener("click", submitPin);
+    }
+  }catch(e){ console.warn('PIN handler init failed', e); }
+})();
 </script>
 </body>
 </html>
