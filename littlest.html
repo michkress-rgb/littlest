@@ -2349,15 +2349,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     pinBtn.addEventListener('click', go);
   }
 });
-if (typeof showScreen === "function") showScreen("mainApp");
-            }
-          );
-} else {
-          e.target.value = "";
-          alert("Incorrect PIN");
-        }
-      }
-    });
 
     function showScreen(screenId) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
