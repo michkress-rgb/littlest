@@ -1,3 +1,8 @@
+Here is the updated HTML file with both changes applied.
+
+I've moved the toast notification container so errors appear correctly on the PIN screen, and I've changed the PIN hint to be more generic.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -570,7 +575,6 @@
     </style>
 </head>
 <body>
-    <!-- PIN Screen -->
     <div id="pinScreen" class="screen active">
         <div class="pin-container">
             <h1>🕊️ Littlest Way</h1>
@@ -584,11 +588,10 @@
                        autocomplete="off">
                 <button id="pinSubmit" class="btn btn-primary">Unlock</button>
             </div>
-            <p class="hint">PIN: 332211</p>
+            <p class="hint">Enter your 6-digit PIN</p>
         </div>
     </div>
 
-    <!-- Loading Screen -->
     <div id="loadingScreen" class="screen">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -596,7 +599,6 @@
         </div>
     </div>
 
-    <!-- Main App Screen -->
     <div id="appScreen" class="screen">
         <header class="app-header">
             <div class="header-content">
@@ -631,10 +633,10 @@
             </div>
         </footer>
 
-        <div id="toastContainer" class="toast-container"></div>
-    </div>
+        </div>
 
-    <!-- Intention Modal -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <div id="intentionModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -994,3 +996,4 @@
     </script>
 </body>
 </html>
+```
