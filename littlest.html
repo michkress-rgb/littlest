@@ -26,20 +26,6 @@
       });
     }
     
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.querySelectorAll('a,button').forEach(el=>{
-    const t = (el.textContent||'').toLowerCase();
-    const id = (el.id||'').toLowerCase();
-    const href = (el.getAttribute('href')||'').toLowerCase();
-    if(t.includes('reading') || id.includes('reading') || href.includes('reading')){
-      el.addEventListener('click', (e)=>{
-        if(!e.defaultPrevented){
-          if (typeof showScreen === 'function') showScreen('readingView');
-        }
-      }, { passive:true });
-    }
-  });
-});
 </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3144,7 +3130,7 @@ async function startApp(){
         `;
         
         section.items.forEach(item => {
-          const key = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.key) ? e.currentTarget.dataset.key : null;
+          const key = item.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
           const checked = todayDailyData.carmeliteReading?.[key] || false;
           
           html += `
@@ -3595,38 +3581,23 @@ async function startApp(){
           set(ref(db, `dailyData/${todayString}/breviary/${key}`), newVal);
         });
       });
-      // Reading toggles (replaced cleanly)
-      (function(){
-        try{
-          const btns = document.querySelectorAll('[data-type="reading"]');
-          btns.forEach(function(btn){
-            btn.addEventListener('click', function(e){
-              var el = e.currentTarget || e.target;
-              var key = (el && el.dataset && el.dataset.key) ? el.dataset.key : null;
-              if(!key) return;
-              var rd = (todayDailyData && todayDailyData.reading) ? todayDailyData.reading : {};
-              var cur = !!rd[key];
-              var next = !cur;
-              set(ref(db, 'dailyData/' + todayString + '/reading/' + key), next);
-              try{ showToast((key==='scripture'?'Scripture':'Lectio') + (next? ': done' : ': cleared')); }catch(e){}
-            });
-          });
-        }catch(_){}
-      })();
-        
+
+      // Reading toggles
+      document.querySelectorAll('[data-type="reading"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData.reading?.[key];
+          set(ref(db, `dailyData/${todayString}/reading/${key}`), newVal);
+        });
       });
 
       // Quick actions
-      document.getElementById("quickMass").addEventListener("click", async function(e){
-  var btn = e.currentTarget;
-  var on = btn.classList.contains("active");
-  var next = !on;
+      document.getElementById("quickMass").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  const current = btn.classList.contains("active");
+  const next = !current;
   btn.classList.toggle("active", next);
   btn.setAttribute("aria-pressed", String(next));
-  await set(ref(db, "dailyData/" + todayString + "/massDone"), next);
-  try{ showToast(next? "Mass: done" : "Mass: cleared"); }catch(e){}
-  if (typeof loadData === "function") { try{ await loadData(); }catch(_){} }
-});
   await set(ref(db, `dailyData/${todayString}/massDone`), next);
   try{ showToast(next? "Mass: done" : "Mass: cleared"); }catch(e){}
   if (typeof loadData === "function") try{ await loadData(); }catch(_){}
