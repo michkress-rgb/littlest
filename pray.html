@@ -1,1386 +1,1687 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Littlest Way Counter</title>
-    <meta name="theme-color" content="#5a3825">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    
-    <style>
-        /* --- 1. "VICTORIAN SEPIA" THEME --- */
-        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap');
-        
-        :root {
-            --primary: #5a3825; /* Sepia Ink */
-            --primary-dark: #3d2519;
-            --secondary: #5a7d5a; /* Faded Green */
-            --secondary-dark: #405d40;
-            --danger: #9a0007; /* Deep Red */
-            --warning: #b4915a; /* Antique Gold */
-            --bg-main: #f5f1e8; /* Antique White */
-            --bg-card: #ffffff;
-            --bg-overlay: rgba(58, 58, 58, 0.6);
-            --text-primary: #3a3a3a; /* Dark Gray */
-            --text-secondary: #6a6a6a;
-            --text-muted: #8d8d8d;
-            --border: #dcd1c0; /* Light Sepia */
-            --shadow: rgba(0, 0, 0, 0.08);
-            --shadow-lg: rgba(0, 0, 0, 0.12);
-            --spacing-xs: 0.25rem;
-            --spacing-sm: 0.5rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
-            --radius-sm: 0.25rem;
-            --radius-md: 0.375rem;
-            --radius-lg: 0.5rem;
-            --radius-xl: 1rem;
-            --transition-fast: 150ms ease;
-            --transition-base: 250ms ease;
-        }
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Littlest Way Counter</title>
+  <meta name="theme-color" content="#5a3825" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-        body.dark-mode {
-            --primary: #b4915a; /* Use gold as primary in dark mode */
-            --primary-dark: #a17f4a;
-            --secondary: #8ab08a;
-            --secondary-dark: #6a9c6a;
-            --warning: #b4915a;
-            --bg-main: #2a2a2a;
-            --bg-card: #3a3a3a;
-            --text-primary: #f5f1e8;
-            --text-secondary: #dcd1c0;
-            --border: #5a5a5a;
-        }
+  <style>
+    /* --- 1. "VICTORIAN SEPIA" THEME --- */
+    @import url("https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap");
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Crimson Text', 'Georgia', 'Times New Roman', serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            line-height: 1.6;
-            transition: background-color var(--transition-base), color var(--transition-base);
-            font-size: 16px;
-        }
-        
-        h1, h2, h3, h4, h5, h6, .nav-link, .btn {
-            font-family: 'Playfair Display', 'Garamond', serif;
-            font-weight: 700;
-        }
+    :root {
+      --primary: #5a3825; /* Sepia Ink */
+      --primary-dark: #3d2519;
+      --secondary: #5a7d5a; /* Faded Green */
+      --secondary-dark: #405d40;
+      --danger: #9a0007; /* Deep Red */
+      --warning: #b4915a; /* Antique Gold */
+      --bg-main: #f5f1e8; /* Antique White */
+      --bg-card: #ffffff;
+      --bg-overlay: rgba(58, 58, 58, 0.6);
+      --text-primary: #3a3a3a; /* Dark Gray */
+      --text-secondary: #6a6a6a;
+      --text-muted: #8d8d8d;
+      --border: #dcd1c0; /* Light Sepia */
+      --shadow: rgba(0, 0, 0, 0.08);
+      --shadow-lg: rgba(0, 0, 0, 0.12);
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --radius-sm: 0.25rem;
+      --radius-md: 0.375rem;
+      --radius-lg: 0.5rem;
+      --radius-xl: 1rem;
+      --transition-fast: 150ms ease;
+      --transition-base: 250ms ease;
+    }
 
-        .screen {
-            display: none; /* Hide all screens by default */
-            min-height: 100vh;
-        }
-        .screen.active {
-            display: block; /* Show only the active one */
-        }
-        #pinScreen.active {
-            display: flex; /* Restore flex for PIN screen */
-            align-items: center;
-            justify-content: center;
-        }
-        #loadingScreen.active {
-            display: flex; /* Restore flex for Loading screen */
-            align-items: center;
-            justify-content: center;
-        }
+    body.dark-mode {
+      --primary: #b4915a; /* Use gold as primary in dark mode */
+      --primary-dark: #a17f4a;
+      --secondary: #8ab08a;
+      --secondary-dark: #6a9c6a;
+      --warning: #b4915a;
+      --bg-main: #2a2a2a;
+      --bg-card: #3a3a3a;
+      --text-primary: #f5f1e8;
+      --text-secondary: #dcd1c0;
+      --border: #5a5a5a;
+    }
 
-        /* --- PIN Screen --- */
-        #pinScreen {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        }
-        .pin-container {
-            text-align: center;
-            padding: var(--spacing-xl);
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 20px 25px -5px var(--shadow-lg);
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid var(--border);
-        }
-        .pin-container h1 { font-size: 2.5rem; margin-bottom: var(--spacing-md); color: var(--primary); }
-        .subtitle { color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 1.1rem; }
-        .pin-input-group { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
-        .pin-input-group input {
-            flex: 1;
-            padding: var(--spacing-md);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-size: 1.125rem;
-            text-align: center;
-            letter-spacing: 0.5em;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            font-family: 'Crimson Text', serif;
-        }
-        .pin-input-group input:focus { outline: none; border-color: var(--primary); }
-        .hint { color: var(--text-muted); font-size: 0.875rem; font-style: italic; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        /* --- Loading Screen --- */
-        .loading-content { text-align: center; font-family: 'Crimson Text', serif; }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto var(--spacing-md);
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+    body {
+      font-family: "Crimson Text", "Georgia", "Times New Roman", serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background-color var(--transition-base),
+        color var(--transition-base);
+      font-size: 16px;
+    }
 
-        /* --- Buttons --- */
-        .btn {
-            padding: var(--spacing-md) var(--spacing-lg);
-            border: 1px solid transparent;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            letter-spacing: 0.5px;
-        }
-        .btn-primary { background: var(--primary); color: white; border-color: var(--primary-dark); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-secondary { background: var(--text-secondary); color: white; border-color: #444; }
-        .btn-secondary:hover { background: var(--text-primary); }
-        .btn-icon {
-            background: transparent;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            padding: var(--spacing-sm);
-            border-radius: var(--radius-sm);
-            transition: background-color var(--transition-fast);
-            color: var(--text-secondary);
-        }
-        .btn-icon:hover { background: var(--border); }
-        .btn-link {
-            background: none;
-            border: none;
-            color: var(--primary);
-            text-decoration: underline;
-            font-size: 0.875rem;
-            font-family: 'Crimson Text', serif;
-            cursor: pointer;
-        }
-        .btn-link:hover { color: var(--primary-dark); }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .nav-link,
+    .btn {
+      font-family: "Playfair Display", "Garamond", serif;
+      font-weight: 700;
+    }
 
-        /* --- App Header & Navigation --- */
-        .app-header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: var(--spacing-md) var(--spacing-lg) 0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 1px 3px var(--shadow);
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .app-header h1 { font-size: 1.75rem; color: var(--primary); }
-        .app-nav { display: flex; gap: var(--spacing-md); margin-top: var(--spacing-md); }
-        .nav-link {
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            padding-bottom: var(--spacing-md);
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-        }
-        .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .screen {
+      display: none; /* Hide all screens by default */
+      min-height: 100vh;
+    }
+    .screen.active {
+      display: block; /* Show only the active one */
+    }
+    #pinScreen.active,
+    #loadingScreen.active {
+      display: flex; /* Restore flex for targeted screens */
+      align-items: center;
+      justify-content: center;
+    }
 
-        /* --- App Views --- */
-        .main-content {
-            padding: var(--spacing-lg);
-            max-width: 800px;
-            margin: 0 auto;
-            padding-bottom: 100px;
-        }
-        .app-view { display: none; }
-        .app-view.active { display: block; }
-        .view-header { font-size: 2rem; margin-bottom: var(--spacing-xs); color: var(--text-primary); }
-        .view-subheader { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
-        
-        /* --- Daily Tally & Goal --- */
-        .daily-tally {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
-            margin-bottom: var(--spacing-xl);
-            box-shadow: var(--shadow);
-        }
-        .tally-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: var(--spacing-md);
-            text-align: center;
-            margin-bottom: var(--spacing-lg);
-        }
-        .tally-item h4 {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-family: 'Crimson Text', serif;
-            font-weight: 600;
-        }
-        .tally-item .tally-count {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            font-family: 'Playfair Display', serif;
-        }
-        .goal-tally {
-            text-align: center;
-            margin-top: var(--spacing-lg);
-            padding-top: var(--spacing-lg);
-            border-top: 1px solid var(--border);
-        }
-        .goal-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-xs);
-        }
-        .goal-progress-bar {
-            background: var(--border);
-            border-radius: var(--radius-md);
-            height: 12px;
-            overflow: hidden;
-            margin-top: var(--spacing-sm);
-        }
-        .goal-progress-bar div {
-            background: var(--primary);
-            height: 100%;
-            transition: width var(--transition-base);
-        }
-        .goal-tally .tally-count {
-            font-family: 'Crimson Text', serif;
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
+    /* --- PIN Screen --- */
+    #pinScreen {
+      background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        var(--primary-dark) 100%
+      );
+    }
+    .pin-container {
+      text-align: center;
+      padding: var(--spacing-xl);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 25px -5px var(--shadow-lg);
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid var(--border);
+    }
+    .pin-container h1 {
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-md);
+      color: var(--primary);
+    }
+    .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+      font-size: 1.1rem;
+    }
+    .pin-input-group {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+    .pin-input-group input {
+      flex: 1;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 1.125rem;
+      text-align: center;
+      letter-spacing: 0.5em;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: "Crimson Text", serif;
+    }
+    .pin-input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .hint {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-style: italic;
+    }
 
-        .prayer-section { margin-bottom: var(--spacing-xl); }
-        .prayer-section h3 {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
-        }
-        .prayer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: var(--spacing-sm);
-        }
-        .btn-toggle {
-            padding: var(--spacing-md);
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: 'Crimson Text', serif;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            text-align: center;
-        }
-        .btn-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow);
-        }
-        .btn-toggle.active {
-            background: var(--secondary);
-            border-color: var(--secondary-dark);
-            color: white;
-            font-weight: 700;
-        }
-        
-        /* --- Intentions View --- */
-        .btn-add {
-            width: 100%;
-            margin-bottom: var(--spacing-lg);
-            padding: var(--spacing-lg);
-            font-size: 1.25rem;
-        }
-        .intentions-list { display: flex; flex-direction: column; gap: var(--spacing-lg); }
-        .intention-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            opacity: 1;
-            transition: all var(--transition-base);
-        }
-        .intention-card.answered { opacity: 0.6; background: var(--bg-main); }
-        .intention-card.answered .intention-title { text-decoration: line-through; }
-        .intention-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--spacing-md);
-        }
-        .intention-title { font-size: 1.5rem; margin-bottom: var(--spacing-xs); }
-        .intention-note { font-size: 1rem; color: var(--text-secondary); margin: 0; }
-        .intention-actions { display: flex; gap: var(--spacing-xs); }
-        .intention-counter {
-            text-align: center;
-            padding: var(--spacing-md) 0;
-            margin: var(--spacing-md) 0;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-        .counter-today {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            line-height: 1;
-        }
-        .counter-label { font-size: 0.875rem; color: var(--text-muted); font-family: 'Crimson Text', serif; }
-        .counting-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm); }
-        
-        .btn-count {
-            padding: var(--spacing-lg);
-            font-size: 1.25rem;
-            font-weight: 700;
-            border: 2px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border-radius: var(--radius-md);
-        }
-        .btn-count-1 {
-            font-size: 1.75rem; /* Bigger font */
-            padding: var(--spacing-lg); /* More padding */
-            border-color: var(--secondary);
-            color: var(--secondary);
-            grid-column: span 1; /* Take 1 column */
-        }
-        .btn-count-1:hover { background: var(--secondary); color: white; }
-        .btn-count-10 {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .btn-count-10:hover { background: var(--primary); color: white; }
-        .btn-count-100 {
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-        .btn-count-100:hover { background: var(--warning); color: white; }
+    /* --- Loading Screen --- */
+    .loading-content {
+      text-align: center;
+      font-family: "Crimson Text", serif;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto var(--spacing-md);
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
-        .empty-state { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); }
-        .empty-state p { font-size: 1.25rem; font-style: italic; }
+    /* --- Buttons --- */
+    .btn {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      letter-spacing: 0.5px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--text-secondary);
+      color: white;
+      border-color: #444;
+    }
+    .btn-secondary:hover {
+      background: var(--text-primary);
+    }
+    .btn-icon {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      transition: background-color var(--transition-fast);
+      color: var(--text-secondary);
+    }
+    .btn-icon:hover {
+      background: var(--border);
+    }
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      text-decoration: underline;
+      font-size: 0.875rem;
+      font-family: "Crimson Text", serif;
+      cursor: pointer;
+    }
+    .btn-link:hover {
+      color: var(--primary-dark);
+    }
 
-        /* --- History View --- */
-        .chart-container {
-            position: relative;
-            height: 350px;
-            width: 100%;
-            background: var(--bg-card);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-        
-        /* --- Novena View --- */
-        .novena-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            margin-bottom: var(--spacing-lg);
-        }
-        .novena-card.answered {
-            opacity: 0.6;
-            background: var(--bg-main);
-        }
-        .novena-card.answered .novena-title { text-decoration: line-through; }
-        .novena-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--spacing-md);
-        }
-        .novena-title { font-size: 1.5rem; margin-bottom: var(--spacing-xs); }
-        .novena-for { font-size: 1rem; color: var(--text-secondary); margin: 0; font-style: italic; }
-        .novena-actions { display: flex; gap: var(--spacing-xs); }
-        
-        .novena-progress {
-            margin: var(--spacing-md) 0;
-        }
-        .novena-progress-bar {
-            background: var(--border);
-            border-radius: var(--radius-md);
-            height: 10px;
-            overflow: hidden;
-        }
-        .novena-progress-bar div {
-            background: var(--secondary);
-            height: 100%;
-            transition: width var(--transition-base);
-        }
-        .novena-progress-label {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            margin-top: var(--spacing-sm);
-        }
-        .novena-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-md);
-            padding-top: var(--spacing-md);
-            border-top: 1px solid var(--border);
-        }
-        .novena-dates { font-size: 0.875rem; color: var(--text-muted); }
-        .btn-check-in {
-            background: var(--secondary);
-            color: white;
-            border-color: var(--secondary-dark);
-        }
-        .btn-check-in:disabled {
-            background: var(--text-muted);
-            border-color: var(--text-secondary);
-            cursor: not-allowed;
-        }
+    /* --- App Header & Navigation --- */
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: var(--spacing-md) var(--spacing-lg) 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .app-header h1 {
+      font-size: 1.75rem;
+      color: var(--primary);
+    }
+    .app-nav {
+      display: flex;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+    .nav-link {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+    }
+    .nav-link.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
 
+    /* --- App Views --- */
+    .main-content {
+      padding: var(--spacing-lg);
+      max-width: 800px;
+      margin: 0 auto;
+      padding-bottom: 100px;
+    }
+    .app-view {
+      display: none;
+    }
+    .app-view.active {
+      display: block;
+    }
+    .view-header {
+      font-size: 2rem;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-primary);
+    }
+    .view-subheader {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
 
-        /* --- Modal --- */
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-overlay);
-            z-index: 200;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-md);
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 25px -5px var(--shadow-lg);
-            border: 1px solid var(--border);
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border);
-        }
-        .modal-header h2 { font-size: 1.75rem; }
-        .modal form { padding: var(--spacing-lg); }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-md);
-        }
-        .form-group label {
-            font-weight: 600;
-            font-size: 1rem;
-            font-family: 'Crimson Text', serif;
-        }
-        .form-group input, .form-group textarea, .form-group select {
-            padding: var(--spacing-md);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-family: 'Crimson Text', serif;
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        .modal-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border);
-        }
-        .modal-actions .btn { flex: 1; }
+    /* --- Daily Tally & Goal --- */
+    .daily-tally {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      box-shadow: var(--shadow);
+    }
+    .tally-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--spacing-md);
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+    }
+    .tally-item h4 {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-family: "Crimson Text", serif;
+      font-weight: 600;
+    }
+    .tally-item .tally-count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: "Playfair Display", serif;
+    }
+    .goal-tally {
+      text-align: center;
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--border);
+    }
+    .goal-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-xs);
+    }
+    .goal-progress-bar {
+      background: var(--border);
+      border-radius: var(--radius-md);
+      height: 12px;
+      overflow: hidden;
+      margin-top: var(--spacing-sm);
+    }
+    .goal-progress-bar div {
+      background: var(--primary);
+      height: 100%;
+      transition: width var(--transition-base);
+    }
+    .goal-tally .tally-count {
+      font-family: "Crimson Text", serif;
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
 
-        /* --- Toast --- */
-        .toast-container {
-            position: fixed;
-            bottom: var(--spacing-lg);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 300;
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-sm);
-            pointer-events: none;
-        }
-        .toast {
-            background: var(--text-primary);
-            color: white;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 4px 12px var(--shadow-lg);
-            font-weight: 500;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all var(--transition-base);
-            font-family: 'Crimson Text', serif;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast-success { background: var(--secondary); }
-        .toast-error { background: var(--danger); }
-    </style>
+    .prayer-section {
+      margin-bottom: var(--spacing-xl);
+    }
+    .prayer-section h3 {
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+    .prayer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--spacing-sm);
+    }
+    .btn-toggle {
+      padding: var(--spacing-md);
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: "Crimson Text", serif;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-align: center;
+    }
+    .btn-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+    .btn-toggle.active {
+      background: var(--secondary);
+      border-color: var(--secondary-dark);
+      color: white;
+      font-weight: 700;
+    }
+
+    /* --- Intentions View --- */
+    .btn-add {
+      width: 100%;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-lg);
+      font-size: 1.25rem;
+    }
+    .intentions-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+    .intention-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      opacity: 1;
+      transition: all var(--transition-base);
+    }
+    .intention-card.answered {
+      opacity: 0.6;
+      background: var(--bg-main);
+    }
+    .intention-card.answered .intention-title {
+      text-decoration: line-through;
+    }
+    .intention-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-md);
+    }
+    .intention-title {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-xs);
+    }
+    .intention-note {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    .intention-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+    .intention-counter {
+      text-align: center;
+      padding: var(--spacing-md) 0;
+      margin: var(--spacing-md) 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .counter-today {
+      display: block;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .counter-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-family: "Crimson Text", serif;
+    }
+    .counting-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-sm);
+    }
+
+    .btn-count {
+      padding: var(--spacing-lg);
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: var(--radius-md);
+    }
+    .btn-count-1 {
+      font-size: 1.75rem; /* Bigger font */
+      padding: var(--spacing-lg); /* More padding */
+      border-color: var(--secondary);
+      color: var(--secondary);
+      grid-column: span 1; /* Take 1 column */
+    }
+    .btn-count-1:hover {
+      background: var(--secondary);
+      color: white;
+    }
+    .btn-count-10 {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-count-10:hover {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-count-100 {
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+    .btn-count-100:hover {
+      background: var(--warning);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--text-secondary);
+    }
+    .empty-state p {
+      font-size: 1.25rem;
+      font-style: italic;
+    }
+
+    /* --- History View --- */
+    .chart-container {
+      position: relative;
+      height: 350px;
+      width: 100%;
+      background: var(--bg-card);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    /* --- Novena View --- */
+    .novena-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: var(--spacing-lg);
+    }
+    .novena-card.answered {
+      opacity: 0.6;
+      background: var(--bg-main);
+    }
+    .novena-card.answered .novena-title {
+      text-decoration: line-through;
+    }
+    .novena-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-md);
+    }
+    .novena-title {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-xs);
+    }
+    .novena-for {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-style: italic;
+    }
+    .novena-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .novena-progress {
+      margin: var(--spacing-md) 0;
+    }
+    .novena-progress-bar {
+      background: var(--border);
+      border-radius: var(--radius-md);
+      height: 10px;
+      overflow: hidden;
+    }
+    .novena-progress-bar div {
+      background: var(--secondary);
+      height: 100%;
+      transition: width var(--transition-base);
+    }
+    .novena-progress-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: var(--spacing-sm);
+    }
+    .novena-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-md);
+      border-top: 1px solid var(--border);
+    }
+    .novena-dates {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .btn-check-in {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary-dark);
+    }
+    .btn-check-in:disabled {
+      background: var(--text-muted);
+      border-color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+
+    /* --- Modal --- */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-overlay);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 {
+      font-size: 1.75rem;
+    }
+    .modal form {
+      padding: var(--spacing-lg);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-md);
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: "Crimson Text", serif;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-family: "Crimson Text", serif;
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .modal-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-lg);
+      border-top: 1px solid var(--border);
+    }
+    .modal-actions .btn {
+      flex: 1;
+    }
+
+    /* --- Toast --- */
+    .toast-container {
+      position: fixed;
+      bottom: var(--spacing-lg);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--text-primary);
+      color: white;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 12px var(--shadow-lg);
+      font-weight: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all var(--transition-base);
+      font-family: "Crimson Text", serif;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-success {
+      background: var(--secondary);
+    }
+    .toast-error {
+      background: var(--danger);
+    }
+  </style>
 </head>
 <body>
-    
-    <div id="pinScreen" class="screen active">
-        <div class="pin-container">
-            <h1>🕊️ Littlest Way</h1>
-            <p class="subtitle">Enter PIN to continue</p>
-            <div class="pin-input-group">
-                <input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="******" autocomplete="off">
-                <button id="pinSubmit" class="btn btn-primary">Unlock</button>
-            </div>
-            <p class="hint">Enter your 6-digit PIN</p>
+  <div id="pinScreen" class="screen active">
+    <div class="pin-container">
+      <h1>🕊️ Littlest Way</h1>
+      <p class="subtitle">Enter PIN to continue</p>
+      <div class="pin-input-group">
+        <input
+          type="password"
+          id="pinInput"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="******"
+          autocomplete="off"
+        />
+        <button id="pinSubmit" class="btn btn-primary">Unlock</button>
+      </div>
+      <p class="hint">Enter your 6-digit PIN</p>
+    </div>
+  </div>
+
+  <div id="loadingScreen" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading your prayers...</p>
+    </div>
+  </div>
+
+  <div id="appScreen" class="screen">
+    <header class="app-header">
+      <div class="header-content">
+        <h1>🕊️ Littlest Way</h1>
+        <div class="header-actions">
+          <button id="themeToggle" class="btn-icon" title="Toggle theme">
+            <span class="theme-icon">🌙</span>
+          </button>
         </div>
-    </div>
+      </div>
+      <nav class="app-nav">
+        <button class="nav-link active" data-view="todayView">Today</button>
+        <button class="nav-link" data-view="intentionsView">Intentions</button>
+        <button class="nav-link" data-view="novenasView">Novenas</button>
+        <button class="nav-link" data-view="historyView">History</button>
+      </nav>
+    </header>
 
-    <div id="loadingScreen" class="screen">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>Loading your prayers...</p>
+    <main class="main-content">
+      <div id="todayView" class="app-view active">
+        <h2 class="view-header">Today's Prayers</h2>
+        <p class="view-subheader" id="todayDate">Loading date...</p>
+
+        <section class="daily-tally">
+          <h3 style="text-align: center; margin-bottom: 1.5rem">Today's Summary</h3>
+          <div class="tally-grid">
+            <div class="tally-item">
+              <h4>Intention Prayers</h4>
+              <p class="tally-count" id="tallyIntentionCount">0</p>
+            </div>
+            <div class="tally-item">
+              <h4>Devotions</h4>
+              <p class="tally-count" id="tallyDevotionCount">0</p>
+            </div>
+            <div class="tally-item">
+              <h4>Hours Prayed</h4>
+              <p class="tally-count" id="tallyHourCount">0</p>
+            </div>
+          </div>
+
+          <div class="goal-tally">
+            <div class="goal-header">
+              <h4 style="font-family: 'Crimson Text', serif; font-weight: 600">
+                Daily Intention Goal
+              </h4>
+              <button id="setGoalBtn" class="btn-link">(Set Goal)</button>
+            </div>
+            <p class="tally-count">
+              <span id="tallyGoalCount">0</span> /
+              <span id="tallyGoalTarget">100</span>
+            </p>
+            <div class="goal-progress-bar">
+              <div id="goalProgressFill" style="width: 0%"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="prayer-section">
+          <h3>Rosary</h3>
+          <div class="prayer-grid" id="rosaryGrid">
+            <button class="btn-toggle" data-type="rosary" data-key="joyful">
+              Joyful
+            </button>
+            <button class="btn-toggle" data-type="rosary" data-key="luminous">
+              Luminous
+            </button>
+            <button class="btn-toggle" data-type="rosary" data-key="sorrowful">
+              Sorrowful
+            </button>
+            <button class="btn-toggle" data-type="rosary" data-key="glorious">
+              Glorious
+            </button>
+          </div>
+        </section>
+
+        <section class="prayer-section">
+          <h3>Devotions & Chaplets</h3>
+          <div class="prayer-grid" id="devotionsGrid">
+            <button class="btn-toggle" data-type="devotions" data-key="sevenSorrows">
+              Seven Sorrows
+            </button>
+            <button class="btn-toggle" data-type="devotions" data-key="divineMercy">
+              Divine Mercy
+            </button>
+            <button class="btn-toggle" data-type="devotions" data-key="holyFace">
+              Holy Face
+            </button>
+            <button class="btn-toggle" data-type="devotions" data-key="holyWounds">
+              Holy Wounds
+            </button>
+          </div>
+        </section>
+
+        <section class="prayer-section">
+          <h3>Liturgy of the Hours</h3>
+          <div class="prayer-grid" id="breviaryGrid">
+            <button class="btn-toggle" data-type="breviary" data-key="matins">
+              Matins
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="lauds">
+              Lauds
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="terce">
+              Terce
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="sext">
+              Sext
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="none">
+              None
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="vespers">
+              Vespers
+            </button>
+            <button class="btn-toggle" data-type="breviary" data-key="compline">
+              Compline
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div id="intentionsView" class="app-view">
+        <button id="addIntentionBtn" class="btn btn-primary btn-add">
+          ➕ Add New Intention
+        </button>
+        <div id="intentionsList" class="intentions-list"></div>
+      </div>
+
+      <div id="novenasView" class="app-view">
+        <button id="addNovenaBtn" class="btn btn-primary btn-add">
+          ➕ Add New Novena
+        </button>
+        <div id="novenasList" class="novenas-list"></div>
+      </div>
+
+      <div id="historyView" class="app-view">
+        <h2 class="view-header">Prayer History</h2>
+        <p class="view-subheader">Prayer categories over the last 30 days</p>
+
+        <div class="chart-container">
+          <canvas id="historyChart"></canvas>
         </div>
-    </div>
+      </div>
+    </main>
+  </div>
 
-    <div id="appScreen" class="screen">
-        <header class="app-header">
-            <div class="header-content">
-                <h1>🕊️ Littlest Way</h1>
-                <div class="header-actions">
-                    <button id="themeToggle" class="btn-icon" title="Toggle theme">
-                        <span class="theme-icon">🌙</span>
-                    </button>
-                </div>
-            </div>
-            <nav class="app-nav">
-                <button class="nav-link active" data-view="todayView">Today</button>
-                <button class="nav-link" data-view="intentionsView">Intentions</button>
-                <button class="nav-link" data-view="novenasView">Novenas</button>
-                <button class="nav-link" data-view="historyView">History</button>
-            </nav>
-        </header>
+  <div id="toastContainer" class="toast-container"></div>
 
-        <main class="main-content">
-            <div id="todayView" class="app-view active">
-                <h2 class="view-header">Today's Prayers</h2>
-                <p class="view-subheader" id="todayDate">Loading date...</p>
-                
-                <section class="daily-tally">
-                    <h3 style="text-align: center; margin-bottom: 1.5rem;">Today's Summary</h3>
-                    <div class="tally-grid">
-                        <div class="tally-item">
-                            <h4>Intention Prayers</h4>
-                            <p class="tally-count" id="tallyIntentionCount">0</p>
-                        </div>
-                        <div class="tally-item">
-                            <h4>Devotions</h4>
-                            <p class="tally-count" id="tallyDevotionCount">0</p>
-                        </div>
-                        <div class="tally-item">
-                            <h4>Hours Prayed</h4>
-                            <p class="tally-count" id="tallyHourCount">0</p>
-                        </div>
-                    </div>
-                    
-                    <div class="goal-tally">
-                        <div class="goal-header">
-                            <h4 style="font-family: 'Crimson Text', serif; font-weight: 600;">Daily Intention Goal</h4>
-                            <button id="setGoalBtn" class="btn-link">(Set Goal)</button>
-                        </div>
-                        <p class="tally-count">
-                            <span id="tallyGoalCount">0</span> / <span id="tallyGoalTarget">100</span>
-                        </p>
-                        <div class="goal-progress-bar">
-                            <div id="goalProgressFill" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="prayer-section">
-                    <h3>Rosary</h3>
-                    <div class="prayer-grid" id="rosaryGrid">
-                        <button class="btn-toggle" data-type="rosary" data-key="joyful">Joyful</button>
-                        <button class="btn-toggle" data-type="rosary" data-key="luminous">Luminous</button>
-                        <button class="btn-toggle" data-type="rosary" data-key="sorrowful">Sorrowful</button>
-                        <button class="btn-toggle" data-type="rosary" data-key="glorious">Glorious</button>
-                    </div>
-                </section>
-
-                <section class="prayer-section">
-                    <h3>Devotions & Chaplets</h3>
-                    <div class="prayer-grid" id="devotionsGrid">
-                        <button class="btn-toggle" data-type="devotions" data-key="sevenSorrows">Seven Sorrows</button>
-                        <button class="btn-toggle" data-type="devotions" data-key="divineMercy">Divine Mercy</button>
-                        <button class="btn-toggle" data-type="devotions" data-key="holyFace">Holy Face</button>
-                        <button class="btn-toggle" data-type="devotions" data-key="holyWounds">Holy Wounds</button>
-                    </div>
-                </section>
-
-                <section class="prayer-section">
-                    <h3>Liturgy of the Hours</h3>
-                    <div class="prayer-grid" id="breviaryGrid">
-                        <button class="btn-toggle" data-type="breviary" data-key="matins">Matins</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="lauds">Lauds</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="terce">Terce</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="sext">Sext</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="none">None</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="vespers">Vespers</button>
-                        <button class="btn-toggle" data-type="breviary" data-key="compline">Compline</button>
-                    </div>
-                </section>
-            </div>
-
-            <div id="intentionsView" class="app-view">
-                <button id="addIntentionBtn" class="btn btn-primary btn-add">
-                    ➕ Add New Intention
-                </button>
-                <div id="intentionsList" class="intentions-list">
-                    </div>
-            </div>
-            
-            <div id="novenasView" class="app-view">
-                <button id="addNovenaBtn" class="btn btn-primary btn-add">
-                    ➕ Add New Novena
-                </button>
-                <div id="novenasList" class="novenas-list">
-                    </div>
-            </div>
-
-            <div id="historyView" class="app-view">
-                <h2 class="view-header">Prayer History</h2>
-                <p class="view-subheader">Prayer categories over the last 30 days</p>
-
-                <div class="chart-container">
-                    <canvas id="historyChart"></canvas>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div id="toastContainer" class="toast-container"></div>
-
-    <div id="intentionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add Intention</h2>
-                <button class="btn-icon" id="closeModal">✕</button>
-            </div>
-            <form id="intentionForm">
-                <div class="form-group">
-                    <label for="intentionTitle">Title *</label>
-                    <input type="text" id="intentionTitle" required maxlength="100" placeholder="e.g., For my family">
-                </div>
-                <div class="form-group">
-                    <label for="intentionNote">Note (optional)</label>
-                    <textarea id="intentionNote" rows="3" maxlength="500" placeholder="Additional details..."></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelIntentionModal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+  <div id="intentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Intention</h2>
+        <button class="btn-icon" id="closeModal">✕</button>
+      </div>
+      <form id="intentionForm">
+        <div class="form-group">
+          <label for="intentionTitle">Title *</label>
+          <input
+            type="text"
+            id="intentionTitle"
+            required
+            maxlength="100"
+            placeholder="e.g., For my family"
+          />
         </div>
-    </div>
-    
-    <div id="novenaModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="novenaModalTitle">Add Novena</h2>
-                <button class="btn-icon" id="closeNovenaModal">✕</button>
-            </div>
-            <form id="novenaForm">
-                <div class="form-group">
-                    <label for="novenaTitle">Novena Title *</label>
-                    <input type="text" id="novenaTitle" required maxlength="100" placeholder="e.g., Divine Mercy Novena">
-                </div>
-                <div class="form-group">
-                    <label for="novenaFor">Intention (What is it for?)</label>
-                    <textarea id="novenaFor" rows="2" maxlength="500" placeholder="e.g., For the conversion of sinners"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="novenaType">Type *</label>
-                    <select id="novenaType" required>
-                        <option value="9">9-Day</option>
-                        <option value="54">54-Day (Rosary)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="novenaStartDate">Start Date *</label>
-                    <input type="date" id="novenaStartDate" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelNovenaModal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Novena</button>
-                </div>
-            </form>
+        <div class="form-group">
+          <label for="intentionNote">Note (optional)</label>
+          <textarea
+            id="intentionNote"
+            rows="3"
+            maxlength="500"
+            placeholder="Additional details..."
+          ></textarea>
         </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelIntentionModal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
     </div>
+  </div>
 
+  <div id="novenaModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="novenaModalTitle">Add Novena</h2>
+        <button class="btn-icon" id="closeNovenaModal">✕</button>
+      </div>
+      <form id="novenaForm">
+        <div class="form-group">
+          <label for="novenaTitle">Novena Title *</label>
+          <input
+            type="text"
+            id="novenaTitle"
+            required
+            maxlength="100"
+            placeholder="e.g., Divine Mercy Novena"
+          />
+        </div>
+        <div class="form-group">
+          <label for="novenaFor">Intention (What is it for?)</label>
+          <textarea
+            id="novenaFor"
+            rows="2"
+            maxlength="500"
+            placeholder="e.g., For the conversion of sinners"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="novenaType">Type *</label>
+          <select id="novenaType" required>
+            <option value="9">9-Day</option>
+            <option value="54">54-Day (Rosary)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="novenaStartDate">Start Date *</label>
+          <input type="date" id="novenaStartDate" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelNovenaModal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Save Novena</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    <script type="module">
-        // === This is the full, correct Firebase logic ===
-        
-        // === Firebase Config ===
-        const firebaseConfig = {
-            apiKey: "AIzaSyC8h3coWuE2erx7QGQQkykproMDJsg3CUo",
-            authDomain: "littlest-7ffe5.firebaseapp.com",
-            databaseURL: "https://littlest-7ffe5-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "littlest-7ffe5",
-            storageBucket: "littlest-7ffe5.firebasestorage.app",
-            messagingSenderId: "97338367295",
-            appId: "1:97338367295:web:5e1075caf990514a77078a"
-        };
-        
-        // === App Constants ===
-        const CORRECT_PIN = "332211";
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to start of day
-        const todayString = today.toISOString().slice(0, 10); // "YYYY-MM-DD"
-        
-        // === Firebase SDK Imports ===
-        let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
-        let getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByKey;
+  <script type="module">
+    // === Firebase Config ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8h3coWuE2erx7QGQQkykproMDJsg3CUo",
+      authDomain: "littlest-7ffe5.firebaseapp.com",
+      databaseURL:
+        "https://littlest-7ffe5-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "littlest-7ffe5",
+      storageBucket: "littlest-7ffe5.appspot.com", // fixed
+      messagingSenderId: "97338367295",
+      appId: "1:97338367295:web:5e1075caf990514a77078a",
+    };
 
-        // === App State ===
-        let app, auth, db, currentUser;
-        let activeIntentions = {};
-        let activeNovenas = {};
-        let todayDailyData = {};
-        let globalSettings = { dailyGoal: 100 };
-        let historyChart;
-        
-        // === 1. Initialization ===
-        
-        document.getElementById('pinSubmit').addEventListener('click', handlePINSubmit);
-        document.getElementById('pinInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handlePINSubmit();
+    // === App Constants ===
+    const CORRECT_PIN = "332211";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const todayString = today.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+    // === Firebase SDK Imports (placeholders for dynamic import) ===
+    let initializeApp,
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged,
+      getDatabase,
+      ref,
+      push,
+      set,
+      update,
+      onValue,
+      increment,
+      get,
+      query,
+      orderByChild,
+      limitToLast,
+      orderByKey;
+
+    // === App State ===
+    let app, auth, db, currentUser;
+    let activeIntentions = {};
+    let activeNovenas = {};
+    let todayDailyData = {};
+    let globalSettings = { dailyGoal: 100 };
+    let historyChart;
+
+    // === Define functions that must exist BEFORE we attach listeners ===
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add("show"), 10);
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => container.removeChild(toast), 300);
+      }, 3000);
+    }
+
+    function showScreen(id) {
+      document.getElementById("pinScreen").classList.remove("active");
+      document.getElementById("loadingScreen").classList.remove("active");
+      document.getElementById("appScreen").classList.remove("active");
+      document.getElementById(id).classList.add("active");
+    }
+
+    // Moved ABOVE setupUIListeners to avoid undefined handler
+    window.setDailyGoal = async () => {
+      const currentGoal = globalSettings.dailyGoal;
+      const newGoal = prompt(
+        "Set your new daily intention prayer goal:",
+        currentGoal
+      );
+
+      if (newGoal === null || newGoal.trim() === "") {
+        return; // User cancelled
+      }
+
+      const goalNum = parseInt(newGoal, 10);
+
+      if (isNaN(goalNum) || goalNum < 1) {
+        showToast("Please enter a valid number.", "error");
+        return;
+      }
+
+      try {
+        await set(
+          ref(db, `users/${currentUser.uid}/settings/dailyGoal`),
+          goalNum
+        );
+        showToast("Goal updated!");
+      } catch (error) {
+        showToast("Error updating goal: " + error.message, "error");
+      }
+    };
+
+    // === PIN handlers (can be attached now) ===
+    document
+      .getElementById("pinSubmit")
+      .addEventListener("click", handlePINSubmit);
+    document.getElementById("pinInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handlePINSubmit();
+    });
+
+    async function handlePINSubmit() {
+      const pin = document.getElementById("pinInput").value.trim();
+      if (pin === CORRECT_PIN) {
+        showScreen("loadingScreen");
+        await initializeAppAndAuth();
+      } else {
+        showToast("Incorrect PIN.", "error");
+        document.getElementById("pinInput").value = "";
+      }
+    }
+
+    async function initializeAppAndAuth() {
+      try {
+        // Dynamically import Firebase
+        ({ initializeApp } = await import(
+          "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
+        ));
+        ({ getAuth, signInAnonymously, onAuthStateChanged } = await import(
+          "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
+        ));
+        ({
+          getDatabase,
+          ref,
+          push,
+          set,
+          update,
+          onValue,
+          increment,
+          get,
+          query,
+          orderByChild,
+          limitToLast,
+          orderByKey,
+        } = await import(
+          "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+        ));
+
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getDatabase(app);
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            currentUser = user;
+            console.log("Firebase Auth Success. User UID:", user.uid);
+            setupApp();
+          } else {
+            console.log("Firebase Auth Failed.");
+          }
         });
 
-        async function handlePINSubmit() {
-            const pin = document.getElementById('pinInput').value.trim();
-            if (pin === CORRECT_PIN) {
-                showScreen('loadingScreen');
-                await initializeAppAndAuth();
-            } else {
-                showToast('Incorrect PIN.', 'error');
-                document.getElementById('pinInput').value = '';
-            }
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error("❌ Firebase Init Error:", error);
+        showToast("Error loading app. Host this file and retry.", "error");
+        showScreen("pinScreen"); // Go back to PIN screen on error
+      }
+    }
+
+    function setupApp() {
+      showScreen("appScreen");
+      document.getElementById("todayDate").textContent =
+        today.toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      document.getElementById("novenaStartDate").value = todayString;
+
+      setupUIListeners();
+      loadUserSettings();
+      loadIntentions();
+      loadNovenas();
+      loadDailyData(todayString);
+    }
+
+    // === 2. Data Loading (FROM Firebase) ===
+    function loadUserSettings() {
+      const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+      onValue(settingsRef, (snapshot) => {
+        const settings = snapshot.val();
+        if (settings && settings.dailyGoal) {
+          globalSettings.dailyGoal = parseInt(settings.dailyGoal, 10);
+        } else {
+          globalSettings.dailyGoal = 100; // Default
         }
+        updateDailyTally();
+      });
+    }
 
-        async function initializeAppAndAuth() {
-            try {
-                // Dynamically import Firebase
-                ({ initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'));
-                ({ getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js'));
-                ({ getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByKey } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js'));
+    function loadIntentions() {
+      const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
+      const orderedIntentionsRef = query(intentionsRef, orderByKey());
 
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getDatabase(app);
+      onValue(orderedIntentionsRef, (snapshot) => {
+        activeIntentions = {};
+        const data = snapshot.val() || {};
 
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        console.log("Firebase Auth Success. User UID:", user.uid);
-                        setupApp();
-                    } else {
-                        console.log("Firebase Auth Failed.");
-                    }
-                });
-                
-                await signInAnonymously(auth); 
-                
-            } catch (error) {
-                console.error('❌ Firebase Init Error:', error);
-                showToast('Error loading app. Run from a server.', 'error');
-                showScreen('pinScreen'); // Go back to PIN screen on error
-            }
+        for (const [id, intention] of Object.entries(data)) {
+          if (!intention.deleted) {
+            activeIntentions[id] = { ...intention, id };
+          }
         }
+        renderIntentions();
+        updateIntentionCounts();
+      });
+    }
 
-        function setupApp() {
-            showScreen('appScreen');
-            document.getElementById('todayDate').textContent = today.toLocaleDateString(undefined, {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
-            document.getElementById('novenaStartDate').value = todayString;
-            
-            setupUIListeners();
-            loadUserSettings(); 
-            loadIntentions();
-            loadNovenas();
-            loadDailyData(todayString);
+    function loadNovenas() {
+      const novenasRef = ref(db, `users/${currentUser.uid}/novenas`);
+      const orderedNovenasRef = query(novenasRef, orderByKey());
+
+      onValue(orderedNovenasRef, (snapshot) => {
+        activeNovenas = {};
+        const data = snapshot.val() || {};
+
+        for (const [id, novena] of Object.entries(data)) {
+          if (!novena.deleted) {
+            activeNovenas[id] = { ...novena, id };
+          }
         }
+        renderNovenas();
+      });
+    }
 
-        // === 2. Data Loading (FROM Firebase) ===
-        
-        function loadUserSettings() {
-            const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
-            onValue(settingsRef, (snapshot) => {
-                const settings = snapshot.val();
-                if (settings && settings.dailyGoal) {
-                    globalSettings.dailyGoal = parseInt(settings.dailyGoal, 10);
-                } else {
-                    globalSettings.dailyGoal = 100; // Default
+    function loadDailyData(dateString) {
+      const dailyDataRef = ref(
+        db,
+        `users/${currentUser.uid}/dailyData/${dateString}`
+      );
+      onValue(dailyDataRef, (snapshot) => {
+        todayDailyData = snapshot.val() || {};
+
+        updateToggleButtons("rosary", todayDailyData.rosary);
+        updateToggleButtons("devotions", todayDailyData.devotions);
+        updateToggleButtons("breviary", todayDailyData.breviary);
+
+        updateIntentionCounts();
+        updateDailyTally();
+        renderNovenas();
+      });
+    }
+
+    const countTrue = (obj) => (obj ? Object.values(obj).filter(Boolean).length : 0);
+
+    async function loadHistoryData() {
+      const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
+      const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
+
+      const snapshot = await get(historyQuery);
+      const data = snapshot.val() || {};
+
+      const labels = [];
+      const intentionData = [];
+      const devotionData = [];
+      const hourData = [];
+
+      for (const [date, dailyData] of Object.entries(data)) {
+        labels.push(date.substring(5)); // "MM-DD"
+
+        intentionData.push(dailyData.intentionsTotal || 0);
+
+        const devotions =
+          countTrue(dailyData.rosary) + countTrue(dailyData.devotions);
+        devotionData.push(devotions);
+
+        const hours = countTrue(dailyData.breviary);
+        hourData.push(hours);
+      }
+
+      renderHistoryChart(labels, intentionData, devotionData, hourData);
+    }
+
+    // === 3. UI Rendering & Updates ===
+    function renderIntentions() {
+      const container = document.getElementById("intentionsList");
+      const list = Object.values(activeIntentions);
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>✨ No intentions yet</p></div>`;
+        return;
+      }
+
+      container.innerHTML = list
+        .map(
+          (intention) => `
+          <div class="intention-card ${intention.answered ? "answered" : ""}" data-id="${intention.id}">
+            <div class="intention-header">
+              <div class="intention-info">
+                <h3 class="intention-title">${escapeHtml(intention.title)}</h3>
+                ${
+                  intention.note
+                    ? `<p class="intention-note">${escapeHtml(intention.note)}</p>`
+                    : ""
                 }
-                updateDailyTally();
-            });
+              </div>
+              <div class="intention-actions">
+                <button class="btn-icon" onclick="window.toggleIntentionAnswered('${intention.id}')" title="Mark as Answered">
+                  ${intention.answered ? "✅" : "✔️"}
+                </button>
+                <button class="btn-icon" onclick="window.editIntention('${intention.id}')" title="Edit">✏️</button>
+                <button class="btn-icon" onclick="window.deleteIntention('${intention.id}')" title="Delete">🗑️</button>
+              </div>
+            </div>
+            <div class="intention-counter">
+              <span class="counter-today" data-counter-id="${intention.id}">0</span>
+              <span class="counter-label">today</span>
+            </div>
+            <div class="counting-buttons">
+              <button class="btn-count btn-count-1" onclick="window.addCount('${intention.id}', 1)">+1</button>
+              <button class="btn-count btn-count-10" onclick="window.addCount('${intention.id}', 10)">+10</button>
+              <button class="btn-count btn-count-100" onclick="window.addCount('${intention.id}', 100)">+100</button>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    function renderNovenas() {
+      const container = document.getElementById("novenasList");
+      const list = Object.values(activeNovenas);
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>✨ No novenas yet</p></div>`;
+        return;
+      }
+
+      const oneDay = 24 * 60 * 60 * 1000;
+      const checkIns = todayDailyData.novenaCheckIns || {};
+
+      container.innerHTML = list
+        .map((novena) => {
+          const startDate = new Date(novena.startDate + "T00:00:00");
+          const endDate = new Date(startDate.getTime() + (novena.type - 1) * oneDay);
+
+          const diffDays = Math.round((today - startDate) / oneDay);
+          let currentDay = diffDays + 1;
+          let progressPercent = 0;
+          let label = `Day ${currentDay} of ${novena.type}`;
+          let canCheckIn = false;
+
+          if (currentDay > novena.type) {
+            label = `Completed on ${endDate.toLocaleDateString()}`;
+            progressPercent = 100;
+          } else if (currentDay < 1) {
+            label = `Starts on ${startDate.toLocaleDateString()}`;
+            progressPercent = 0;
+          } else {
+            progressPercent = (currentDay / novena.type) * 100;
+            canCheckIn = true;
+          }
+
+          const isCheckedIn = checkIns[novena.id] === true;
+
+          return `
+          <div class="novena-card ${novena.answered ? "answered" : ""}">
+            <div class="novena-header">
+              <div class="novena-info">
+                <h3 class="novena-title">${escapeHtml(novena.title)}</h3>
+                <p class="novena-for">${escapeHtml(novena.for)}</p>
+              </div>
+              <div class="novena-actions">
+                <button class="btn-icon" onclick="window.toggleNovenaAnswered('${novena.id}')" title="Mark as Answered">
+                  ${novena.answered ? "✅" : "✔️"}
+                </button>
+                <button class="btn-icon" onclick="window.deleteNovena('${novena.id}')" title="Delete">🗑️</button>
+              </div>
+            </div>
+            <div class="novena-progress">
+              <p class="novena-progress-label">${label}</p>
+              <div class="novena-progress-bar">
+                <div style="width: ${progressPercent}%"></div>
+              </div>
+            </div>
+            <div class="novena-footer">
+              <span class="novena-dates">
+                ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}
+              </span>
+              <button class="btn btn-check-in"
+                onclick="window.checkInNovena('${novena.id}')"
+                ${!canCheckIn || isCheckedIn ? "disabled" : ""}>
+                ${isCheckedIn ? "✓ Prayed Today" : "Check-in Today"}
+              </button>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    function updateToggleButtons(type, data) {
+      if (!data) data = {};
+      document.querySelectorAll(`#${type}Grid .btn-toggle`).forEach((btn) => {
+        const key = btn.dataset.key;
+        btn.classList.toggle("active", !!data[key]);
+      });
+    }
+
+    function updateIntentionCounts() {
+      const byIntention = todayDailyData.intentionsBy || {};
+      Object.keys(activeIntentions).forEach((id) => {
+        const count = byIntention[id] || 0;
+        const el = document.querySelector(`[data-counter-id="${id}"]`);
+        if (el) el.textContent = count;
+      });
+    }
+
+    function updateDailyTally() {
+      const intentionCount = todayDailyData.intentionsTotal || 0;
+      const devotionCount =
+        countTrue(todayDailyData.rosary) + countTrue(todayDailyData.devotions);
+      const hourCount = countTrue(todayDailyData.breviary);
+
+      document.getElementById("tallyIntentionCount").textContent = intentionCount;
+      document.getElementById("tallyDevotionCount").textContent = devotionCount;
+      document.getElementById("tallyHourCount").textContent = hourCount;
+
+      // Update Goal
+      const goal = globalSettings.dailyGoal;
+      document.getElementById("tallyGoalCount").textContent = intentionCount;
+      document.getElementById("tallyGoalTarget").textContent = goal;
+
+      const percent = Math.min(100, (intentionCount / goal) * 100);
+      document.getElementById("goalProgressFill").style.width = `${percent}%`;
+    }
+
+    function renderHistoryChart(labels, intentionData, devotionData, hourData) {
+      const ctx = document.getElementById("historyChart").getContext("2d");
+      if (historyChart) historyChart.destroy();
+
+      const isDark = document.body.classList.contains("dark-mode");
+      const gridColor = isDark
+        ? "rgba(255, 255, 255, 0.1)"
+        : "rgba(0, 0, 0, 0.1)";
+      const labelColor = isDark ? "#f5f1e8" : "#3a3a3a";
+
+      const primaryColor = isDark
+        ? "rgba(180, 145, 90, 0.7)"
+        : "rgba(90, 56, 37, 0.7)";
+      const secondaryColor = isDark
+        ? "rgba(138, 176, 138, 0.7)"
+        : "rgba(90, 125, 90, 0.7)";
+      const warningColor = isDark
+        ? "rgba(220, 209, 192, 0.7)"
+        : "rgba(180, 145, 90, 0.7)";
+
+      historyChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Intentions",
+              data: intentionData,
+              backgroundColor: primaryColor,
+            },
+            {
+              label: "Devotions",
+              data: devotionData,
+              backgroundColor: secondaryColor,
+            },
+            {
+              label: "Hours",
+              data: hourData,
+              backgroundColor: warningColor,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: gridColor },
+              ticks: { color: labelColor },
+              stacked: true,
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: labelColor },
+              stacked: true,
+            },
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: labelColor },
+            },
+          },
+        },
+      });
+    }
+
+    // === 4. Event Handlers (Writing TO Firebase) ===
+    function setupUIListeners() {
+      // Tab Navigation
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          const viewId = e.target.dataset.view;
+
+          document.querySelectorAll(".nav-link").forEach((l) => l.classList.remove("active"));
+          e.target.classList.add("active");
+
+          document.querySelectorAll(".app-view").forEach((v) => v.classList.remove("active"));
+          document.getElementById(viewId).classList.add("active");
+
+          if (viewId === "historyView") loadHistoryData();
+        });
+      });
+
+      // Toggle Buttons (Today View)
+      document.querySelectorAll(".btn-toggle").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const type = e.target.dataset.type;
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData[type]?.[key];
+          const path = `users/${currentUser.uid}/dailyData/${todayString}/${type}/${key}`;
+          set(ref(db, path), newVal);
+        });
+      });
+
+      // Intention Modal
+      document.getElementById("addIntentionBtn").addEventListener("click", () => showIntentionModal());
+      document.getElementById("closeModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("cancelIntentionModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("intentionForm").addEventListener("submit", handleIntentionSubmit);
+
+      // Novena Modal
+      document.getElementById("addNovenaBtn").addEventListener("click", showNovenaModal);
+      document.getElementById("closeNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("cancelNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("novenaForm").addEventListener("submit", handleNovenaSubmit);
+
+      // Theme Toggle
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+      // Set Goal Button (handler now guaranteed to exist)
+      document.getElementById("setGoalBtn").addEventListener("click", window.setDailyGoal);
+    }
+
+    async function handleIntentionSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("intentionTitle").value.trim();
+      const note = document.getElementById("intentionNote").value.trim();
+      if (!title) return;
+
+      const intentionData = { title, note, updatedAt: Date.now() };
+
+      try {
+        if (window.currentEditingIntention) {
+          const path = `users/${currentUser.uid}/intentions/${window.currentEditingIntention}`;
+          await update(ref(db, path), intentionData);
+        } else {
+          await set(push(ref(db, `users/${currentUser.uid}/intentions`)), {
+            ...intentionData,
+            createdAt: Date.now(),
+            deleted: false,
+            answered: false,
+          });
         }
+        closeIntentionModal();
+        showToast("Intention saved");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
 
-        function loadIntentions() {
-            const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
-            const orderedIntentionsRef = query(intentionsRef, orderByKey());
+    async function handleNovenaSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("novenaTitle").value.trim();
+      const novenaFor = document.getElementById("novenaFor").value.trim();
+      const type = document.getElementById("novenaType").value;
+      const startDate = document.getElementById("novenaStartDate").value;
 
-            onValue(orderedIntentionsRef, (snapshot) => {
-                activeIntentions = {};
-                const data = snapshot.val() || {};
-                
-                for (const [id, intention] of Object.entries(data)) {
-                    if (!intention.deleted) {
-                        activeIntentions[id] = { ...intention, id };
-                    }
-                }
-                renderIntentions();
-                updateIntentionCounts();
-            });
-        }
-        
-        function loadNovenas() {
-            const novenasRef = ref(db, `users/${currentUser.uid}/novenas`);
-            const orderedNovenasRef = query(novenasRef, orderByKey());
-            
-            onValue(orderedNovenasRef, (snapshot) => {
-                activeNovenas = {};
-                const data = snapshot.val() || {};
-                
-                for (const [id, novena] of Object.entries(data)) {
-                    if (!novena.deleted) {
-                        activeNovenas[id] = { ...novena, id };
-                    }
-                }
-                renderNovenas();
-            });
-        }
+      if (!title || !startDate) return;
 
-        function loadDailyData(dateString) {
-            const dailyDataRef = ref(db, `users/${currentUser.uid}/dailyData/${dateString}`);
-            onValue(dailyDataRef, (snapshot) => {
-                todayDailyData = snapshot.val() || {};
-                
-                updateToggleButtons('rosary', todayDailyData.rosary);
-                updateToggleButtons('devotions', todayDailyData.devotions);
-                updateToggleButtons('breviary', todayDailyData.breviary);
-                
-                updateIntentionCounts();
-                updateDailyTally();
-                renderNovenas(); 
-            });
-        }
-        
-        const countTrue = (obj) => obj ? Object.values(obj).filter(Boolean).length : 0;
-        
-        async function loadHistoryData() {
-            const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
-            const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
-            
-            const snapshot = await get(historyQuery);
-            const data = snapshot.val() || {};
-            
-            const labels = [];
-            const intentionData = [];
-            const devotionData = [];
-            const hourData = [];
-            
-            for (const [date, dailyData] of Object.entries(data)) {
-                labels.push(date.substring(5)); // "MM-DD"
-                
-                intentionData.push(dailyData.intentionsTotal || 0);
-                
-                const devotions = countTrue(dailyData.rosary) + countTrue(dailyData.devotions);
-                devotionData.push(devotions);
-                
-                const hours = countTrue(dailyData.breviary);
-                hourData.push(hours);
-            }
-            
-            renderHistoryChart(labels, intentionData, devotionData, hourData);
-        }
+      const novenaData = {
+        title,
+        for: novenaFor,
+        type: parseInt(type, 10),
+        startDate,
+        createdAt: Date.now(),
+        deleted: false,
+        answered: false,
+      };
 
-        // === 3. UI Rendering & Updates ===
+      try {
+        await set(push(ref(db, `users/${currentUser.uid}/novenas`)), novenaData);
+        closeNovenaModal();
+        showToast("Novena added");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
 
-        function renderIntentions() {
-            const container = document.getElementById('intentionsList');
-            const list = Object.values(activeIntentions);
-            
-            if (list.length === 0) {
-                container.innerHTML = `<div class="empty-state"><p>✨ No intentions yet</p></div>`;
-                return;
-            }
-            
-            container.innerHTML = list.map(intention => `
-                <div class="intention-card ${intention.answered ? 'answered' : ''}" data-id="${intention.id}">
-                    <div class="intention-header">
-                        <div class="intention-info">
-                            <h3 class="intention-title">${escapeHtml(intention.title)}</h3>
-                            ${intention.note ? `<p class="intention-note">${escapeHtml(intention.note)}</p>` : ''}
-                        </div>
-                        <div class="intention-actions">
-                            <button class="btn-icon" onclick="window.toggleIntentionAnswered('${intention.id}')" title="Mark as Answered">
-                                ${intention.answered ? '✅' : '✔️'}
-                            </button>
-                            <button class="btn-icon" onclick="window.editIntention('${intention.id}')" title="Edit">✏️</button>
-                            <button class="btn-icon" onclick="window.deleteIntention('${intention.id}')" title="Delete">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="intention-counter">
-                        <span class="counter-today" data-counter-id="${intention.id}">0</span>
-                        <span class="counter-label">today</span>
-                    </div>
-                    <div class="counting-buttons">
-                        <button class="btn-count btn-count-1" onclick="window.addCount('${intention.id}', 1)">+1</button>
-                        <button class="btn-count btn-count-10" onclick="window.addCount('${intention.id}', 10)">+10</button>
-                        <button class="btn-count btn-count-100" onclick="window.addCount('${intention.id}', 100)">+100</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderNovenas() {
-            const container = document.getElementById('novenasList');
-            const list = Object.values(activeNovenas);
+    // === 5. Global Functions (Writing TO Firebase) ===
+    window.addCount = (intentionId, delta) => {
+      const updates = {};
+      updates[
+        `users/${currentUser.uid}/dailyData/${todayString}/intentionsTotal`
+      ] = increment(delta);
+      updates[
+        `users/${currentUser.uid}/dailyData/${todayString}/intentionsBy/${intentionId}`
+      ] = increment(delta);
+      update(ref(db), updates);
+    };
 
-            if (list.length === 0) {
-                container.innerHTML = `<div class="empty-state"><p>✨ No novenas yet</p></div>`;
-                return;
-            }
-            
-            const oneDay = 24 * 60 * 60 * 1000;
-            const checkIns = todayDailyData.novenaCheckIns || {};
+    window.checkInNovena = (novenaId) => {
+      const path = `users/${currentUser.uid}/dailyData/${todayString}/novenaCheckIns/${novenaId}`;
+      set(ref(db, path), true);
+    };
 
-            container.innerHTML = list.map(novena => {
-                const startDate = new Date(novena.startDate + 'T00:00:00'); // Ensure local time
-                const endDate = new Date(startDate.getTime() + (novena.type - 1) * oneDay);
-                
-                const diffDays = Math.round((today - startDate) / oneDay);
-                let currentDay = diffDays + 1;
-                let progressPercent = 0;
-                let label = `Day ${currentDay} of ${novena.type}`;
-                let canCheckIn = false;
-                
-                if (currentDay > novena.type) {
-                    label = `Completed on ${endDate.toLocaleDateString()}`;
-                    progressPercent = 100;
-                } else if (currentDay < 1) {
-                    label = `Starts on ${startDate.toLocaleDateString()}`;
-                    progressPercent = 0;
-                } else {
-                    progressPercent = (currentDay / novena.type) * 100;
-                    canCheckIn = true;
-                }
-                
-                const isCheckedIn = checkIns[novena.id] === true;
-                
-                return `
-                <div class="novena-card ${novena.answered ? 'answered' : ''}">
-                    <div class="novena-header">
-                        <div class="novena-info">
-                            <h3 class="novena-title">${escapeHtml(novena.title)}</h3>
-                            <p class="novena-for">${escapeHtml(novena.for)}</p>
-                        </div>
-                        <div class="novena-actions">
-                            <button class="btn-icon" onclick="window.toggleNovenaAnswered('${novena.id}')" title="Mark as Answered">
-                                ${novena.answered ? '✅' : '✔️'}
-                            </button>
-                            <button class="btn-icon" onclick="window.deleteNovena('${novena.id}')" title="Delete">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="novena-progress">
-                        <p class="novena-progress-label">${label}</p>
-                        <div class="novena-progress-bar">
-                            <div style="width: ${progressPercent}%"></div>
-                        </div>
-                    </div>
-                    <div class="novena-footer">
-                        <span class="novena-dates">
-                            ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}
-                        </span>
-                        <button class="btn btn-check-in" 
-                                onclick="window.checkInNovena('${novena.id}')" 
-                                ${!canCheckIn || isCheckedIn ? 'disabled' : ''}>
-                            ${isCheckedIn ? '✓ Prayed Today' : 'Check-in Today'}
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
+    window.currentEditingIntention = null;
+    window.editIntention = (id) => {
+      const intention = activeIntentions[id];
+      if (!intention) return;
+      window.currentEditingIntention = id;
+      document.getElementById("modalTitle").textContent = "Edit Intention";
+      document.getElementById("intentionTitle").value = intention.title;
+      document.getElementById("intentionNote").value = intention.note || "";
+      document.getElementById("intentionModal").classList.add("active");
+      document.getElementById("intentionTitle").focus();
+    };
 
-        function updateToggleButtons(type, data) {
-            if (!data) data = {};
-            document.querySelectorAll(`#${type}Grid .btn-toggle`).forEach(btn => {
-                const key = btn.dataset.key;
-                btn.classList.toggle('active', !!data[key]);
-            });
-        }
-        
-        function updateIntentionCounts() {
-            const byIntention = todayDailyData.intentionsBy || {};
-            let globalTotal = 0;
+    window.deleteIntention = async (id) => {
+      if (!confirm("Are you sure you want to delete this intention?")) return;
+      await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), {
+        deleted: true,
+        deletedAt: Date.now(),
+      });
+      showToast("Intention removed");
+    };
 
-            Object.keys(activeIntentions).forEach(id => {
-                const count = byIntention[id] || 0;
-                globalTotal += count;
-                const el = document.querySelector(`[data-counter-id="${id}"]`);
-                if (el) el.textContent = count;
-            });
-        }
-        
-        function updateDailyTally() {
-            const intentionCount = todayDailyData.intentionsTotal || 0;
-            const devotionCount = countTrue(todayDailyData.rosary) + countTrue(todayDailyData.devotions);
-            const hourCount = countTrue(todayDailyData.breviary);
+    window.toggleIntentionAnswered = async (id) => {
+      const intention = activeIntentions[id];
+      if (!intention) return;
+      const newVal = !intention.answered;
+      await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), {
+        answered: newVal,
+      });
+      showToast(
+        newVal ? "Intention marked as answered" : "Intention marked as active"
+      );
+    };
 
-            document.getElementById('tallyIntentionCount').textContent = intentionCount;
-            document.getElementById('tallyDevotionCount').textContent = devotionCount;
-            document.getElementById('tallyHourCount').textContent = hourCount;
-            
-            // Update Goal
-            const goal = globalSettings.dailyGoal;
-            document.getElementById('tallyGoalCount').textContent = intentionCount;
-            document.getElementById('tallyGoalTarget').textContent = goal;
-            
-            const percent = Math.min(100, (intentionCount / goal) * 100);
-            document.getElementById('goalProgressFill').style.width = `${percent}%`;
-        }
+    window.deleteNovena = async (id) => {
+      if (!confirm("Are you sure you want to delete this novena?")) return;
+      await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), {
+        deleted: true,
+        deletedAt: Date.now(),
+      });
+      showToast("Novena removed");
+    };
 
-        function renderHistoryChart(labels, intentionData, devotionData, hourData) {
-            const ctx = document.getElementById('historyChart').getContext('2d');
-            if (historyChart) historyChart.destroy();
-            
-            const isDark = document.body.classList.contains('dark-mode');
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            const labelColor = isDark ? '#f5f1e8' : '#3a3a3a';
-            
-            const primaryColor = isDark ? 'rgba(180, 145, 90, 0.7)' : 'rgba(90, 56, 37, 0.7)';
-            const secondaryColor = isDark ? 'rgba(138, 176, 138, 0.7)' : 'rgba(90, 125, 90, 0.7)';
-            const warningColor = isDark ? 'rgba(220, 209, 192, 0.7)' : 'rgba(180, 145, 90, 0.7)';
-            
-            historyChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Intentions',
-                            data: intentionData,
-                            backgroundColor: primaryColor,
-                        },
-                        {
-                            label: 'Devotions',
-                            data: devotionData,
-                            backgroundColor: secondaryColor,
-                        },
-                        {
-                            label: 'Hours',
-                            data: hourData,
-                            backgroundColor: warningColor,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: gridColor }, 
-                            ticks: { color: labelColor },
-                            stacked: true // Stack Y axis
-                        },
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: labelColor },
-                            stacked: true // Stack X axis
-                        }
-                    },
-                    plugins: { 
-                        legend: { 
-                            display: true, // Show legend
-                            labels: { color: labelColor }
-                        } 
-                    }
-                }
-            });
-        }
+    window.toggleNovenaAnswered = async (id) => {
+      const novena = activeNovenas[id];
+      if (!novena) return;
+      const newVal = !novena.answered;
+      await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), {
+        answered: newVal,
+      });
+      showToast(
+        newVal ? "Novena marked as answered" : "Novena marked as active"
+      );
+    };
 
-        // === 4. Event Handlers (Writing TO Firebase) ===
+    // === 6. Helper Functions ===
+    function showIntentionModal() {
+      window.currentEditingIntention = null;
+      document.getElementById("modalTitle").textContent = "Add Intention";
+      document.getElementById("intentionForm").reset();
+      document.getElementById("intentionModal").classList.add("active");
+      document.getElementById("intentionTitle").focus();
+    }
+    function closeIntentionModal() {
+      document.getElementById("intentionModal").classList.remove("active");
+    }
+    function showNovenaModal() {
+      document.getElementById("novenaForm").reset();
+      document.getElementById("novenaStartDate").value = todayString; // Reset to today
+      document.getElementById("novenaModal").classList.add("active");
+      document.getElementById("novenaTitle").focus();
+    }
+    function closeNovenaModal() {
+      document.getElementById("novenaModal").classList.remove("active");
+    }
 
-        function setupUIListeners() {
-            // Tab Navigation
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    const viewId = e.target.dataset.view;
-                    
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    e.target.classList.add('active');
-                    
-                    document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-                    document.getElementById(viewId).classList.add('active');
-                    
-                    if (viewId === 'historyView') loadHistoryData();
-                });
-            });
-            
-            // Toggle Buttons (Today View)
-            document.querySelectorAll('.btn-toggle').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const type = e.target.dataset.type;
-                    const key = e.target.dataset.key;
-                    const newVal = !todayDailyData[type]?.[key];
-                    const path = `users/${currentUser.uid}/dailyData/${todayString}/${type}/${key}`;
-                    set(ref(db, path), newVal);
-                });
-            });
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      const icon = document.querySelector(".theme-icon");
+      icon.textContent = document.body.classList.contains("dark-mode")
+        ? "☀️"
+        : "🌙";
+      if (document.getElementById("historyView").classList.contains("active")) {
+        loadHistoryData(); // Re-render chart with new colors
+      }
+    }
 
-            // Intention Modal
-            document.getElementById('addIntentionBtn').addEventListener('click', () => showIntentionModal());
-            document.getElementById('closeModal').addEventListener('click', closeIntentionModal);
-            document.getElementById('cancelIntentionModal').addEventListener('click', closeIntentionModal);
-            document.getElementById('intentionForm').addEventListener('submit', handleIntentionSubmit);
-            
-            // Novena Modal
-            document.getElementById('addNovenaBtn').addEventListener('click', showNovenaModal);
-            document.getElementById('closeNovenaModal').addEventListener('click', closeNovenaModal);
-            document.getElementById('cancelNovenaModal').addEventListener('click', closeNovenaModal);
-            document.getElementById('novenaForm').addEventListener('submit', handleNovenaSubmit);
-            
-            // Theme Toggle
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-            
-            // Set Goal Button
-            document.getElementById('setGoalBtn').addEventListener('click', window.setDailyGoal);
-        }
-        
-        async function handleIntentionSubmit(e) {
-            e.preventDefault();
-            const title = document.getElementById('intentionTitle').value.trim();
-            const note = document.getElementById('intentionNote').value.trim();
-            if (!title) return;
-
-            const intentionData = { title, note, updatedAt: Date.now() };
-
-            try {
-                if (window.currentEditingIntention) {
-                    const path = `users/${currentUser.uid}/intentions/${window.currentEditingIntention}`;
-                    await update(ref(db, path), intentionData);
-                } else {
-                    await set(push(ref(db, `users/${currentUser.uid}/intentions`)), {
-                        ...intentionData,
-                        createdAt: Date.now(),
-                        deleted: false,
-                        answered: false
-                    });
-                }
-                closeIntentionModal();
-                showToast('Intention saved');
-            } catch (error) {
-                showToast('Error: ' + error.message, 'error');
-            }
-        }
-        
-        async function handleNovenaSubmit(e) {
-            e.preventDefault();
-            const title = document.getElementById('novenaTitle').value.trim();
-            const novenaFor = document.getElementById('novenaFor').value.trim();
-            const type = document.getElementById('novenaType').value;
-            const startDate = document.getElementById('novenaStartDate').value;
-            
-            if (!title || !startDate) return;
-            
-            const novenaData = {
-                title,
-                for: novenaFor,
-                type: parseInt(type, 10),
-                startDate,
-                createdAt: Date.now(),
-                deleted: false,
-                answered: false
-            };
-            
-            try {
-                await set(push(ref(db, `users/${currentUser.uid}/novenas`)), novenaData);
-                closeNovenaModal();
-                showToast('Novena added');
-            } catch (error) {
-                showToast('Error: ' + error.message, 'error');
-            }
-        }
-
-        // === 5. Global Functions (Writing TO Firebase) ===
-        
-        window.addCount = (intentionId, delta) => {
-            const updates = {};
-            updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsTotal`] = increment(delta);
-            updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsBy/${intentionId}`] = increment(delta);
-            update(ref(db), updates);
-        };
-        
-        window.checkInNovena = (novenaId) => {
-            const path = `users/${currentUser.uid}/dailyData/${todayString}/novenaCheckIns/${novenaId}`;
-            set(ref(db, path), true);
-        };
-        
-        window.setDailyGoal = async () => {
-            const currentGoal = globalSettings.dailyGoal;
-            const newGoal = prompt('Set your new daily intention prayer goal:', currentGoal);
-            
-            if (newGoal === null || newGoal.trim() === '') {
-                return; // User cancelled
-            }
-            
-            const goalNum = parseInt(newGoal, 10);
-            
-            if (isNaN(goalNum) || goalNum < 1) {
-                showToast('Please enter a valid number.', 'error');
-                return;
-            }
-            
-            try {
-                await set(ref(db, `users/${currentUser.uid}/settings/dailyGoal`), goalNum);
-                showToast('Goal updated!');
-            } catch (error) {
-                // === THIS IS THE BUG FIX ===
-                showToast('Error updating goal: ' + error.message, 'error');
-            }
-        };
-
-        window.currentEditingIntention = null;
-        window.editIntention = (id) => {
-            const intention = activeIntentions[id];
-            if (!intention) return;
-            window.currentEditingIntention = id;
-            document.getElementById('modalTitle').textContent = 'Edit Intention';
-            document.getElementById('intentionTitle').value = intention.title;
-            document.getElementById('intentionNote').value = intention.note || '';
-            document.getElementById('intentionModal').classList.add('active');
-            document.getElementById('intentionTitle').focus();
-        };
-
-        window.deleteIntention = async (id) => {
-            if (!confirm('Are you sure you want to delete this intention?')) return;
-            await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { deleted: true, deletedAt: Date.now() });
-            showToast('Intention removed');
-        };
-        
-        window.toggleIntentionAnswered = async (id) => {
-            const intention = activeIntentions[id];
-            if (!intention) return;
-            const newVal = !intention.answered;
-            await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { answered: newVal });
-            showToast(newVal ? 'Intention marked as answered' : 'Intention marked as active');
-        };
-        
-        window.deleteNovena = async (id) => {
-            if (!confirm('Are you sure you want to delete this novena?')) return;
-            await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { deleted: true, deletedAt: Date.now() });
-            showToast('Novena removed');
-        };
-        
-        window.toggleNovenaAnswered = async (id) => {
-            const novena = activeNovenas[id];
-            if (!novena) return;
-            const newVal = !novena.answered;
-            await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { answered: newVal });
-            showToast(newVal ? 'Novena marked as answered' : 'Novena marked as active');
-        };
-
-        // === 6. Helper Functions ===
-        
-        function showIntentionModal() {
-            window.currentEditingIntention = null;
-            document.getElementById('modalTitle').textContent = 'Add Intention';
-            document.getElementById('intentionForm').reset();
-            document.getElementById('intentionModal').classList.add('active');
-            document.getElementById('intentionTitle').focus();
-        }
-        function closeIntentionModal() {
-            document.getElementById('intentionModal').classList.remove('active');
-        }
-        function showNovenaModal() {
-            document.getElementById('novenaForm').reset();
-            document.getElementById('novenaStartDate').value = todayString; // Reset to today
-            document.getElementById('novenaModal').classList.add('active');
-            document.getElementById('novenaTitle').focus();
-        }
-        function closeNovenaModal() {
-            document.getElementById('novenaModal').classList.remove('active');
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const icon = document.querySelector('.theme-icon');
-            icon.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            if (document.getElementById('historyView').classList.contains('active')) {
-                loadHistoryData(); // Re-render chart with new colors
-            }
-        }
-
-        function showScreen(id) {
-            document.getElementById('pinScreen').classList.remove('active');
-            document.getElementById('loadingScreen').classList.remove('active');
-            document.getElementById('appScreen').classList.remove('active');
-            document.getElementById(id).classList.add('active');
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => container.removeChild(toast), 300);
-            }, 3000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-    </script>
+    function escapeHtml(text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
 </body>
 </html>
