@@ -3254,10 +3254,7 @@ async function startApp(){
       await set(ref(db, `dailyData/${todayString}/mass`), next);
       try{showToast("Mass decremented");}catch(e){}
     }
-      const current = todayDailyData.mass || 0;
-      await set(ref(db, `dailyData/${todayString}/mass`), current + 1);
-      showToast("Mass attendance logged");
-    }
+
 
     async function logConfession() {
       const current = todayDailyData.confession || 0;
