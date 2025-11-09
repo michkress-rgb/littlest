@@ -1677,6 +1677,12 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    // ---- Safety helpers ----
+    function safeCall(label, fn){
+      try { return fn(); } 
+      catch(e){ console.error("Render error in", label, e); }
+    }
+    
     // Local YYYY-MM-DD (avoids UTC off-by-one)
     function localISODate(d=new Date()){
       const y=d.getFullYear();
@@ -2444,23 +2450,32 @@ async function startApp(){
       });
     }
 
-    function renderAll() {
-      renderDashboard();
-      renderDailyPrayers();
-      renderRosary();
-      renderStMichael();
-      renderWayOfCross();
-      renderSilentPrayer();
-      renderDevotions();
-      renderBreviary();
-      renderStJosephOffice();
-      renderCarmelitePrayers();
-      renderReading();
-      renderCarmeliteReading();
-      renderIntentions();
-      renderNovenas();
-      renderChildPrayerSection();
-    }
+    
+function renderAll(){
+  const maybe = (name)=> (typeof window[name] === 'function') ? ()=>window[name]() : null;
+  const calls = [
+    maybe('renderDashboard'),
+    maybe('renderDailyPrayers'),
+    maybe('renderRosary'),
+    maybe('renderStMichael'),
+    maybe('renderWayOfCross'),
+    maybe('renderSilentPrayer'),
+    maybe('renderDevotions'),
+    maybe('renderBreviary'),
+    maybe('renderStJosephOffice'),
+    maybe('renderCarmelitePrayers'),
+    maybe('renderReading'),
+    maybe('renderCarmeliteReading'),
+    maybe('renderSacraments'),
+    maybe('renderIntentions'),
+    maybe('renderNovenas'),
+    maybe('renderChildPrayerSection'),
+  ].filter(Boolean);
+  for (const fn of calls){
+    safeCall(fn.name || 'render', fn);
+  }
+}
+
 
     // === DASHBOARD ===
     function renderDashboard() {
@@ -3697,5 +3712,18 @@ window.addEventListener('error', function(e){
   console.error('Global error:', e.message, e.filename, e.lineno, e.error);
 });
 </script>
+
+<script>
+setTimeout(function(){
+  try{
+    if(document.getElementById('loadingScreen') && document.getElementById('loadingScreen').classList.contains('active')){
+      console.warn('Auto-fallback start fired.');
+      if (typeof renderAll==='function') renderAll();
+      if (typeof showScreen==='function') showScreen('mainApp');
+    }
+  }catch(_){}
+}, 10000);
+</script>
+
 </body>
 </html>
