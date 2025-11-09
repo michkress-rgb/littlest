@@ -1123,9 +1123,9 @@
       <h1>Littlest Way</h1>
       <p class="pin-subtitle">A path of little prayers</p>
       <div class="pin-input-group">
-        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <input type="password" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
       </div>
-      <p class="pin-hint">Enter your 6-digit PIN</p>
+      <p class="pin-hint">Enter your 4-digit PIN</p>
     </div>
   </div>
 
@@ -1133,7 +1133,7 @@
   <div id="loadingScreen" class="screen">
     <div class="loading-content">
       <div class="spinner"></div>
-      <p><span id="loadingMessage">Loading your prayers...</span></p>
+      <p>Loading your prayers...</p>
     </div>
   </div>
 
@@ -2301,11 +2301,10 @@ Relying on your maternal protection and on your constant help, I resolve to live
 
     // PIN check
     document.getElementById("pinInput").addEventListener("input", (e) => {
-      if (e.target.value.length === 6) {
-        if (e.target.value === "332211") {
+      if (e.target.value.length === 4) {
+        if (e.target.value === "1234") {
           showScreen("loadingScreen");
           setTimeout(loadApp, 1000);
-          setTimeout(function(){ try{ if(document.getElementById("loadingScreen").classList.contains("active")) { showScreen("mainApp"); } } catch(e){} }, 5000);
         } else {
           e.target.value = "";
           alert("Incorrect PIN");
@@ -2319,20 +2318,11 @@ Relying on your maternal protection and on your constant help, I resolve to live
     }
 
     async function loadApp() {
-  try {
-    if (typeof setupListeners === 'function') setupListeners();
-    if (typeof loadData === 'function') await loadData();
-  } catch (err) {
-    console.error("Init failed:", err);
-    try { if (typeof showToast === 'function') showToast("Could not load data. Working offline.", "error"); } catch (e) {}
-    try { if (typeof todayDailyData === 'undefined') window.todayDailyData = {}; else todayDailyData = {}; } catch (e) {}
-    try { if (typeof activeIntentions === 'undefined') window.activeIntentions = {}; else activeIntentions = {}; } catch (e) {}
-    try { if (typeof activeNovenas === 'undefined') window.activeNovenas = {}; else activeNovenas = {}; } catch (e) {}
-  } finally {
-    try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(e){}
-    try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(e){}
-  }
-}
+      setupListeners();
+      await loadData();
+      showScreen("mainApp");
+      updateDateDisplay();
+    }
 
     async function loadData() {
       updateViewDateString();
@@ -3654,16 +3644,5 @@ Relying on your maternal protection and on your constant help, I resolve to live
       if (currentView === "childrenView") loadChildrenChart();
     }
   </script>
-
-<script>
-window.addEventListener('error', function(e){
-  console.error('Global error:', e.message, e.filename, e.lineno);
-  try {
-    const el = document.getElementById('loadingMessage');
-    if (el) el.textContent = 'Loading took too long. Opening offline mode...';
-  } catch(_){}
-});
-</script>
-
 </body>
 </html>
