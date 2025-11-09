@@ -317,13 +317,29 @@
     }
 
     /* === TABS === */
+
+/* Wrapped tab layout */
+.tab-btn{
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 3.5rem;
+  flex: 1 1 20%;
+}
+@media (max-width: 900px){
+  .tab-btn{ flex: 1 1 33%; }
+}
+@media (max-width: 640px){
+  .tab-btn{ flex: 1 1 50%; }
+}
+
     .tabs {
       display: flex;
       gap: 0.25rem;
-      overflow-x: auto;
+      
       border-bottom: 2px solid var(--border-dark);
       -webkit-overflow-scrolling: touch;
-    }
+      flex-wrap: wrap;
+}
 
     .tab-btn {
       flex: 1;
@@ -1123,9 +1139,9 @@
       <h1>Littlest Way</h1>
       <p class="pin-subtitle">A path of little prayers</p>
       <div class="pin-input-group">
-        <input type="password" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
       </div>
-      <p class="pin-hint">Enter your 4-digit PIN</p>
+      <p class="pin-hint">Enter your 6-digit PIN</p>
     </div>
   </div>
 
@@ -1661,9 +1677,17 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    // Local YYYY-MM-DD (avoids UTC off-by-one)
+    function localISODate(d=new Date()){
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,'0');
+      const da=String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${da}`;
+    }
+    
 
     // Global state
-    let todayString = new Date().toISOString().split('T')[0];
+    let todayString = localISODate(new Date());
     let currentViewDate = new Date();
     let todayDailyData = {};
     let activeIntentions = {};
@@ -2301,8 +2325,8 @@ Relying on your maternal protection and on your constant help, I resolve to live
 
     // PIN check
     document.getElementById("pinInput").addEventListener("input", (e) => {
-      if (e.target.value.length === 4) {
-        if (e.target.value === "1234") {
+      if (e.target.value.length === 6) {
+        if (e.target.value === "332211") {
           showScreen("loadingScreen");
           setTimeout(loadApp, 1000);
         } else {
@@ -2318,11 +2342,18 @@ Relying on your maternal protection and on your constant help, I resolve to live
     }
 
     async function loadApp() {
-      setupListeners();
-      await loadData();
-      showScreen("mainApp");
-      updateDateDisplay();
-    }
+  try {
+    if (typeof setupListeners === 'function') setupListeners();
+    if (typeof loadData === 'function') await loadData();
+  } catch (err) {console.error("Init failed:", err);
+    try { if (typeof showToast === 'function') showToast("Could not load data. Working offline.", "error"); } catch (e) {}
+  
+    try { if (typeof renderAll === "function") renderAll(); } catch(e) {}
+  } finally {
+    try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(e){}
+    try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(e){}
+  }
+}
 
     async function loadData() {
       updateViewDateString();
@@ -2351,9 +2382,7 @@ Relying on your maternal protection and on your constant help, I resolve to live
       setupRealtimeListeners();
     }
 
-    function updateViewDateString() {
-      todayString = currentViewDate.toISOString().split('T')[0];
-    }
+    function updateViewDateString(){ todayString = localISODate(currentViewDate); }
 
     function updateDateDisplay() {
       const today = new Date().toISOString().split('T')[0];
