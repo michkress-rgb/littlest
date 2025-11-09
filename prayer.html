@@ -1,0 +1,2756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Littlest Way - Prayer Tracker</title>
+  <meta name="theme-color" content="#5a3825" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #8b4513;
+      --primary-dark: #5d2f0e;
+      --primary-light: #a0522d;
+      --secondary: #2f4f4f;
+      --secondary-light: #4a7c7c;
+      --accent-gold: #d4af37;
+      --accent-rose: #c17b7b;
+      --bg-main: #faf8f5;
+      --bg-card: #ffffff;
+      --bg-overlay: rgba(0, 0, 0, 0.7);
+      --text-primary: #2c2c2c;
+      --text-secondary: #5a5a5a;
+      --text-muted: #8a8a8a;
+      --border: #e5ddd3;
+      --border-dark: #d0c4b8;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --shadow-lg: rgba(0, 0, 0, 0.15);
+    }
+
+    body.dark-mode {
+      --primary: #d4af37;
+      --primary-dark: #b8941f;
+      --primary-light: #e6c550;
+      --secondary: #5a7d7d;
+      --secondary-light: #7a9d9d;
+      --accent-gold: #f0d875;
+      --accent-rose: #d99999;
+      --bg-main: #1a1a1a;
+      --bg-card: #2a2a2a;
+      --text-primary: #e5e5e5;
+      --text-secondary: #b5b5b5;
+      --text-muted: #858585;
+      --border: #3a3a3a;
+      --border-dark: #4a4a4a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 18px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Cinzel', 'Garamond', serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* === PIN SCREEN === */
+    #pinScreen.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+    }
+
+    .pin-container {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 420px;
+      width: 90%;
+      border: 1px solid var(--border);
+    }
+
+    .pin-container h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+    }
+
+    .pin-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    .pin-input-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pin-input-group input {
+      flex: 1;
+      padding: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 1.25rem;
+      text-align: center;
+      letter-spacing: 0.5em;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .pin-input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .pin-hint {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    /* === LOADING === */
+    #loadingScreen.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-main);
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* === BUTTONS === */
+    .btn {
+      padding: 0.875rem 1.5rem;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-light);
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      color: var(--text-secondary);
+    }
+
+    .btn-icon:hover {
+      background: var(--border);
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      text-decoration: underline;
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .btn-link:hover {
+      color: var(--primary-dark);
+    }
+    
+    .btn-outline {
+        background: var(--bg-card);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+        background: var(--bg-main);
+    }
+
+    /* === HEADER === */
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-dark);
+      padding: 1.25rem 1.5rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .app-header h1 {
+      font-size: 1.75rem;
+      color: var(--primary);
+      letter-spacing: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .app-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-link {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      padding: 0.875rem 1.25rem;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-bottom: 100px;
+    }
+
+    .app-view {
+      display: none;
+    }
+
+    .app-view.active {
+      display: block;
+    }
+
+    /* === NEW: HISTORIC DATE PICKER === */
+    .date-navigator {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: var(--bg-card);
+        border: 2px solid var(--border-dark);
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px var(--shadow);
+    }
+    .date-navigator button {
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+    }
+    .date-picker-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .date-picker-group input[type="date"] {
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        padding: 0.5rem;
+        border: 2px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-main);
+        color: var(--text-primary);
+    }
+    #todayBtn {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* === STREAK CARD === */
+    .streak-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-dark);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .streak-flame {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .streak-count {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .streak-label {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+    
+    /* === DAILY SUMMARY === */
+    .daily-summary {
+      background: var(--bg-card);
+      border: 2px solid var(--border-dark);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .summary-title {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-item h4 {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'Cinzel', serif;
+    }
+
+    .summary-count {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Cinzel', serif;
+    }
+
+    .goal-section {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .goal-header h4 {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .goal-numbers {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .goal-progress-bar {
+      background: var(--border);
+      border-radius: 12px;
+      height: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .goal-progress-fill {
+      background: linear-gradient(90deg, var(--primary), var(--accent-gold));
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 12px;
+    }
+    
+    /* === PRAYER SECTIONS === */
+    .prayer-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .prayer-section h3 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      border-bottom: 2px solid var(--border-dark);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .prayer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    /* === DEVOTION COUNTER CARD === */
+    .devotion-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: all 0.2s ease;
+    }
+
+    .devotion-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--shadow-lg);
+    }
+
+    .devotion-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .devotion-count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--secondary);
+      text-align: center;
+      margin-bottom: 0.75rem;
+      font-family: 'Cinzel', serif;
+    }
+
+    .devotion-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .btn-devotion {
+      width: 50px;
+      height: 50px;
+      border: 2px solid var(--border-dark);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 6px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-devotion:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+    .btn-devotion-minus {
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    .btn-devotion-minus:hover {
+      background: var(--accent-rose);
+      color: white;
+    }
+
+    .btn-devotion-plus {
+      border-color: var(--secondary);
+      color: var(--secondary);
+    }
+
+    .btn-devotion-plus:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .devotion-intention {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+      min-height: 2.5rem;
+    }
+
+    .btn-set-intention {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      margin-top: 0.5rem;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    
+    /* === QUICK ACTIONS (Shared Style) === */
+    .btn-child-prayer {
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 2px solid var(--border-dark);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .btn-child-prayer:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .btn-child-prayer.prayed {
+      background: var(--secondary);
+      border-color: var(--secondary);
+      color: white;
+    }
+    
+    /* === INTENTIONS === */
+    .btn-add {
+      width: 100%;
+      margin-bottom: 2rem;
+      padding: 1.25rem;
+      font-size: 1.1rem;
+    }
+
+    .intentions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .intention-card {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px var(--shadow);
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .intention-card.answered {
+      opacity: 0.7;
+      background: var(--bg-main);
+      border-color: var(--accent-gold);
+      border-left: 6px solid var(--accent-gold);
+    }
+
+    .intention-card.answered .intention-title {
+      text-decoration: line-through;
+    }
+
+    .intention-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .intention-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    .intention-note {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-style: italic;
+    }
+
+    .intention-status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Cinzel', serif;
+    }
+
+    .status-waiting {
+      background: var(--secondary-light);
+      color: white;
+    }
+
+    .status-answered {
+      background: var(--accent-gold);
+      color: var(--primary-dark);
+    }
+
+    .intention-dates {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .intention-actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .intention-counter {
+      text-align: center;
+      padding: 1.25rem 0;
+      margin: 1rem 0;
+      border-top: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .counter-today {
+      display: block;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+      font-family: 'Cinzel', serif;
+    }
+
+    .counter-label {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.5rem;
+    }
+
+    .counting-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    .btn-count {
+      padding: 1.25rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: 2px solid var(--border-dark);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Cinzel', serif;
+    }
+
+    .btn-count:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .btn-count-minus {
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    .btn-count-minus:hover {
+      background: var(--accent-rose);
+      color: white;
+    }
+
+    .btn-count-1 {
+      font-size: 1.75rem;
+      border-color: var(--secondary);
+      color: var(--secondary);
+    }
+
+    .btn-count-1:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-count-10 {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-count-10:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-count-100 {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .btn-count-100:hover {
+      background: var(--accent-gold);
+      color: white;
+    }
+
+    /* === NOVENAS === */
+    .novena-card {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px var(--shadow);
+      border: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .novena-card.answered {
+      opacity: 0.6;
+      background: var(--bg-main);
+    }
+
+    .novena-card.answered .novena-title {
+      text-decoration: line-through;
+    }
+
+    .novena-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .novena-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    .novena-for {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-style: italic;
+    }
+
+    .novena-actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .novena-progress {
+      margin: 1rem 0;
+    }
+
+    .novena-progress-bar {
+      background: var(--border);
+      border-radius: 12px;
+      height: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .novena-progress-fill {
+      background: var(--secondary);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .novena-progress-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+
+    .novena-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 2px solid var(--border);
+    }
+
+    .novena-dates {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .btn-check-in {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+
+    .btn-check-in:disabled {
+      background: var(--text-muted);
+      border-color: var(--text-secondary);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* === CHARTS === */
+    .chart-container {
+      position: relative;
+      height: 350px;
+      width: 100%;
+      background: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px var(--shadow);
+      border: 2px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    
+    /* === NEW: WAY OF THE CROSS === */
+    .way-of-cross-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    .station-card {
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .station-card:hover {
+        border-color: var(--primary);
+    }
+    .station-card.checked {
+        background: var(--bg-main);
+        border-color: var(--secondary);
+    }
+    .station-checkbox {
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--border-dark);
+        border-radius: 4px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: white;
+        background: var(--bg-card);
+        transition: all 0.2s ease;
+        margin-top: 0.25rem;
+    }
+    .station-card.checked .station-checkbox {
+        background: var(--secondary);
+        border-color: var(--secondary);
+    }
+    .station-content {
+        flex: 1;
+    }
+    .station-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+    .station-description {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    /* === NEW: CONTEMPLATION === */
+    .contemplation-timer {
+        background: var(--bg-card);
+        border: 2px solid var(--border-dark);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px var(--shadow);
+        margin-bottom: 2rem;
+    }
+    .stopwatch-display {
+        font-size: 4rem;
+        font-weight: 700;
+        color: var(--primary);
+        font-family: 'Cinzel', serif;
+        margin: 1rem 0;
+    }
+    .stopwatch-controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    .preset-timers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--border);
+    }
+    .timer-countdown {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary);
+        font-family: 'Cinzel', serif;
+        margin: 1rem 0;
+    }
+
+    /* === MODALS === */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-overlay);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 8px;
+      max-width: 550px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px var(--shadow-lg);
+      border: 2px solid var(--border-dark);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 1.75rem;
+      color: var(--primary);
+    }
+
+    .modal form {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.875rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: 0.875rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: 'Cormorant Garamond', serif;
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      border-top: 2px solid var(--border);
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+    }
+
+    /* === TOAST === */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--text-primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px var(--shadow-lg);
+      font-weight: 600;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-success {
+      background: var(--secondary);
+    }
+
+    .toast-error {
+      background: var(--accent-rose);
+      color: white;
+    }
+
+    /* === EMPTY STATES === */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state p {
+      font-size: 1.25rem;
+      font-style: italic;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+      }
+
+      .app-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .prayer-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .counting-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .btn-count-1 { grid-column: span 2; } /* Make +1 full width on small screens */
+
+    }
+  </style>
+</head>
+<body>
+  <!-- PIN SCREEN -->
+  <div id="pinScreen" class="screen active">
+    <div class="pin-container">
+      <h1>Littlest Way</h1>
+      <p class="pin-subtitle">Prayer Tracker</p>
+      <div class="pin-input-group">
+        <input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off" />
+        <button id="pinSubmit" class="btn btn-primary">Unlock</button>
+      </div>
+      <p class="pin-hint">Enter your 6-digit PIN</p>
+    </div>
+  </div>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading your prayers...</p>
+    </div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="appScreen" class="screen">
+    <header class="app-header">
+      <div class="header-content">
+        <h1>Littlest Way</h1>
+        <div class="header-actions">
+          <button id="themeToggle" class="btn-icon" title="Toggle theme">
+            <span class="theme-icon">☾</span>
+          </button>
+        </div>
+      </div>
+      <nav class="app-nav">
+        <button class="nav-link active" data-view="dailyView">Daily</button>
+        <button class="nav-link" data-view="contemplationView">Contemplation</button>
+        <button class="nav-link" data-view="wayOfCrossView">Way of Cross</button>
+        <button class="nav-link" data-view="rosaryView">Rosary</button>
+        <button class="nav-link" data-view="intentionsView">Intentions</button>
+        <button class="nav-link" data-view="novenasView">Novenas</button>
+        <button class="nav-link" data-view="readingView">Reading</button>
+        <button class="nav-link" data-view="historyView">History</button>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <!-- DAILY VIEW (Replaces Today) -->
+      <div id="dailyView" class="app-view active">
+      
+        <!-- NEW: Date Navigator -->
+        <div class="date-navigator">
+            <button id="prevDayBtn" class="btn btn-outline">‹</button>
+            <div class="date-picker-group">
+                <input type="date" id="datePicker" />
+                <button id="todayBtn" class="btn btn-link">Go to Today</button>
+            </div>
+            <button id="nextDayBtn" class="btn btn-outline">›</button>
+        </div>
+
+        <!-- Streak Card -->
+        <div class="streak-card">
+          <span class="streak-flame">🕯</span>
+          <div class="streak-count" id="streakCount">0</div>
+          <div class="streak-label">Day Streak</div>
+        </div>
+
+        <!-- Daily Summary -->
+        <section class="daily-summary">
+          <h3 class="summary-title" id="summaryTitle">Today's Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <h4>Intentions</h4>
+              <p class="summary-count" id="tallyIntentionCount">0</p>
+            </div>
+            <div class="summary-item">
+              <h4>Devotions</h4>
+              <p class="summary-count" id="tallyDevotionCount">0</p>
+            </div>
+            <div class="summary-item">
+              <h4>Hours</h4>
+              <p class="summary-count" id="tallyHourCount">0</p>
+            </div>
+          </div>
+
+          <div class="goal-section">
+            <div class="goal-header">
+              <h4>Daily Intention Goal</h4>
+              <button id="setGoalBtn" class="btn-link">(Set Goal)</button>
+            </div>
+            <p class="goal-numbers">
+              <span id="tallyGoalCount">0</span> / <span id="tallyGoalTarget">100</span>
+            </p>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" id="goalProgressFill"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rosary -->
+        <section class="prayer-section">
+          <h3>Rosary</h3>
+          <div class="prayer-grid" id="rosaryGrid"></div>
+        </section>
+
+        <!-- Devotions -->
+        <section class="prayer-section">
+          <h3>Devotions & Chaplets</h3>
+          <div class="prayer-grid" id="devotionsGrid"></div>
+        </section>
+
+        <!-- Liturgy of the Hours -->
+        <section class="prayer-section">
+          <h3>Liturgy of the Hours</h3>
+          <div class="prayer-grid">
+            <button class="btn-child-prayer" data-type="breviary" data-key="matins">Matins</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="lauds">Lauds</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="terce">Terce</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="sext">Sext</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="none">None</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="vespers">Vespers</button>
+            <button class="btn-child-prayer" data-type="breviary" data-key="compline">Compline</button>
+          </div>
+        </section>
+      </div>
+      
+      <!-- NEW: CONTEMPLATION VIEW -->
+      <div id="contemplationView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">Contemplative Prayer</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-style: italic;">
+          "Be still and know that I am God." — Psalm 46:10
+        </p>
+
+        <div class="contemplation-timer">
+            <h3 class="summary-title">Stopwatch</h3>
+            <div class="stopwatch-display" id="stopwatchDisplay">00:00:00</div>
+            <div class="stopwatch-controls">
+                <button id="stopwatchStartBtn" class="btn btn-primary">Start</button>
+                <button id="stopwatchStopBtn" class="btn btn-secondary">Stop & Log</button>
+            </div>
+            <p class="summary-count" style="font-size: 1.5rem;" id="contemplationTotalToday">Total Logged Today: 0m 0s</p>
+        </div>
+        
+        <div class="contemplation-timer">
+            <h3 class="summary-title">Preset Timer</h3>
+            <div id="countdownTimerSection" style="display: none;">
+                <div class="timer-countdown" id="countdownDisplay">10:00</div>
+                <button id="cancelTimerBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+            <div class="preset-timers" id="presetTimerSection">
+                <button class="btn btn-outline" data-minutes="1">1 min</button>
+                <button class="btn btn-outline" data-minutes="5">5 min</button>
+                <button class="btn btn-outline" data-minutes="10">10 min</button>
+                <button class="btn btn-outline" data-minutes="20">20 min</button>
+                <button class="btn btn-outline" data-minutes="30">30 min</button>
+            </div>
+        </div>
+      </div>
+      
+      <!-- NEW: WAY OF THE CROSS VIEW -->
+      <div id="wayOfCrossView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">Way of the Cross</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-style: italic;">
+          "We adore you, O Christ, and we bless you, because by your holy cross you have redeemed the world."
+        </p>
+        <button id="completeWayOfCrossBtn" class="btn btn-primary btn-add">Mark All 14 Stations Complete</button>
+        <div class="way-of-cross-grid" id="wayOfCrossGrid">
+            <!-- Stations will be rendered here by JS -->
+        </div>
+      </div>
+
+      <!-- COVERT ROSARY VIEW -->
+      <div id="rosaryView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary); text-align: center;">Covert Rosary</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; text-align: center; font-style: italic;">
+          Pray discreetly during meetings or commutes
+        </p>
+        
+        <div class="covert-rosary-container">
+          <h3 class="covert-title" id="covertMysteryTitle">First Mystery</h3>
+          <p class="covert-mystery" id="covertMysteryName">The Annunciation</p>
+          
+          <div class="covert-counter" id="covertCounter">0</div>
+          <p class="covert-label">Hail Marys</p>
+          
+          <div class="covert-progress" id="covertProgress"></div>
+          
+          <div class="covert-buttons">
+            <button class="btn-covert" id="covertIncrement">+</button>
+            <button class="btn-covert" id="covertReset">↻</button>
+          </div>
+          
+          <select class="covert-mystery-select" id="covertMysterySelect">
+            <option value="joyful">Joyful Mysteries</option>
+            <option value="luminous">Luminous Mysteries</option>
+            <option value="sorrowful">Sorrowful Mysteries</option>
+            <option value="glorious">Glorious Mysteries</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- INTENTIONS VIEW -->
+      <div id="intentionsView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">Prayer Intentions</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-style: italic;">
+          Track your active and answered prayer intentions
+        </p>
+        
+        <button id="addIntentionBtn" class="btn btn-primary btn-add">Add New Intention</button>
+        
+        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-secondary);">Active Intentions</h3>
+        <div id="intentionsList" class="intentions-list"></div>
+        
+        <h3 style="font-size: 1.5rem; margin: 2rem 0 1rem; color: var(--text-secondary);">Answered Prayers</h3>
+        <div id="answeredIntentionsList" class="intentions-list"></div>
+      </div>
+
+      <!-- NOVENAS VIEW -->
+      <div id="novenasView" class="app-view">
+        <button id="addNovenaBtn" class="btn btn-primary btn-add">Add New Novena</button>
+        <div id="novenasList" class="novenas-list"></div>
+      </div>
+
+      <!-- READING VIEW -->
+      <div id="readingView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">Spiritual Reading</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-style: italic;">
+          Track your daily spiritual reading practice
+        </p>
+        
+        <section class="prayer-section">
+          <h3>Today's Reading</h3>
+          <div class="prayer-grid">
+            <button class="btn-child-prayer" data-type="reading" data-key="scripture">Sacred Scripture</button>
+            <button class="btn-child-prayer" data-type="reading" data-key="lectio">Lectio Divina</button>
+            <button class="btn-child-prayer" data-type="reading" data-key="carmelite">Carmelite Reading</button>
+            <button class="btn-child-prayer" data-type="reading" data-key="spiritual">Other Spiritual</button>
+          </div>
+        </section>
+
+        <!-- Reading History -->
+        <section class="prayer-section">
+          <h3>Reading History (Last 30 Days)</h3>
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="readingChart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- HISTORY VIEW -->
+      <div id="historyView" class="app-view">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">Prayer History</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Prayer categories over the last 30 days</p>
+        <div class="chart-container">
+          <canvas id="historyChart"></canvas>
+        </div>
+        
+        <!-- NEW: EXPORT BUTTON -->
+        <section class="prayer-section">
+            <h3>Data Export</h3>
+            <button id="exportDataBtn" class="btn btn-primary">Export All Data as JSON</button>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- INTENTION MODAL -->
+  <div id="intentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Intention</h2>
+        <button class="btn-icon" id="closeModal">×</button>
+      </div>
+      <form id="intentionForm">
+        <div class="form-group">
+          <label for="intentionTitle">Title *</label>
+          <input type="text" id="intentionTitle" required maxlength="100" placeholder="e.g., For my family" />
+        </div>
+        <div class="form-group">
+          <label for="intentionNote">Note (optional)</label>
+          <textarea id="intentionNote" rows="3" maxlength="500" placeholder="Additional details..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelIntentionModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOVENA MODAL -->
+  <div id="novenaModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="novenaModalTitle">Add Novena</h2>
+        <button class="btn-icon" id="closeNovenaModal">×</button>
+      </div>
+      <form id="novenaForm">
+        <div class="form-group">
+          <label for="novenaTitle">Novena Title *</label>
+          <input type="text" id="novenaTitle" required maxlength="100" placeholder="e.g., Divine Mercy Novena" />
+        </div>
+        <div class="form-group">
+          <label for="novenaFor">Intention *</label>
+          <textarea id="novenaFor" rows="2" maxlength="500" placeholder="e.g., For the conversion of sinners"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="novenaType">Type *</label>
+          <select id="novenaType" required>
+            <option value="9">9-Day</option>
+            <option value="54">54-Day (Rosary)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="novenaStartDate">Start Date *</label>
+          <input type="date" id="novenaStartDate" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelNovenaModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Novena</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ANSWERED PRAYER MODAL -->
+  <div id="answeredModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Prayer Answered!</h2>
+        <button class="btn-icon" id="closeAnsweredModal">×</button>
+      </div>
+      <form id="answeredForm">
+        <input type="hidden" id="answeredIntentionId" />
+        <div class="form-group">
+          <label for="answeredTestimony">Share your testimony (optional)</label>
+          <textarea id="answeredTestimony" rows="5" maxlength="1000" placeholder="How did God answer this prayer? What did you learn?"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelAnsweredModal">Skip</button>
+          <button type="submit" class="btn btn-primary">Save Testimony</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DEVOTION INTENTION MODAL -->
+  <div id="devotionIntentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Set Devotion Intention</h2>
+        <button class="btn-icon" id="closeDevotionIntentionModal">×</button>
+      </div>
+      <form id="devotionIntentionForm">
+        <input type="hidden" id="devotionKey" />
+        <div class="form-group">
+          <label for="devotionIntentionText">Prayer Intention (optional)</label>
+          <textarea id="devotionIntentionText" rows="3" maxlength="200" placeholder="e.g., For my mother's health"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelDevotionIntentionModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    // === CARMELITE QUOTES (from user file) ===
+    const carmeliteQuotes = [
+      { text: "Miss no single opportunity of making some small sacrifice, here by a smiling look, there by a kindly word; always doing the smallest right and doing it all for love.", author: "St. Thérèse of Lisieux" },
+      { text: "The splendor of the rose and the whiteness of the lily do not rob the little violet of its scent nor the daisy of its simple charm.", author: "St. Thérèse of Lisieux" },
+      { text: "Let nothing disturb you, let nothing frighten you. All things pass away: God never changes.", author: "St. Teresa of Ávila" },
+      { text: "Prayer is nothing else than being on terms of friendship with God.", author: "St. Teresa of Ávila" },
+      { text: "In the evening of life, we will be judged on love alone.", author: "St. John of the Cross" },
+    ];
+    
+    // === ROSARY MYSTERIES (from user file) ===
+    const rosaryMysteries = {
+      joyful: ["The Annunciation", "The Visitation", "The Nativity", "The Presentation", "Finding in the Temple"],
+      luminous: ["Baptism in the Jordan", "Wedding at Cana", "Proclamation of the Kingdom", "The Transfiguration", "Institution of the Eucharist"],
+      sorrowful: ["Agony in the Garden", "Scourging at the Pillar", "Crowning with Thorns", "Carrying of the Cross", "The Crucifixion"],
+      glorious: ["The Resurrection", "The Ascension", "Descent of the Holy Spirit", "Assumption of Mary", "Coronation of Mary"]
+    };
+
+    // === DEVOTIONS (from user file) ===
+    const devotions = {
+      rosary: [
+        { key: 'joyful', name: 'Joyful Mysteries' },
+        { key: 'luminous', name: 'Luminous Mysteries' },
+        { key: 'sorrowful', name: 'Sorrowful Mysteries' },
+        { key: 'glorious', name: 'Glorious Mysteries' }
+      ],
+      devotions: [
+        { key: 'sevenSorrows', name: 'Seven Sorrows' },
+        { key: 'divineMercy', name: 'Divine Mercy' },
+        { key: 'holyFace', name: 'Holy Face' },
+        { key: 'holyWounds', name: 'Holy Wounds' },
+        { key: 'litanyJoseph', name: 'Litany of St. Joseph' },
+        { key: 'litanyLoretto', name: 'Litany of Loretto' }
+      ]
+    };
+    
+    // === NEW: WAY OF THE CROSS ===
+    const wayOfCrossStations = [
+        "I. Jesus is condemned to death",
+        "II. Jesus carries His cross",
+        "III. Jesus falls the first time",
+        "IV. Jesus meets His Mother",
+        "V. Simon of Cyrene helps Jesus",
+        "VI. Veronica wipes the face of Jesus",
+        "VII. Jesus falls the second time",
+        "VIII. Jesus meets the women of Jerusalem",
+        "IX. Jesus falls the third time",
+        "X. Jesus is stripped of His garments",
+        "XI. Jesus is nailed to the cross",
+        "XII. Jesus dies on the cross",
+        "XIII. Jesus is taken down from the cross",
+        "XIV. Jesus is laid in the tomb"
+    ];
+
+    // === Firebase Config ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8h3coWuE2erx7QGQQkykproMDJsg3CUo",
+      authDomain: "littlest-7ffe5.firebaseapp.com",
+      databaseURL: "https://littlest-7ffe5-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "littlest-7ffe5",
+      storageBucket: "littlest-7ffe5.appspot.com",
+      messagingSenderId: "97338367295",
+      appId: "1:97338367295:web:5e1075caf990514a77078a"
+    };
+
+    const CORRECT_PIN = "332211";
+    
+    // === NEW: Date Management ===
+    let viewingDate = new Date();
+    viewingDate.setHours(0, 0, 0, 0);
+    let viewingDateString = viewingDate.toISOString().slice(0, 10);
+    const todayString = new Date().toISOString().slice(0, 10);
+
+    let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
+    let getDatabase, ref, push, set, update, onValue, increment, get, query, orderByKey, limitToLast;
+    
+    let app, auth, db, currentUser;
+    let activeIntentions = {};
+    let activeNovenas = {};
+    let todayDailyData = {}; // This will now hold data for the `viewingDate`
+    let globalSettings = { dailyGoal: 100 };
+    let streakData = { currentStreak: 0, lastPrayerDate: null };
+    let historyChart, consistencyChart, readingChart, massChart;
+    let covertRosaryState = { mysteryType: 'joyful', mysteryIndex: 0, beadCount: 0 };
+    
+    // === NEW: Contemplation Timer State ===
+    let stopwatchInterval = null;
+    let stopwatchStartTime = 0;
+    let stopwatchPausedTime = 0;
+    let presetTimerInterval = null;
+    let presetTimerEndTime = 0;
+    let audioCtx = null; // For timer sound
+
+    // === Helper Functions ===
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add("show"), 10);
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => container.removeChild(toast), 300);
+      }, 3000);
+    }
+
+    function showScreen(id) {
+      ["pinScreen", "loadingScreen", "appScreen"].forEach(s =>
+        document.getElementById(s).classList.remove("active")
+      );
+      document.getElementById(id).classList.add("active");
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // === NEW: Format Timer (Stopwatch) ===
+    function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    // === NEW: Format Minutes/Seconds (Countdown) ===
+    function formatMinutesSeconds(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    // === NEW: Gentle Chime for Timer ===
+    function playTimerChime() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.1); // Fade in
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1); // Fade out
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 1);
+    }
+
+    // === Daily Quote ===
+    function displayDailyQuote() {
+      const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const quote = carmeliteQuotes[dayOfYear % carmeliteQuotes.length];
+    }
+
+    // === Streak Calculation ===
+    function calculateStreak() {
+      const lastDate = streakData.lastPrayerDate;
+      if (!lastDate) {
+        streakData.currentStreak = 0;
+      } else {
+          const lastPrayerDate = new Date(lastDate);
+          lastPrayerDate.setHours(0, 0, 0, 0);
+          const todayDateOnly = new Date(todayString); // Use normalized today string
+          const daysDiff = Math.floor((todayDateOnly - lastPrayerDate) / 86400000);
+
+          if (daysDiff === 0) {
+              // Already prayed today, streak is current
+          } else if (daysDiff === 1) {
+              // Last prayer was yesterday, streak is current
+          } else {
+              // Missed a day
+              streakData.currentStreak = 0;
+          }
+      }
+      document.getElementById("streakCount").textContent = streakData.currentStreak;
+    }
+
+    async function updateStreak() {
+        // This function should only run if we are viewing *today's* data
+        if (viewingDateString !== todayString) return;
+
+        const hasAnyPrayer =
+            (todayDailyData.intentionsTotal && todayDailyData.intentionsTotal > 0) ||
+            countDevotions() > 0 ||
+            countBreviaryToggled(todayDailyData.breviary) > 0 ||
+            (todayDailyData.contemplationTotal && todayDailyData.contemplationTotal > 0);
+
+        if (hasAnyPrayer && streakData.lastPrayerDate !== todayString) {
+            const todayDateOnly = new Date(todayString);
+            const lastDate = streakData.lastPrayerDate ? new Date(streakData.lastPrayerDate) : null;
+            let newStreak = 1;
+            
+            if (lastDate) {
+                lastDate.setHours(0, 0, 0, 0);
+                const daysDiff = Math.floor((todayDateOnly - lastDate) / 86400000);
+                if (daysDiff === 1) {
+                    newStreak = streakData.currentStreak + 1; // Increment
+                } else if (daysDiff === 0) {
+                    newStreak = streakData.currentStreak; // Already counted
+                }
+            }
+            
+            // Save new streak to Firebase
+            await update(ref(db, `users/${currentUser.uid}/streak`), {
+                currentStreak: newStreak,
+                lastPrayerDate: todayString
+            });
+            // onValue listener will update the state
+        }
+    }
+
+    // === Goal Setting ===
+    window.setDailyGoal = async () => {
+      const currentGoal = globalSettings.dailyGoal;
+      const newGoal = prompt("Set your new daily intention prayer goal:", currentGoal);
+      if (newGoal === null || newGoal.trim() === "") return;
+      const goalNum = parseInt(newGoal, 10);
+      if (isNaN(goalNum) || goalNum < 1) {
+        return showToast("Please enter a valid number.", "error");
+      }
+      try {
+        await set(ref(db, `users/${currentUser.uid}/settings/dailyGoal`), goalNum);
+        showToast("Goal updated!");
+      } catch (e) {
+        showToast("Error updating goal: " + e.message, "error");
+      }
+    };
+
+    // === Devotion Rendering ===
+    function renderDevotions() {
+      const rosaryGrid = document.getElementById("rosaryGrid");
+      const devotionsGrid = document.getElementById("devotionsGrid");
+      
+      const rosaryCounts = todayDailyData.rosaryCounts || {};
+      const devotionCounts = todayDailyData.devotionCounts || {};
+      const devotionIntentions = todayDailyData.devotionIntentions || {};
+      
+      rosaryGrid.innerHTML = devotions.rosary.map(dev => `
+        <div class="devotion-card">
+          <div class="devotion-name">${dev.name}</div>
+          <div class="devotion-count">${rosaryCounts[dev.key] || 0}</div>
+          <div class="devotion-buttons">
+            <button class="btn-devotion btn-devotion-minus" onclick="window.adjustDevotion('rosary', '${dev.key}', -1)">−</button>
+            <button class="btn-devotion btn-devotion-plus" onclick="window.adjustDevotion('rosary', '${dev.key}', 1)">+</button>
+          </div>
+          <div class="devotion-intention">
+            ${devotionIntentions['rosary_' + dev.key] || ''}
+          </div>
+          <button class="btn btn-link btn-set-intention" onclick="window.setDevotionIntention('rosary', '${dev.key}')">Set Intention</button>
+        </div>
+      `).join('');
+      
+      devotionsGrid.innerHTML = devotions.devotions.map(dev => `
+        <div class="devotion-card">
+          <div class="devotion-name">${dev.name}</div>
+          <div class="devotion-count">${devotionCounts[dev.key] || 0}</div>
+          <div class="devotion-buttons">
+            <button class="btn-devotion btn-devotion-minus" onclick="window.adjustDevotion('devotions', '${dev.key}', -1)">−</button>
+            <button class="btn-devotion btn-devotion-plus" onclick="window.adjustDevotion('devotions', '${dev.key}', 1)">+</button>
+          </div>
+          <div class="devotion-intention">
+            ${devotionIntentions['devotions_' + dev.key] || ''}
+          </div>
+          <button class="btn btn-link btn-set-intention" onclick="window.setDevotionIntention('devotions', '${dev.key}')">Set Intention</button>
+        </div>
+      `).join('');
+    }
+
+    window.adjustDevotion = async (type, key, delta) => {
+      const path = `dailyData/${viewingDateString}/${type}Counts/${key}`;
+      await update(ref(db, `users/${currentUser.uid}`), { [path]: increment(delta) });
+      showToast(delta > 0 ? "Devotion added" : "Devotion adjusted");
+    };
+
+    window.setDevotionIntention = (type, key) => {
+      const intentionKey = `${type}_${key}`;
+      const current = todayDailyData.devotionIntentions?.[intentionKey] || '';
+      document.getElementById('devotionKey').value = intentionKey;
+      document.getElementById('devotionIntentionText').value = current;
+      document.getElementById('devotionIntentionModal').classList.add('active');
+    };
+
+    // === Covert Rosary ===
+    function updateCovertRosary() {
+      const mysteries = rosaryMysteries[covertRosaryState.mysteryType];
+      const mysteryIndex = covertRosaryState.mysteryIndex;
+      const beadCount = covertRosaryState.beadCount;
+      
+      document.getElementById("covertMysteryTitle").textContent = 
+        `${['First', 'Second', 'Third', 'Fourth', 'Fifth'][mysteryIndex]} Mystery`;
+      document.getElementById("covertMysteryName").textContent = mysteries[mysteryIndex];
+      document.getElementById("covertCounter").textContent = beadCount;
+      
+      const progressDiv = document.getElementById("covertProgress");
+      progressDiv.innerHTML = Array(10).fill(0).map((_, i) => 
+        `<div class="bead ${i < beadCount ? 'prayed' : ''}"></div>`
+      ).join('');
+    }
+
+    // === PIN Handler ===
+    document.getElementById("pinSubmit").addEventListener("click", handlePINSubmit);
+    document.getElementById("pinInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handlePINSubmit();
+    });
+
+    async function handlePINSubmit() {
+      const pin = document.getElementById("pinInput").value.trim();
+      if (pin === CORRECT_PIN) {
+        showScreen("loadingScreen");
+        await initializeFirebase();
+      } else {
+        showToast("Incorrect PIN.", "error");
+        document.getElementById("pinInput").value = "";
+      }
+    }
+
+    // === ***** CRITICAL FIREBASE FIX ***** ===
+    // This is the function that was missing Auth.
+    async function initializeFirebase() {
+      try {
+        ({ initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"));
+        // ADDED AUTH
+        ({ getAuth, signInAnonymously, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"));
+        ({ getDatabase, ref, push, set, update, onValue, increment, get, query, orderByKey, limitToLast } =
+          await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"));
+          
+        app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        auth = getAuth(app); // ADDED
+
+        // ADDED Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log("Firebase Auth Success. User UID:", user.uid);
+                setupApp(); // Setup app *after* user is signed in
+            } else {
+                console.log("Firebase Auth Failed. Signing in anonymously...");
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Anonymous sign-in error", error);
+                    showToast("Could not connect to database.", "error");
+                });
+            }
+        });
+
+        // Try to sign in if no user
+        if (!auth.currentUser) {
+            await signInAnonymously(auth);
+        }
+
+      } catch (error) {
+        console.error("Firebase Init Error:", error);
+        showToast("Error loading app. Run from a local server.", "error");
+        showScreen("pinScreen");
+      }
+    }
+
+    // === App Setup ===
+    function setupApp() {
+      showScreen("appScreen");
+      
+      // NEW: Set date picker to viewing date
+      document.getElementById("datePicker").value = viewingDateString;
+      document.getElementById("novenaStartDate").value = viewingDateString;
+
+      displayDailyQuote();
+      setupUIListeners();
+      
+      // Load all data
+      loadSettings();
+      loadStreak();
+      loadIntentions();
+      loadNovenas();
+      loadDailyData(viewingDateString); // Load for the current viewing date
+      updateCovertRosary();
+      renderWayOfCross();
+    }
+
+    // === Data Loading ===
+    function loadSettings() {
+      if (!currentUser) return;
+      const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+      onValue(settingsRef, (snapshot) => {
+        const s = snapshot.val() || {};
+        globalSettings.dailyGoal = s.dailyGoal ? parseInt(s.dailyGoal, 10) : 100;
+        updateDailyTally();
+      });
+    }
+
+    function loadStreak() {
+      if (!currentUser) return;
+      const streakRef = ref(db, `users/${currentUser.uid}/streak`);
+      onValue(streakRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        streakData.currentStreak = data.currentStreak || 0;
+        streakData.lastPrayerDate = data.lastPrayerDate || null;
+        calculateStreak();
+      });
+    }
+
+    function loadIntentions() {
+      if (!currentUser) return;
+      const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
+      const ordered = query(intentionsRef, orderByKey());
+      onValue(ordered, (snapshot) => {
+        activeIntentions = {};
+        const data = snapshot.val() || {};
+        for (const [id, item] of Object.entries(data)) {
+          if (!item.deleted) activeIntentions[id] = { ...item, id };
+        }
+        renderIntentions();
+        updateIntentionCounts();
+      });
+    }
+
+    function loadNovenas() {
+      if (!currentUser) return;
+      const novenasRef = ref(db, `users/${currentUser.uid}/novenas`);
+      const ordered = query(novenasRef, orderByKey());
+      onValue(ordered, (snapshot) => {
+        activeNovenas = {};
+        const data = snapshot.val() || {};
+        for (const [id, item] of Object.entries(data)) {
+          if (!item.deleted) activeNovenas[id] = { ...item, id };
+        }
+        renderNovenas();
+      });
+    }
+
+    // MODIFIED: This now loads data for the `viewingDateString`
+    function loadDailyData(dateString) {
+      if (!currentUser) return;
+      const dailyRef = ref(db, `users/${currentUser.uid}/dailyData/${dateString}`);
+      onValue(dailyRef, (snapshot) => {
+        todayDailyData = snapshot.val() || {};
+        
+        // Update all UI elements with this date's data
+        updateBreviaryToggles();
+        updateReadingToggles();
+        updateIntentionCounts();
+        updateDailyTally();
+        if (dateString === todayString) {
+            updateStreak(); // Only update streak if we're viewing today
+        }
+        renderNovenas();
+        renderDevotions();
+        renderWayOfCross();
+        updateContemplationUI();
+      });
+    }
+    
+    // Helper to count true values
+    const countTrue = (obj) => obj ? Object.values(obj).filter(Boolean).length : 0;
+
+    async function loadHistoryData() {
+      if (!currentUser) return;
+      const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
+      const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
+      const snapshot = await get(historyQuery);
+      const data = snapshot.val() || {};
+      
+      const labels = [];
+      const intentionData = [];
+      const devotionData = [];
+      const hourData = [];
+      
+      for (const [date, dailyData] of Object.entries(data)) {
+        labels.push(date.substring(5));
+        const intentions = dailyData.intentionsTotal || 0;
+        
+        let devotions = 0;
+        const rosaryCounts = dailyData.rosaryCounts || {};
+        const devotionCounts = dailyData.devotionCounts || {};
+        Object.values(rosaryCounts).forEach(count => devotions += count || 0);
+        Object.values(devotionCounts).forEach(count => devotions += count || 0);
+        
+        const hours = countBreviaryToggled(dailyData.breviary);
+        
+        intentionData.push(intentions);
+        devotionData.push(devotions);
+        hourData.push(hours);
+      }
+
+      renderHistoryChart(labels, intentionData, devotionData, hourData);
+    }
+
+    async function loadReadingData() {
+      if (!currentUser) return;
+      const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
+      const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
+      const snapshot = await get(historyQuery);
+      const data = snapshot.val() || {};
+      
+      const labels = [];
+      const scripture = [];
+      const lectio = [];
+      const carmelite = [];
+      const spiritual = [];
+
+      for (const [date, dailyData] of Object.entries(data)) {
+        labels.push(date.substring(5));
+        scripture.push(dailyData.reading?.scripture ? 1 : 0);
+        lectio.push(dailyData.reading?.lectio ? 1 : 0);
+        carmelite.push(dailyData.reading?.carmelite ? 1 : 0);
+        spiritual.push(dailyData.reading?.spiritual ? 1 : 0);
+      }
+
+      renderReadingChart(labels, scripture, lectio, carmelite, spiritual);
+    }
+
+    // === Rendering ===
+    function renderIntentions() {
+      const activeList = document.getElementById("intentionsList");
+      const answeredList = document.getElementById("answeredIntentionsList");
+      
+      const active = Object.values(activeIntentions).filter(i => !i.answered);
+      const answered = Object.values(activeIntentions).filter(i => i.answered);
+      
+      if (active.length === 0) {
+        activeList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✟</div><p>No active intentions</p></div>`;
+      } else {
+        activeList.innerHTML = active.map(intention => `
+          <div class="intention-card" data-id="${intention.id}">
+            <div class="intention-header">
+              <div class="intention-info">
+                <span class="intention-status status-waiting">Waiting</span>
+                <h3 class="intention-title">${escapeHtml(intention.title)}</h3>
+                ${intention.note ? `<p class="intention-note">${escapeHtml(intention.note)}</p>` : ""}
+                <p class="intention-dates">
+                  Started: ${new Date(intention.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <div class="intention-actions">
+                <button class="btn-icon" onclick="window.markIntentionAnswered('${intention.id}')" title="Mark as Answered">✓</button>
+                <button class="btn-icon" onclick="window.deleteIntention('${intention.id}')" title="Delete">×</button>
+              </div>
+            </div>
+            <div class="intention-counter">
+              <span class="counter-today" data-counter-id="${intention.id}">0</span>
+              <span class="counter-label">prayers on ${viewingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            </div>
+            <div class="counting-buttons">
+              <button class="btn-count btn-count-minus" onclick="window.addCount('${intention.id}', -1)">−</button>
+              <button class="btn-count btn-count-1" onclick="window.addCount('${intention.id}', 1)">+1</button>
+              <button class="btn-count btn-count-10" onclick="window.addCount('${intention.id}', 10)">+10</button>
+              <button class="btn-count btn-count-100" onclick="window.addCount('${intention.id}', 100)">+100</button>
+            </div>
+          </div>
+        `).join("");
+      }
+      
+      if (answered.length === 0) {
+        answeredList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✟</div><p>Answered prayers will appear here</p></div>`;
+      } else {
+        answeredList.innerHTML = answered.map(intention => `
+          <div class="intention-card answered" data-id="${intention.id}">
+            <div class="intention-header">
+              <div class="intention-info">
+                <span class="intention-status status-answered">Answered</span>
+                <h3 class="intention-title">${escapeHtml(intention.title)}</h3>
+                ${intention.note ? `<p class="intention-note">${escapeHtml(intention.note)}</p>` : ""}
+                ${intention.testimony ? `<p style="font-style: italic; margin-top: 1rem;">${escapeHtml(intention.testimony)}</p>` : ""}
+                <p class="intention-dates">
+                  Answered: ${intention.answeredDate ? new Date(intention.answeredDate).toLocaleDateString() : 'Recently'}
+                </p>
+              </div>
+              <div class="intention-actions">
+                <button class="btn-icon" onclick="window.deleteIntention('${intention.id}')" title="Delete">×</button>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    function renderNovenas() {
+      const container = document.getElementById("novenasList");
+      const list = Object.values(activeNovenas).filter(n => !n.answered);
+      
+      if (list.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✟</div><p>No active novenas</p></div>`;
+        return;
+      }
+
+      const oneDay = 86400000;
+      const checkIns = todayDailyData.novenaCheckIns || {};
+
+      container.innerHTML = list
+        .map((novena) => {
+          const startDate = new Date(novena.startDate + "T00:00:00");
+          // Use viewingDate for "currentDay" calculation
+          const diffDays = Math.round((viewingDate - startDate) / oneDay);
+          const endDate = new Date(startDate.getTime() + (novena.type - 1) * oneDay);
+          
+          let currentDay = diffDays + 1;
+          let progressPercent = 0;
+          let label = `Day ${currentDay} of ${novena.type}`;
+          let canCheckIn = false;
+
+          if (currentDay > novena.type) {
+            label = `Completed on ${endDate.toLocaleDateString()}`;
+            progressPercent = 100;
+          } else if (currentDay < 1) {
+            label = `Starts on ${startDate.toLocaleDateString()}`;
+            progressPercent = 0;
+          } else {
+            progressPercent = (currentDay / novena.type) * 100;
+            canCheckIn = true;
+          }
+
+          const isCheckedIn = checkIns[novena.id] === true;
+
+          return `
+            <div class="novena-card">
+              <div class="novena-header">
+                <div class="novena-info">
+                  <h3 class="novena-title">${escapeHtml(novena.title)}</h3>
+                  <p class="novena-for">${escapeHtml(novena.for || "")}</p>
+                </div>
+                <div class="novena-actions">
+                  <button class="btn-icon" onclick="window.markNovenaAnswered('${novena.id}')" title="Mark as Answered">✓</button>
+                  <button class="btn-icon" onclick="window.deleteNovena('${novena.id}')" title="Delete">×</button>
+                </div>
+              </div>
+              <div class="novena-progress">
+                <p class="novena-progress-label">${label}</p>
+                <div class="novena-progress-bar">
+                  <div class="novena-progress-fill" style="width:${progressPercent}%"></div>
+                </div>
+              </div>
+              <div class="novena-footer">
+                <span class="novena-dates">${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</span>
+                <button class="btn btn-check-in" onclick="window.checkInNovena('${novena.id}')" ${!canCheckIn || isCheckedIn ? "disabled" : ""}>
+                  ${isCheckedIn ? `✓ Prayed ${viewingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : `Check-in ${viewingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function updateIntentionCounts() {
+      const byIntention = todayDailyData.intentionsBy || {};
+      Object.keys(activeIntentions).forEach((id) => {
+        const count = byIntention[id] || 0;
+        const el = document.querySelector(`[data-counter-id="${id}"]`);
+        if (el) el.textContent = count;
+      });
+      // Update label on intention counters
+      document.querySelectorAll('.counter-label').forEach(el => {
+          el.textContent = `prayers on ${viewingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      });
+    }
+
+    function updateDailyTally() {
+      const intentionCount = todayDailyData.intentionsTotal || 0;
+      const devotionCount = countDevotions();
+      const hourCount = countBreviaryToggled(todayDailyData.breviary);
+
+      document.getElementById("tallyIntentionCount").textContent = intentionCount;
+      document.getElementById("tallyDevotionCount").textContent = devotionCount;
+      document.getElementById("tallyHourCount").textContent = hourCount;
+
+      const goal = globalSettings.dailyGoal;
+      document.getElementById("tallyGoalCount").textContent = intentionCount;
+      document.getElementById("tallyGoalTarget").textContent = goal;
+      const percent = Math.min(100, (intentionCount / goal) * 100);
+      document.getElementById("goalProgressFill").style.width = `${percent}%`;
+    }
+
+    function renderHistoryChart(labels, intentionData, devotionData, hourData) {
+      const ctx = document.getElementById("historyChart").getContext("2d");
+      if (historyChart) historyChart.destroy();
+      
+      const isDark = document.body.classList.contains("dark-mode");
+      const gridColor = isDark ? "rgba(255,255,255,.1)" : "rgba(0,0,0,.1)";
+      const labelColor = isDark ? "#e5e5e5" : "#2c2c2c";
+      const primary = isDark ? "rgba(212,175,55,.7)" : "rgba(139,69,19,.7)";
+      const secondary = isDark ? "rgba(90,125,125,.7)" : "rgba(47,79,79,.7)";
+      const tertiary = isDark ? "rgba(193,123,123,.7)" : "rgba(160,82,45,.7)";
+
+      historyChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Intentions", data: intentionData, backgroundColor: primary },
+            { label: "Devotions", data: devotionData, backgroundColor: secondary },
+            { label: "Hours", data: hourData, backgroundColor: tertiary }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: gridColor },
+              ticks: { color: labelColor },
+              stacked: true
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: labelColor },
+              stacked: true
+            }
+          },
+          plugins: {
+            legend: { display: true, labels: { color: labelColor } }
+          }
+        }
+      });
+    }
+
+    function renderReadingChart(labels, scripture, lectio, carmelite, spiritual) {
+      const ctx = document.getElementById("readingChart").getContext("2d");
+      if (readingChart) readingChart.destroy();
+      
+      const isDark = document.body.classList.contains("dark-mode");
+      const gridColor = isDark ? "rgba(255,255,255,.1)" : "rgba(0,0,0,.1)";
+      const labelColor = isDark ? "#e5e5e5" : "#2c2c2c";
+
+      readingChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Scripture", data: scripture, backgroundColor: "rgba(139,69,19,.7)" },
+            { label: "Lectio", data: lectio, backgroundColor: "rgba(47,79,79,.7)" },
+            { label: "Carmelite", data: carmelite, backgroundColor: "rgba(212,175,55,.7)" },
+            { label: "Other", data: spiritual, backgroundColor: "rgba(193,123,123,.7)" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1,
+              grid: { color: gridColor },
+              ticks: { color: labelColor, stepSize: 1 },
+              stacked: true
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: labelColor },
+              stacked: true
+            }
+          },
+          plugins: {
+            legend: { display: true, labels: { color: labelColor } }
+          }
+        }
+      });
+    }
+    
+    // === NEW: Render Way of the Cross ===
+    function renderWayOfCross() {
+        const container = document.getElementById("wayOfCrossGrid");
+        const stations = todayDailyData.wayOfCross || {};
+        
+        container.innerHTML = wayOfCrossStations.map((title, index) => {
+            const key = `station_${index + 1}`;
+            const isChecked = stations[key] === true;
+            return `
+            <div class="station-card ${isChecked ? 'checked' : ''}" 
+                 onclick="window.toggleStation('${key}')">
+              <div class="station-checkbox">
+                ${isChecked ? '✓' : ''}
+              </div>
+              <div class="station-content">
+                <div class="station-title">${title}</div>
+              </div>
+            </div>
+            `;
+        }).join('');
+    }
+    
+    window.toggleStation = async (key) => {
+        const currentValue = todayDailyData.wayOfCross?.[key] || false;
+        await set(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}/wayOfCross/${key}`), !currentValue);
+    };
+
+    // === Event Handlers ===
+    function setupUIListeners() {
+      // Navigation
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          const viewId = e.target.dataset.view;
+          document.querySelectorAll(".nav-link").forEach((l) => l.classList.remove("active"));
+          e.target.classList.add("active");
+          document.querySelectorAll(".app-view").forEach((v) => v.classList.remove("active"));
+          document.getElementById(viewId).classList.add("active");
+          
+          if (viewId === "historyView") loadHistoryData();
+          if (viewId === "readingView") loadReadingData();
+        });
+      });
+      
+      // === NEW: Date Navigator Listeners ===
+      document.getElementById("prevDayBtn").addEventListener("click", () => changeViewingDate(-1));
+      document.getElementById("nextDayBtn").addEventListener("click", () => changeViewingDate(1));
+      document.getElementById("todayBtn").addEventListener("click", () => changeViewingDate(0, true));
+      document.getElementById("datePicker").addEventListener("change", (e) => {
+          viewingDate = new Date(e.target.value + "T00:00:00"); // Use local time
+          viewingDateString = viewingDate.toISOString().slice(0, 10);
+          loadDailyData(viewingDateString);
+          updateDateUI();
+      });
+
+      // Breviary toggles
+      document.querySelectorAll('[data-type="breviary"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData.breviary?.[key];
+          set(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}/breviary/${key}`), newVal);
+        });
+      });
+
+      // Reading toggles
+      document.querySelectorAll('[data-type="reading"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const key = e.target.dataset.key;
+          const newVal = !todayDailyData.reading?.[key];
+          set(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}/reading/${key}`), newVal);
+        });
+      });
+
+      // Modals
+      document.getElementById("addIntentionBtn").addEventListener("click", showIntentionModal);
+      document.getElementById("closeModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("cancelIntentionModal").addEventListener("click", closeIntentionModal);
+      document.getElementById("intentionForm").addEventListener("submit", handleIntentionSubmit);
+
+      document.getElementById("addNovenaBtn").addEventListener("click", showNovenaModal);
+      document.getElementById("closeNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("cancelNovenaModal").addEventListener("click", closeNovenaModal);
+      document.getElementById("novenaForm").addEventListener("submit", handleNovenaSubmit);
+
+      document.getElementById("closeAnsweredModal").addEventListener("click", closeAnsweredModal);
+      document.getElementById("cancelAnsweredModal").addEventListener("click", () => {
+        closeAnsweredModal();
+        completeAnsweredMarking();
+      });
+      document.getElementById("answeredForm").addEventListener("submit", handleAnsweredSubmit);
+
+      document.getElementById("closeDevotionIntentionModal").addEventListener("click", closeDevotionIntentionModal);
+      document.getElementById("cancelDevotionIntentionModal").addEventListener("click", closeDevotionIntentionModal);
+      document.getElementById("devotionIntentionForm").addEventListener("submit", handleDevotionIntentionSubmit);
+
+      // Theme & Goal
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+      document.getElementById("setGoalBtn").addEventListener("click", window.setDailyGoal);
+      
+      // NEW: Way of the Cross
+      document.getElementById("completeWayOfCrossBtn").addEventListener("click", async () => {
+          if (!confirm("Mark all 14 Stations of the Cross as complete?")) return;
+          const updates = {};
+          wayOfCrossStations.forEach((_, index) => {
+              updates[`users/${currentUser.uid}/dailyData/${viewingDateString}/wayOfCross/station_${index + 1}`] = true;
+          });
+          await update(ref(db), updates);
+          showToast("Way of the Cross complete!");
+      });
+      
+      // NEW: Contemplation Timers
+      document.getElementById("stopwatchStartBtn").addEventListener("click", startStopwatch);
+      document.getElementById("stopwatchStopBtn").addEventListener("click", stopStopwatch);
+      document.querySelectorAll("#presetTimerSection .btn-outline").forEach(btn => {
+          btn.addEventListener("click", () => startPresetTimer(parseInt(btn.dataset.minutes, 10)));
+      });
+      document.getElementById("cancelTimerBtn").addEventListener("click", cancelPresetTimer);
+      
+      // NEW: Export Data
+      document.getElementById("exportDataBtn").addEventListener("click", exportData);
+    }
+    
+    // === NEW: Date Navigation Logic ===
+    function changeViewingDate(dayDelta, goToToday = false) {
+        if (goToToday) {
+            viewingDate = new Date();
+        } else {
+            viewingDate.setDate(viewingDate.getDate() + dayDelta);
+        }
+        viewingDate.setHours(0, 0, 0, 0);
+        viewingDateString = viewingDate.toISOString().slice(0, 10);
+        
+        loadDailyData(viewingDateString);
+        updateDateUI();
+    }
+    
+    function updateDateUI() {
+        document.getElementById("datePicker").value = viewingDateString;
+        
+        const isToday = (viewingDateString === todayString);
+        document.getElementById("summaryTitle").textContent = isToday ? "Today's Summary" : 
+            `${viewingDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Summary`;
+            
+        // Disable next day button if we are on today
+        document.getElementById("nextDayBtn").disabled = isToday;
+        document.getElementById("todayBtn").style.display = isToday ? 'none' : 'block';
+    }
+
+    async function handleIntentionSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("intentionTitle").value.trim();
+      const note = document.getElementById("intentionNote").value.trim();
+      if (!title) return;
+
+      const data = {
+        title,
+        note,
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        deleted: false,
+        answered: false
+      };
+
+      try {
+        await set(push(ref(db, `users/${currentUser.uid}/intentions`)), data);
+        closeIntentionModal();
+        showToast("Intention saved");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
+
+    async function handleNovenaSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("novenaTitle").value.trim();
+      const novenaFor = document.getElementById("novenaFor").value.trim();
+      const type = parseInt(document.getElementById("novenaType").value, 10);
+      const startDate = document.getElementById("novenaStartDate").value;
+      if (!title || !startDate) return;
+
+      const data = {
+        title,
+        for: novenaFor,
+        type,
+        startDate,
+        createdAt: Date.now(),
+        deleted: false,
+        answered: false
+      };
+
+      try {
+        await set(push(ref(db, `users/${currentUser.uid}/novenas`)), data);
+        closeNovenaModal();
+        showToast("Novena added");
+      } catch (error) {
+        showToast("Error: " + error.message, "error");
+      }
+    }
+
+    let pendingAnsweredId = null;
+
+    async function handleAnsweredSubmit(e) {
+      e.preventDefault();
+      const testimony = document.getElementById("answeredTestimony").value.trim();
+      const intentionId = document.getElementById("answeredIntentionId").value;
+
+      closeAnsweredModal();
+      
+      await update(ref(db, `users/${currentUser.uid}/intentions/${intentionId}`), { 
+        answered: true,
+        answeredDate: Date.now(),
+        testimony: testimony || ""
+      });
+      
+      showToast("Intention marked as answered");
+      pendingAnsweredId = null;
+    }
+
+    async function completeAnsweredMarking() {
+      if (pendingAnsweredId) {
+        await update(ref(db, `users/${currentUser.uid}/intentions/${pendingAnsweredId}`), { 
+          answered: true,
+          answeredDate: Date.now()
+        });
+        showToast("Intention marked as answered");
+        pendingAnsweredId = null;
+      }
+    }
+
+    async function handleDevotionIntentionSubmit(e) {
+      e.preventDefault();
+      const intentionKey = document.getElementById('devotionKey').value;
+      const intentionText = document.getElementById('devotionIntentionText').value.trim();
+      
+      await set(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}/devotionIntentions/${intentionKey}`), intentionText);
+      closeDevotionIntentionModal();
+      showToast("Intention saved");
+    }
+
+    // === Global Functions ===
+    window.addCount = (intentionId, delta) => {
+      const updates = {};
+      updates[`dailyData/${viewingDateString}/intentionsTotal`] = increment(delta);
+      updates[`dailyData/${viewingDateString}/intentionsBy/${intentionId}`] = increment(delta);
+      update(ref(db, `users/${currentUser.uid}`), updates);
+    };
+
+    window.checkInNovena = (novenaId) => {
+      set(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}/novenaCheckIns/${novenaId}`), true);
+    };
+
+    window.deleteIntention = async (id) => {
+      if (!confirm("Delete this intention?")) return;
+      await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { deleted: true, deletedAt: Date.now() });
+      showToast("Intention removed");
+    };
+
+    window.markIntentionAnswered = async (id) => {
+      const intention = activeIntentions[id];
+      if (!intention) return;
+      
+      pendingAnsweredId = id;
+      document.getElementById("answeredIntentionId").value = id;
+      document.getElementById("answeredTestimony").value = "";
+      document.getElementById("answeredModal").classList.add("active");
+      document.getElementById("answeredTestimony").focus();
+    };
+
+    window.deleteNovena = async (id) => {
+      if (!confirm("Delete this novena?")) return;
+      await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { deleted: true, deletedAt: Date.now() });
+      showToast("Novena removed");
+    };
+
+    window.markNovenaAnswered = async (id) => {
+      const novena = activeNovenas[id];
+      if (!novena) return;
+      
+      if (confirm(`Mark "${novena.title}" as answered?`)) {
+        await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { answered: true, answeredDate: Date.now() });
+        showToast("Novena marked as answered");
+      }
+    };
+    
+    // === NEW: Contemplation Logic ===
+    function updateContemplationUI() {
+        const totalMs = (todayDailyData.contemplationTotal || 0) * 1000;
+        const totalSeconds = Math.floor(totalMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        document.getElementById("contemplationTotalToday").textContent = `Total Logged Today: ${minutes}m ${seconds}s`;
+    }
+    
+    function startStopwatch() {
+        stopwatchStartTime = Date.now() - stopwatchPausedTime;
+        stopwatchInterval = setInterval(() => {
+            stopwatchPausedTime = Date.now() - stopwatchStartTime;
+            document.getElementById("stopwatchDisplay").textContent = formatTime(stopwatchPausedTime);
+        }, 1000);
+        document.getElementById("stopwatchStartBtn").disabled = true;
+    }
+
+    async function stopStopwatch() {
+        clearInterval(stopwatchInterval);
+        document.getElementById("stopwatchStartBtn").disabled = false;
+        
+        const elapsedSeconds = Math.floor(stopwatchPausedTime / 1000);
+        if (elapsedSeconds > 0) {
+            await update(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}`), {
+                contemplationTotal: increment(elapsedSeconds)
+            });
+            showToast(`Logged ${formatMinutesSeconds(elapsedSeconds)} of prayer.`);
+        }
+        stopwatchPausedTime = 0;
+        document.getElementById("stopwatchDisplay").textContent = "00:00:00";
+    }
+
+    function startPresetTimer(minutes) {
+        if (presetTimerInterval) clearInterval(presetTimerInterval);
+        
+        let totalSeconds = minutes * 60;
+        presetTimerEndTime = Date.now() + totalSeconds * 1000;
+
+        document.getElementById("countdownTimerSection").style.display = "block";
+        document.getElementById("presetTimerSection").style.display = "none";
+        document.getElementById("countdownDisplay").textContent = formatMinutesSeconds(totalSeconds);
+
+        presetTimerInterval = setInterval(async () => {
+            const remaining = Math.round((presetTimerEndTime - Date.now()) / 1000);
+            if (remaining <= 0) {
+                clearInterval(presetTimerInterval);
+                document.getElementById("countdownDisplay").textContent = "00:00";
+                document.getElementById("countdownTimerSection").style.display = "none";
+                document.getElementById("presetTimerSection").style.display = "flex";
+                playTimerChime();
+                showToast(`Timer complete! Logged ${minutes} min.`);
+                
+                await update(ref(db, `users/${currentUser.uid}/dailyData/${viewingDateString}`), {
+                    contemplationTotal: increment(minutes * 60)
+                });
+            } else {
+                document.getElementById("countdownDisplay").textContent = formatMinutesSeconds(remaining);
+            }
+        }, 1000);
+    }
+    
+    function cancelPresetTimer() {
+        if (presetTimerInterval) clearInterval(presetTimerInterval);
+        document.getElementById("countdownTimerSection").style.display = "none";
+        document.getElementById("presetTimerSection").style.display = "flex";
+    }
+    
+    // === NEW: Export Data Logic ===
+    async function exportData() {
+        if (!confirm("This will download a JSON file of all your prayer data. Continue?")) return;
+        
+        try {
+            const dataRef = ref(db, `users/${currentUser.uid}`);
+            const snapshot = await get(dataRef);
+            if (!snapshot.exists()) {
+                showToast("No data to export.", "error");
+                return;
+            }
+            
+            const data = snapshot.val();
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `littlest_way_export_${todayString}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast("Data export complete!");
+            
+        } catch (error) {
+            console.error("Export error:", error);
+            showToast("Failed to export data.", "error");
+        }
+    }
+
+    // === Modal Functions ===
+    function showIntentionModal() {
+      document.getElementById("modalTitle").textContent = "Add Intention";
+      document.getElementById("intentionForm").reset();
+      document.getElementById("intentionModal").classList.add("active");
+      document.getElementById("intentionTitle").focus();
+    }
+
+    function closeIntentionModal() {
+      document.getElementById("intentionModal").classList.remove("active");
+    }
+
+    function showNovenaModal() {
+      document.getElementById("novenaForm").reset();
+      document.getElementById("novenaStartDate").value = viewingDateString;
+      document.getElementById("novenaModal").classList.add("active");
+      document.getElementById("novenaTitle").focus();
+    }
+
+    function closeNovenaModal() {
+      document.getElementById("novenaModal").classList.remove("active");
+    }
+
+    function closeAnsweredModal() {
+      document.getElementById("answeredModal").classList.remove("active");
+    }
+
+    function closeDevotionIntentionModal() {
+      document.getElementById("devotionIntentionModal").classList.remove("active");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      const icon = document.querySelector(".theme-icon");
+      icon.textContent = document.body.classList.contains("dark-mode") ? "☀" : "☾";
+      
+      const currentView = document.querySelector(".app-view.active").id;
+      if (currentView === "historyView") loadHistoryData();
+      if (currentView === "readingView") loadReadingData();
+    }
+    
+    // Init functions that don't need auth
+    updateDateUI();
+
+  </script>
+</body>
+</html>
