@@ -4,29 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Littlest Way Counter</title>
-    <meta name="theme-color" content="#4a148c">
+    <meta name="theme-color" content="#5a3825">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
-        /* --- 1. "VICTORIAN" THEME --- */
+        /* --- 1. NEW "VICTORIAN SEPIA" THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap');
         
         :root {
-            --primary: #4a148c; /* Deep Purple */
-            --primary-dark: #38006b;
-            --secondary: #004d40; /* Dark Teal */
-            --secondary-dark: #00251a;
+            --primary: #5a3825; /* Sepia Ink */
+            --primary-dark: #3d2519;
+            --secondary: #5a7d5a; /* Faded Green */
+            --secondary-dark: #405d40;
             --danger: #9a0007; /* Deep Red */
-            --warning: #c0a160; /* Old Gold */
-            --bg-main: #fdfbf5; /* Cream */
+            --warning: #b4915a; /* Antique Gold */
+            --bg-main: #f5f1e8; /* Antique White */
             --bg-card: #ffffff;
-            --bg-overlay: rgba(0, 0, 0, 0.6);
-            --text-primary: #212121;
-            --text-secondary: #5a5a5a;
+            --bg-overlay: rgba(58, 58, 58, 0.6);
+            --text-primary: #3a3a3a; /* Dark Gray */
+            --text-secondary: #6s6s6s;
             --text-muted: #8d8d8d;
-            --border: #e0e0e0;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --shadow-lg: rgba(0, 0, 0, 0.15);
+            --border: #dcd1c0; /* Light Sepia */
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-lg: rgba(0, 0, 0, 0.12);
             --spacing-xs: 0.25rem;
             --spacing-sm: 0.5rem;
             --spacing-md: 1rem;
@@ -41,16 +41,16 @@
         }
 
         body.dark-mode {
-            --primary: #ab47bc;
-            --primary-dark: #9c27b0;
-            --secondary: #26a69a;
-            --secondary-dark: #00897b;
-            --warning: #ecd092;
-            --bg-main: #121212;
-            --bg-card: #1e1e1e;
-            --text-primary: #f5f5f5;
-            --text-secondary: #bdbdbd;
-            --border: #333333;
+            --primary: #b4915a; /* Use gold as primary in dark mode */
+            --primary-dark: #a17f4a;
+            --secondary: #8ab08a;
+            --secondary-dark: #6s9c6s;
+            --warning: #b4915a;
+            --bg-main: #2a2a2a;
+            --bg-card: #3a3a3a;
+            --text-primary: #f5f1e8;
+            --text-secondary: #dcd1c0;
+            --border: #5a5a5a;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -120,7 +120,7 @@
         .hint { color: var(--text-muted); font-size: 0.875rem; font-style: italic; }
 
         /* --- Loading Screen --- */
-        .loading-content { text-align: center; }
+        .loading-content { text-align: center; font-family: 'Crimson Text', serif; }
         .spinner {
             width: 50px;
             height: 50px;
@@ -322,7 +322,7 @@
             opacity: 1;
             transition: all var(--transition-base);
         }
-        .intention-card.answered { opacity: 0.6; background: #f0f0f0; }
+        .intention-card.answered { opacity: 0.6; background: var(--bg-main); }
         .intention-card.answered .intention-title { text-decoration: line-through; }
         .intention-header {
             display: flex;
@@ -404,7 +404,7 @@
         }
         .novena-card.answered {
             opacity: 0.6;
-            background: #f0f0f0;
+            background: var(--bg-main);
         }
         .novena-card.answered .novena-title { text-decoration: line-through; }
         .novena-header {
@@ -748,6 +748,8 @@
 
 
     <script type="module">
+        // === 2. THIS IS THE FULL FIREBASE LOGIC ===
+        
         // === Firebase Config ===
         const firebaseConfig = {
             apiKey: "AIzaSyC8h3coWuE2erx7QGQQkykproMDJsg3CUo",
@@ -774,7 +776,7 @@
         let activeIntentions = {};
         let activeNovenas = {};
         let todayDailyData = {};
-        let globalSettings = { dailyGoal: 100 }; // NEW: Add default goal
+        let globalSettings = { dailyGoal: 100 };
         let historyChart;
         
         // === 1. Initialization ===
@@ -797,6 +799,7 @@
 
         async function initializeAppAndAuth() {
             try {
+                // This is the part that was missing from your snippet
                 ({ initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'));
                 ({ getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js'));
                 ({ getDatabase, ref, push, set, update, onValue, increment, get, query, orderByChild, limitToLast, orderByKey } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js'));
@@ -808,16 +811,21 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUser = user;
+                        console.log("Firebase Auth Success. User UID:", user.uid);
                         setupApp();
+                    } else {
+                        console.log("Firebase Auth Failed.");
                     }
                 });
-
-                await signInAnonymously(auth);
+                
+                // This signs you in to Firebase so you can read/write data
+                await signInAnonymously(auth); 
                 
             } catch (error) {
                 console.error('❌ Firebase Init Error:', error);
-                showScreen('pinScreen');
-                showToast('Error loading app: ' + error.message, 'error');
+                // This error happens if you open the file as `file:///`
+                showToast('Error loading app. Try a local server.', 'error');
+                showScreen('pinScreen'); // Go back to PIN screen on error
             }
         }
 
@@ -826,18 +834,18 @@
             document.getElementById('todayDate').textContent = today.toLocaleDateString(undefined, {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
-            document.getElementById('novenaStartDate').value = todayString; // Default novena start date
+            document.getElementById('novenaStartDate').value = todayString;
             
             setupUIListeners();
-            loadUserSettings(); // NEW: Load settings
+            // These functions load data FROM Firebase
+            loadUserSettings(); 
             loadIntentions();
             loadNovenas();
             loadDailyData(todayString);
         }
 
-        // === 2. Data Loading ===
+        // === 2. Data Loading (FROM Firebase) ===
         
-        // NEW function to load user settings
         function loadUserSettings() {
             const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
             onValue(settingsRef, (snapshot) => {
@@ -847,7 +855,7 @@
                 } else {
                     globalSettings.dailyGoal = 100; // Default
                 }
-                updateDailyTally(); // Update tally now that we have the goal
+                updateDailyTally();
             });
         }
 
@@ -858,6 +866,7 @@
             onValue(orderedIntentionsRef, (snapshot) => {
                 activeIntentions = {};
                 const data = snapshot.val() || {};
+                console.log("Loaded intentions:", data);
                 
                 for (const [id, intention] of Object.entries(data)) {
                     if (!intention.deleted) {
@@ -876,6 +885,7 @@
             onValue(orderedNovenasRef, (snapshot) => {
                 activeNovenas = {};
                 const data = snapshot.val() || {};
+                console.log("Loaded novenas:", data);
                 
                 for (const [id, novena] of Object.entries(data)) {
                     if (!novena.deleted) {
@@ -890,6 +900,7 @@
             const dailyDataRef = ref(db, `users/${currentUser.uid}/dailyData/${dateString}`);
             onValue(dailyDataRef, (snapshot) => {
                 todayDailyData = snapshot.val() || {};
+                console.log("Loaded daily data:", todayDailyData);
                 
                 updateToggleButtons('rosary', todayDailyData.rosary);
                 updateToggleButtons('devotions', todayDailyData.devotions);
@@ -897,14 +908,12 @@
                 
                 updateIntentionCounts();
                 updateDailyTally();
-                renderNovenas(); // Re-render novenas to update check-in status
+                renderNovenas(); 
             });
         }
         
-        // NEW Helper to count true values in an object
         const countTrue = (obj) => obj ? Object.values(obj).filter(Boolean).length : 0;
         
-        // UPDATED to load all prayer history
         async function loadHistoryData() {
             const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
             const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
@@ -1061,7 +1070,6 @@
             });
         }
         
-        // UPDATED to include goal
         function updateDailyTally() {
             const intentionCount = todayDailyData.intentionsTotal || 0;
             const devotionCount = countTrue(todayDailyData.rosary) + countTrue(todayDailyData.devotions);
@@ -1084,9 +1092,15 @@
         function renderHistoryChart(labels, intentionData, devotionData, hourData) {
             const ctx = document.getElementById('historyChart').getContext('2d');
             if (historyChart) historyChart.destroy();
+            
             const isDark = document.body.classList.contains('dark-mode');
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            const labelColor = isDark ? '#f9fafb' : '#333333';
+            const labelColor = isDark ? '#f5f1e8' : '#3a3a3a';
+            
+            // New theme colors
+            const primaryColor = isDark ? 'rgba(180, 145, 90, 0.7)' : 'rgba(90, 56, 37, 0.7)';
+            const secondaryColor = isDark ? 'rgba(138, 176, 138, 0.7)' : 'rgba(90, 125, 90, 0.7)';
+            const warningColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(180, 145, 90, 0.7)'; // Lighter gold
             
             historyChart = new Chart(ctx, {
                 type: 'bar',
@@ -1096,17 +1110,17 @@
                         {
                             label: 'Intentions',
                             data: intentionData,
-                            backgroundColor: 'rgba(74, 20, 140, 0.7)', // --primary
+                            backgroundColor: primaryColor,
                         },
                         {
                             label: 'Devotions',
                             data: devotionData,
-                            backgroundColor: 'rgba(0, 77, 64, 0.7)', // --secondary
+                            backgroundColor: secondaryColor,
                         },
                         {
                             label: 'Hours',
                             data: hourData,
-                            backgroundColor: 'rgba(192, 161, 96, 0.7)', // --warning
+                            backgroundColor: warningColor,
                         }
                     ]
                 },
@@ -1136,7 +1150,7 @@
             });
         }
 
-        // === 4. Event Handlers ===
+        // === 4. Event Handlers (Writing TO Firebase) ===
 
         function setupUIListeners() {
             // Tab Navigation
@@ -1160,9 +1174,9 @@
                     const type = e.target.dataset.type;
                     const key = e.target.dataset.key;
                     const newVal = !todayDailyData[type]?.[key];
+                    // THIS WRITES TO FIREBASE
                     const path = `users/${currentUser.uid}/dailyData/${todayString}/${type}/${key}`;
                     set(ref(db, path), newVal);
-                    // onValue listener will update UI
                 });
             });
 
@@ -1181,7 +1195,7 @@
             // Theme Toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
-            // NEW: Set Goal Button
+            // Set Goal Button
             document.getElementById('setGoalBtn').addEventListener('click', window.setDailyGoal);
         }
         
@@ -1195,9 +1209,11 @@
 
             try {
                 if (window.currentEditingIntention) {
+                    // THIS WRITES TO FIREBASE
                     const path = `users/${currentUser.uid}/intentions/${window.currentEditingIntention}`;
                     await update(ref(db, path), intentionData);
                 } else {
+                    // THIS WRITES TO FIREBASE
                     await set(push(ref(db, `users/${currentUser.uid}/intentions`)), {
                         ...intentionData,
                         createdAt: Date.now(),
@@ -1232,7 +1248,7 @@
             };
             
             try {
-                // Note: Editing novenas is not implemented, only adding
+                // THIS WRITES TO FIREBASE
                 await set(push(ref(db, `users/${currentUser.uid}/novenas`)), novenaData);
                 closeNovenaModal();
                 showToast('Novena added');
@@ -1241,30 +1257,27 @@
             }
         }
 
-        // === 5. Global Functions (attached to window) ===
+        // === 5. Global Functions (Writing TO Firebase) ===
         
         window.addCount = (intentionId, delta) => {
             const updates = {};
+            // THIS WRITES TO FIREBASE
             updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsTotal`] = increment(delta);
             updates[`users/${currentUser.uid}/dailyData/${todayString}/intentionsBy/${intentionId}`] = increment(delta);
             update(ref(db), updates);
         };
         
         window.checkInNovena = (novenaId) => {
+            // THIS WRITES TO FIREBASE
             const path = `users/${currentUser.uid}/dailyData/${todayString}/novenaCheckIns/${novenaId}`;
             set(ref(db, path), true);
-            // onValue listener will update the button state
         };
         
-        // NEW: Set Daily Goal
         window.setDailyGoal = async () => {
             const currentGoal = globalSettings.dailyGoal;
             const newGoal = prompt('Set your new daily intention prayer goal:', currentGoal);
             
-            if (newGoal === null || newGoal.trim() === '') {
-                return; // User cancelled
-            }
-            
+            if (newGoal === null || newGoal.trim() === '') return;
             const goalNum = parseInt(newGoal, 10);
             
             if (isNaN(goalNum) || goalNum < 1) {
@@ -1273,11 +1286,11 @@
             }
             
             try {
+                // THIS WRITES TO FIREBASE
                 await set(ref(db, `users/${currentUser.uid}/settings/dailyGoal`), goalNum);
                 showToast('Goal updated!');
-                // onValue listener in loadUserSettings will handle the UI update
             } catch (error) {
-                showToast('Error updating goal: ' + error.message, 'error');
+                showToast('Error updating goal: 'D + error.message, 'error');
             }
         };
 
@@ -1295,6 +1308,7 @@
 
         window.deleteIntention = async (id) => {
             if (!confirm('Are you sure you want to delete this intention?')) return;
+            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { deleted: true, deletedAt: Date.now() });
             showToast('Intention removed');
         };
@@ -1303,12 +1317,14 @@
             const intention = activeIntentions[id];
             if (!intention) return;
             const newVal = !intention.answered;
+            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/intentions/${id}`), { answered: newVal });
             showToast(newVal ? 'Intention marked as answered' : 'Intention marked as active');
         };
         
         window.deleteNovena = async (id) => {
             if (!confirm('Are you sure you want to delete this novena?')) return;
+            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { deleted: true, deletedAt: Date.now() });
             showToast('Novena removed');
         };
@@ -1317,13 +1333,13 @@
             const novena = activeNovenas[id];
             if (!novena) return;
             const newVal = !novena.answered;
+            // THIS WRITES TO FIREBASE
             await update(ref(db, `users/${currentUser.uid}/novenas/${id}`), { answered: newVal });
             showToast(newVal ? 'Novena marked as answered' : 'Novena marked as active');
         };
 
         // === 6. Helper Functions ===
         
-        // --- Modal Helpers ---
         function showIntentionModal() {
             window.currentEditingIntention = null;
             document.getElementById('modalTitle').textContent = 'Add Intention';
@@ -1344,7 +1360,6 @@
             document.getElementById('novenaModal').classList.remove('active');
         }
 
-        // --- General Helpers ---
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             const icon = document.querySelector('.theme-icon');
@@ -1355,12 +1370,9 @@
         }
 
         function showScreen(id) {
-            // Brute-force hide all screens
             document.getElementById('pinScreen').classList.remove('active');
             document.getElementById('loadingScreen').classList.remove('active');
             document.getElementById('appScreen').classList.remove('active');
-            
-            // Show the one requested
             document.getElementById(id).classList.add('active');
         }
 
