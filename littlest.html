@@ -1143,7 +1143,7 @@
       <div class="pin-input-group">
         <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
       </div>
-      <button class="btn btn-primary" id="pinSubmitBtn" style="margin-top:1rem;">Enter</button>
+      <button class="btn btn-primary" id="pinSubmitBtn" style="margin-top:1rem;" type="button">Enter</button>
       <p class="pin-hint">Enter your 6-digit PIN</p>
     </div>
   </div>
@@ -1715,14 +1715,18 @@
       }
     }
 
-    if(pinSubmitBtn){
-      pinSubmitBtn.addEventListener('click', handlePinSubmit);
-    }
-    if(pinInput){
-      pinInput.addEventListener('keydown', (e)=>{
-        if(e.key === 'Enter') handlePinSubmit();
-      });
-    }
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const pinInputNow = document.getElementById('pinInput');
+      const pinSubmitNow = document.getElementById('pinSubmitBtn');
+      if(pinSubmitNow){
+        pinSubmitNow.addEventListener('click', handlePinSubmit);
+      }
+      if(pinInputNow){
+        pinInputNow.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter') handlePinSubmit();
+        });
+      }
+    });
 
     // Local YYYY-MM-DD (avoids UTC off-by-one)
     function localISODate(d=new Date()){
