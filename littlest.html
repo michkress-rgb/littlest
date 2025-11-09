@@ -3144,7 +3144,7 @@ async function startApp(){
         `;
         
         section.items.forEach(item => {
-          const key = item.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+          const key = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.key) ? e.currentTarget.dataset.key : null;
           const checked = todayDailyData.carmeliteReading?.[key] || false;
           
           html += `
