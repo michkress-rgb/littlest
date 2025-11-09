@@ -1146,6 +1146,19 @@
 /* Limit to roughly two lines on typical widths */
 .tab-strip{display:flex;flex-wrap:wrap;gap:.5rem .75rem}
 
+
+/* --- Centered two-row menu --- */
+.nav-tabs, .tabs, .tab-bar, .menu-tabs, .main-tabs, .top-tabs, .tab-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem .85rem;
+  text-align: center;
+}
+.nav-tabs > *, .tabs > *, .tab-bar > *, .menu-tabs > *, .main-tabs > *, .top-tabs > *, .tab-strip > * {
+  flex: 0 1 auto;
+}
+
 </style>
 </head>
 <body>
@@ -2530,6 +2543,15 @@ async function startApp(){
     
       
       // Update Scripture/Lectio badges from counts
+      const sCount = todayDailyData.reading?.scriptureCount || 0;
+      const lCount = todayDailyData.reading?.lectioCount || 0;
+      const sBadge = document.getElementById("scriptureBadge");
+      const lBadge = document.getElementById("lectioBadge");
+      if (sBadge) sBadge.textContent = String(sCount);
+      if (lBadge) lBadge.textContent = String(lCount);
+    
+      
+      // Scripture/Lectio badges from counts
       const sCount = todayDailyData.reading?.scriptureCount || 0;
       const lCount = todayDailyData.reading?.lectioCount || 0;
       const sBadge = document.getElementById("scriptureBadge");
