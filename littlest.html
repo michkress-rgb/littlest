@@ -1133,7 +1133,7 @@
   <div id="loadingScreen" class="screen">
     <div class="loading-content">
       <div class="spinner"></div>
-      <p>Loading your prayers...</p>
+      <p><span id="loadingMessage">Loading your prayers...</span></p>
     </div>
   </div>
 
@@ -2305,6 +2305,7 @@ Relying on your maternal protection and on your constant help, I resolve to live
         if (e.target.value === "332211") {
           showScreen("loadingScreen");
           setTimeout(loadApp, 1000);
+          setTimeout(function(){ try{ if(document.getElementById("loadingScreen").classList.contains("active")) { showScreen("mainApp"); } } catch(e){} }, 5000);
         } else {
           e.target.value = "";
           alert("Incorrect PIN");
@@ -3653,5 +3654,16 @@ Relying on your maternal protection and on your constant help, I resolve to live
       if (currentView === "childrenView") loadChildrenChart();
     }
   </script>
+
+<script>
+window.addEventListener('error', function(e){
+  console.error('Global error:', e.message, e.filename, e.lineno);
+  try {
+    const el = document.getElementById('loadingMessage');
+    if (el) el.textContent = 'Loading took too long. Opening offline mode...';
+  } catch(_){}
+});
+</script>
+
 </body>
 </html>
