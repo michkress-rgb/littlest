@@ -1130,7 +1130,10 @@
         font-size: 2.5rem;
       }
     }
-  </style>
+  
+.badge{display:inline-block;padding:2px 6px;border-radius:9999px;background:#eee;font-size:.8rem}
+.quick-action-btn.active{outline:2px solid currentColor}
+</style>
 </head>
 <body>
   <!-- === PIN SCREEN === -->
@@ -1219,7 +1222,7 @@
         <div class="quick-actions">
           <button class="quick-action-btn" id="quickMass">
             <span class="quick-action-icon">✟</span>
-            <span class="quick-action-label">Mass</span>
+            <span class="quick-action-label">Mass</span> <span id="massBadge" class="badge" style="margin-left:.5rem">0</span>
           </button>
           <button class="quick-action-btn" id="quickScripture">
             <span class="quick-action-icon">📖</span>
@@ -2496,6 +2499,18 @@ async function startApp(){
       document.getElementById("dailyGoalProgress").textContent = progress + "%";
 
       // Calculate streak (simplified - just count consecutive days with data)
+      
+      // Update quick Mass badge
+      const massCount = todayDailyData.mass || 0;
+      const massBadge = document.getElementById("massBadge");
+      if (massBadge) massBadge.textContent = String(massCount);
+
+      // Set quick button states for Scripture / Lectio
+      const qScript = document.getElementById("quickScripture");
+      const qLectio = document.getElementById("quickLectio");
+      if (qScript) qScript.classList.toggle("active", !!(todayDailyData.reading && todayDailyData.reading.scripture));
+      if (qLectio) qLectio.classList.toggle("active", !!(todayDailyData.reading && todayDailyData.reading.lectio));
+    
       document.getElementById("streakCount").textContent = "0";
     }
 
@@ -3473,10 +3488,14 @@ async function startApp(){
       document.getElementById("quickScripture").addEventListener("click", () => {
         const newVal = !todayDailyData.reading?.scripture;
         set(ref(db, `dailyData/${todayString}/reading/scripture`), newVal);
+        try{ showToast(newVal? "Holy Scripture marked" : "Holy Scripture unmarked"); }catch(e){}
+        document.getElementById("quickScripture").classList.toggle("active", newVal);
       });
       document.getElementById("quickLectio").addEventListener("click", () => {
         const newVal = !todayDailyData.reading?.lectio;
         set(ref(db, `dailyData/${todayString}/reading/lectio`), newVal);
+        try{ showToast(newVal? "Lectio Divina marked" : "Lectio Divina unmarked"); }catch(e){}
+        document.getElementById("quickLectio").classList.toggle("active", newVal);
       });
 
       // Children selector
