@@ -2541,6 +2541,15 @@ async function startApp(){
 
     // === DASHBOARD ===
     function renderDashboard() {
+      // Littlest Way reading counters (Scripture/Lectio) badges
+      const sCount = todayDailyData.reading?.scriptureCount || 0;
+      const lCount = todayDailyData.reading?.lectioCount || 0;
+      const sBadge = document.getElementById("scriptureBadge");
+      const lBadge = document.getElementById("lectioBadge");
+      if (sBadge) sBadge.textContent = String(sCount);
+      if (lBadge) lBadge.textContent = String(lCount);
+    
+
       const rosaryCount = (todayDailyData.rosary?.joyful || 0) + 
                          (todayDailyData.rosary?.sorrowful || 0) + 
                          (todayDailyData.rosary?.glorious || 0) + 
@@ -2578,16 +2587,8 @@ async function startApp(){
     
       
       // Scripture/Lectio badges from counts      if (sBadge) sBadge.textContent = String(sCount);
+      if (lBadge) lBadge.textContent = String(lCount);      if (sBadge) sBadge.textContent = String(sCount);
       if (lBadge) lBadge.textContent = String(lCount);
-    
-      
-      const sCount = todayDailyData.reading?.scriptureCount || 0;
-      const lCount = todayDailyData.reading?.lectioCount || 0;
-      const sBadge = document.getElementById("scriptureBadge");
-      const lBadge = document.getElementById("lectioBadge");
-      if (sBadge) sBadge.textContent = String(sCount);
-      if (lBadge) lBadge.textContent = String(lCount);
-    
       document.getElementById("streakCount").textContent = "0";
     }
 
