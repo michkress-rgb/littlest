@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
-        /* --- 1. NEW "VICTORIAN" THEME --- */
+        /* --- 1. "VICTORIAN" THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap');
         
         :root {
@@ -45,6 +45,7 @@
             --primary-dark: #9c27b0;
             --secondary: #26a69a;
             --secondary-dark: #00897b;
+            --warning: #ecd092;
             --bg-main: #121212;
             --bg-card: #1e1e1e;
             --text-primary: #f5f5f5;
@@ -68,8 +69,6 @@
             font-weight: 700;
         }
 
-        /* --- 2. THE BUG FIX --- */
-        /* This ensures only the *active* screen is ever visible */
         .screen {
             display: none; /* Hide all screens by default */
             min-height: 100vh;
@@ -159,6 +158,16 @@
             color: var(--text-secondary);
         }
         .btn-icon:hover { background: var(--border); }
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            font-size: 0.875rem;
+            font-family: 'Crimson Text', serif;
+            cursor: pointer;
+        }
+        .btn-link:hover { color: var(--primary-dark); }
 
         /* --- App Header & Navigation --- */
         .app-header {
@@ -200,7 +209,7 @@
         .view-header { font-size: 2rem; margin-bottom: var(--spacing-xs); color: var(--text-primary); }
         .view-subheader { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
         
-        /* --- 3. NEW Daily Tally --- */
+        /* --- Daily Tally & Goal --- */
         .daily-tally {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -214,6 +223,7 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: var(--spacing-md);
             text-align: center;
+            margin-bottom: var(--spacing-lg);
         }
         .tally-item h4 {
             font-size: 1rem;
@@ -226,6 +236,36 @@
             font-weight: 700;
             color: var(--primary);
             font-family: 'Playfair Display', serif;
+        }
+        .goal-tally {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border);
+        }
+        .goal-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+        .goal-progress-bar {
+            background: var(--border);
+            border-radius: var(--radius-md);
+            height: 12px;
+            overflow: hidden;
+            margin-top: var(--spacing-sm);
+        }
+        .goal-progress-bar div {
+            background: var(--primary);
+            height: 100%;
+            transition: width var(--transition-base);
+        }
+        .goal-tally .tally-count {
+            font-family: 'Crimson Text', serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
         }
 
         .prayer-section { margin-bottom: var(--spacing-xl); }
@@ -310,7 +350,6 @@
         .counter-label { font-size: 0.875rem; color: var(--text-muted); font-family: 'Crimson Text', serif; }
         .counting-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm); }
         
-        /* --- 4. BIGGER +1 BUTTON --- */
         .btn-count {
             padding: var(--spacing-lg);
             font-size: 1.25rem;
@@ -354,7 +393,7 @@
             border: 1px solid var(--border);
         }
         
-        /* --- 5. NEW Novena View --- */
+        /* --- Novena View --- */
         .novena-card {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
@@ -546,7 +585,8 @@
             <nav class="app-nav">
                 <button class="nav-link active" data-view="todayView">Today</button>
                 <button class="nav-link" data-view="intentionsView">Intentions</button>
-                <button class="nav-link" data-view="novenasView">Novenas</button> <button class="nav-link" data-view="historyView">History</button>
+                <button class="nav-link" data-view="novenasView">Novenas</button>
+                <button class="nav-link" data-view="historyView">History</button>
             </nav>
         </header>
 
@@ -556,7 +596,7 @@
                 <p class="view-subheader" id="todayDate">Loading date...</p>
                 
                 <section class="daily-tally">
-                    <h3 style="text-align: center; margin-bottom: 1rem;">Today's Summary</h3>
+                    <h3 style="text-align: center; margin-bottom: 1.5rem;">Today's Summary</h3>
                     <div class="tally-grid">
                         <div class="tally-item">
                             <h4>Intention Prayers</h4>
@@ -569,6 +609,19 @@
                         <div class="tally-item">
                             <h4>Hours Prayed</h4>
                             <p class="tally-count" id="tallyHourCount">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-tally">
+                        <div class="goal-header">
+                            <h4 style="font-family: 'Crimson Text', serif; font-weight: 600;">Daily Intention Goal</h4>
+                            <button id="setGoalBtn" class="btn-link">(Set Goal)</button>
+                        </div>
+                        <p class="tally-count">
+                            <span id="tallyGoalCount">0</span> / <span id="tallyGoalTarget">100</span>
+                        </p>
+                        <div class="goal-progress-bar">
+                            <div id="goalProgressFill" style="width: 0%;"></div>
                         </div>
                     </div>
                 </section>
@@ -625,7 +678,7 @@
 
             <div id="historyView" class="app-view">
                 <h2 class="view-header">Prayer History</h2>
-                <p class="view-subheader">Intention prayers over the last 30 days</p>
+                <p class="view-subheader">Prayer categories over the last 30 days</p>
 
                 <div class="chart-container">
                     <canvas id="historyChart"></canvas>
@@ -708,9 +761,6 @@
         
         // === App Constants ===
         const CORRECT_PIN = "332211";
-        
-        // --- Date Helpers ---
-        // We set these once to avoid issues with crossing midnight
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Normalize to start of day
         const todayString = today.toISOString().slice(0, 10); // "YYYY-MM-DD"
@@ -724,6 +774,7 @@
         let activeIntentions = {};
         let activeNovenas = {};
         let todayDailyData = {};
+        let globalSettings = { dailyGoal: 100 }; // NEW: Add default goal
         let historyChart;
         
         // === 1. Initialization ===
@@ -778,12 +829,27 @@
             document.getElementById('novenaStartDate').value = todayString; // Default novena start date
             
             setupUIListeners();
+            loadUserSettings(); // NEW: Load settings
             loadIntentions();
             loadNovenas();
             loadDailyData(todayString);
         }
 
         // === 2. Data Loading ===
+        
+        // NEW function to load user settings
+        function loadUserSettings() {
+            const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+            onValue(settingsRef, (snapshot) => {
+                const settings = snapshot.val();
+                if (settings && settings.dailyGoal) {
+                    globalSettings.dailyGoal = parseInt(settings.dailyGoal, 10);
+                } else {
+                    globalSettings.dailyGoal = 100; // Default
+                }
+                updateDailyTally(); // Update tally now that we have the goal
+            });
+        }
 
         function loadIntentions() {
             const intentionsRef = ref(db, `users/${currentUser.uid}/intentions`);
@@ -835,6 +901,10 @@
             });
         }
         
+        // NEW Helper to count true values in an object
+        const countTrue = (obj) => obj ? Object.values(obj).filter(Boolean).length : 0;
+        
+        // UPDATED to load all prayer history
         async function loadHistoryData() {
             const historyRef = ref(db, `users/${currentUser.uid}/dailyData`);
             const historyQuery = query(historyRef, orderByKey(), limitToLast(30));
@@ -843,14 +913,23 @@
             const data = snapshot.val() || {};
             
             const labels = [];
-            const chartData = [];
+            const intentionData = [];
+            const devotionData = [];
+            const hourData = [];
             
             for (const [date, dailyData] of Object.entries(data)) {
                 labels.push(date.substring(5)); // "MM-DD"
-                chartData.push(dailyData.intentionsTotal || 0);
+                
+                intentionData.push(dailyData.intentionsTotal || 0);
+                
+                const devotions = countTrue(dailyData.rosary) + countTrue(dailyData.devotions);
+                devotionData.push(devotions);
+                
+                const hours = countTrue(dailyData.breviary);
+                hourData.push(hours);
             }
             
-            renderHistoryChart(labels, chartData);
+            renderHistoryChart(labels, intentionData, devotionData, hourData);
         }
 
         // === 3. UI Rendering & Updates ===
@@ -982,18 +1061,27 @@
             });
         }
         
+        // UPDATED to include goal
         function updateDailyTally() {
             const intentionCount = todayDailyData.intentionsTotal || 0;
-            const devotionCount = Object.values(todayDailyData.rosary || {}).filter(Boolean).length +
-                                  Object.values(todayDailyData.devotions || {}).filter(Boolean).length;
-            const hourCount = Object.values(todayDailyData.breviary || {}).filter(Boolean).length;
+            const devotionCount = countTrue(todayDailyData.rosary) + countTrue(todayDailyData.devotions);
+            const hourCount = countTrue(todayDailyData.breviary);
 
             document.getElementById('tallyIntentionCount').textContent = intentionCount;
             document.getElementById('tallyDevotionCount').textContent = devotionCount;
             document.getElementById('tallyHourCount').textContent = hourCount;
+            
+            // Update Goal
+            const goal = globalSettings.dailyGoal;
+            document.getElementById('tallyGoalCount').textContent = intentionCount;
+            document.getElementById('tallyGoalTarget').textContent = goal;
+            
+            const percent = Math.min(100, (intentionCount / goal) * 100);
+            document.getElementById('goalProgressFill').style.width = `${percent}%`;
         }
 
-        function renderHistoryChart(labels, data) {
+        // UPDATED to be a stacked bar chart
+        function renderHistoryChart(labels, intentionData, devotionData, hourData) {
             const ctx = document.getElementById('historyChart').getContext('2d');
             if (historyChart) historyChart.destroy();
             const isDark = document.body.classList.contains('dark-mode');
@@ -1004,23 +1092,46 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Intention Prayers',
-                        data: data,
-                        backgroundColor: 'rgba(74, 20, 140, 0.7)',
-                        borderColor: 'rgba(74, 20, 140, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                    }]
+                    datasets: [
+                        {
+                            label: 'Intentions',
+                            data: intentionData,
+                            backgroundColor: 'rgba(74, 20, 140, 0.7)', // --primary
+                        },
+                        {
+                            label: 'Devotions',
+                            data: devotionData,
+                            backgroundColor: 'rgba(0, 77, 64, 0.7)', // --secondary
+                        },
+                        {
+                            label: 'Hours',
+                            data: hourData,
+                            backgroundColor: 'rgba(192, 161, 96, 0.7)', // --warning
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: labelColor } },
-                        x: { grid: { display: false }, ticks: { color: labelColor } }
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: gridColor }, 
+                            ticks: { color: labelColor },
+                            stacked: true // Stack Y axis
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: labelColor },
+                            stacked: true // Stack X axis
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { 
+                            display: true, // Show legend
+                            labels: { color: labelColor }
+                        } 
+                    }
                 }
             });
         }
@@ -1069,6 +1180,9 @@
             
             // Theme Toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // NEW: Set Goal Button
+            document.getElementById('setGoalBtn').addEventListener('click', window.setDailyGoal);
         }
         
         async function handleIntentionSubmit(e) {
@@ -1140,6 +1254,31 @@
             const path = `users/${currentUser.uid}/dailyData/${todayString}/novenaCheckIns/${novenaId}`;
             set(ref(db, path), true);
             // onValue listener will update the button state
+        };
+        
+        // NEW: Set Daily Goal
+        window.setDailyGoal = async () => {
+            const currentGoal = globalSettings.dailyGoal;
+            const newGoal = prompt('Set your new daily intention prayer goal:', currentGoal);
+            
+            if (newGoal === null || newGoal.trim() === '') {
+                return; // User cancelled
+            }
+            
+            const goalNum = parseInt(newGoal, 10);
+            
+            if (isNaN(goalNum) || goalNum < 1) {
+                showToast('Please enter a valid number.', 'error');
+                return;
+            }
+            
+            try {
+                await set(ref(db, `users/${currentUser.uid}/settings/dailyGoal`), goalNum);
+                showToast('Goal updated!');
+                // onValue listener in loadUserSettings will handle the UI update
+            } catch (error) {
+                showToast('Error updating goal: ' + error.message, 'error');
+            }
         };
 
         window.currentEditingIntention = null;
@@ -1215,7 +1354,6 @@
             }
         }
 
-        /* --- THIS IS THE BUG FIX --- */
         function showScreen(id) {
             // Brute-force hide all screens
             document.getElementById('pinScreen').classList.remove('active');
