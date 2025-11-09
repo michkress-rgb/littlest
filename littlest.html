@@ -1149,7 +1149,7 @@
   <div id="loadingScreen" class="screen">
     <div class="loading-content">
       <div class="spinner"></div>
-      <p>Loading your prayers...</p>
+      <p><span id="loadingMessage">Loading your prayers...</span></p>
     </div>
   </div>
 
@@ -2327,14 +2327,8 @@ Relying on your maternal protection and on your constant help, I resolve to live
     document.getElementById("pinInput").addEventListener("input", (e) => {
       if (e.target.value.length === 6) {
         if (e.target.value === "332211") {
-          showScreen("loadingScreen");
-          setTimeout(loadApp, 1000);
-        
-          // hard fallback if something stalls
-          setTimeout(function(){
-            try { if (document.getElementById("loadingScreen").classList.contains("active")) {
-              if (typeof renderAll === "function") renderAll();
-              if (typeof showScreen === "function") showScreen("mainApp");
+          showScreen("loadingScreen"); startApp();
+if (typeof showScreen === "function") showScreen("mainApp");
             }} catch(_){}
           }, 7000);
 } else {
@@ -2361,6 +2355,23 @@ Relying on your maternal protection and on your constant help, I resolve to live
     try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(e){}
   }
 }
+// Deterministic startup that never hangs on loading
+async function startApp(){
+  try {
+    showScreen && showScreen("loadingScreen");
+  } catch(_){}
+  const timeout = new Promise((resolve)=>setTimeout(resolve, 4000));
+  try {
+    await Promise.race([ (typeof loadApp === 'function' ? loadApp() : Promise.resolve()), timeout ]);
+  } catch (e) {
+    console.warn("startApp race error", e);
+  } finally {
+    try { if (typeof renderAll === 'function') renderAll(); } catch(_){}
+    try { if (typeof updateDateDisplay === 'function') updateDateDisplay(); } catch(_){}
+    try { if (typeof showScreen === 'function') showScreen("mainApp"); } catch(_){}
+  }
+}
+
 
     async function loadData() {
       updateViewDateString();
