@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Littlest Way - Prayer Tracker</title>
+  <meta name="theme-color" content="#5a3825" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- === PIN SCREEN === -->
+  <div id="pinScreen" class="screen active">
+    <div class="pin-container">
+      <h1>Littlest Way</h1>
+      <p class="pin-subtitle">A path of little prayers</p>
+      <div class="pin-input-group">
+        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Enter PIN" />
+      </div>
+      <button id="pinSubmitBtn" class="btn btn-primary">Enter</button>
+      <p class="pin-hint">Enter your 6-digit PIN</p>
+    </div>
+  </div>
+
+  <!-- === LOADING SCREEN === -->
+  <div id="loadingScreen" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p><span id="loadingMessage">Loading your prayers...</span></p>
+    </div>
+  </div>
+
+  <!-- === MAIN APP === -->
+  <div id="mainApp" class="screen">
+    <header class="app-header">
+      <div class="header-content">
+        <h1>Littlest Way</h1>
+        <div class="header-actions">
+          <button id="menuToggle" class="btn-icon" title="Menu">☰</button>
+          <button id="themeToggle" class="btn-icon" title="Toggle Theme">
+            <span class="theme-icon">☾</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date Navigator -->
+      <div class="date-navigator">
+        <button id="prevDayBtn" class="nav-arrow">←</button>
+        <div class="date-display" id="currentDateDisplay">Today</div>
+        <button id="nextDayBtn" class="nav-arrow">→</button>
+      </div>
+    </header>
+
+    <!-- Side Menu -->
+    <div id="sideMenu" class="side-menu">
+      <div class="side-menu-header">
+        <h2>Menu</h2>
+        <button id="closeMenu" class="btn-icon">×</button>
+      </div>
+      <div class="side-menu-content">
+        <div class="menu-section">
+          <h3>Main</h3>
+          <button class="menu-item active" data-view="dashboardView">
+            <span class="menu-icon">🏠</span>
+            <span>Dashboard</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Daily Prayer</h3>
+          <button class="menu-item" data-view="dailyPrayersView">
+            <span class="menu-icon">🌅</span>
+            <span>Daily Prayers</span>
+          </button>
+          <button class="menu-item" data-view="rosaryView">
+            <span class="menu-icon">📿</span>
+            <span>Rosary</span>
+          </button>
+          <button class="menu-item" data-view="silentView">
+            <span class="menu-icon">🕊️</span>
+            <span>Silent Prayer</span>
+          </button>
+          <button class="menu-item" data-view="devotionsView">
+            <span class="menu-icon">🙏</span>
+            <span>Devotions</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Liturgy</h3>
+          <button class="menu-item" data-view="breviaryView">
+            <span class="menu-icon">📖</span>
+            <span>Breviary</span>
+          </button>
+          <button class="menu-item" data-view="stJosephView">
+            <span class="menu-icon">🔨</span>
+            <span>St. Joseph Office</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Carmelite</h3>
+          <button class="menu-item" data-view="carmelitePrayersView">
+            <span class="menu-icon">⛰️</span>
+            <span>Carmelite Prayers</span>
+          </button>
+          <button class="menu-item" data-view="carmeliteView">
+            <span class="menu-icon">📚</span>
+            <span>Carmelite Reading</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Special Devotions</h3>
+          <button class="menu-item" data-view="stMichaelView">
+            <span class="menu-icon">⚔️</span>
+            <span>St. Michael Chaplet</span>
+          </button>
+          <button class="menu-item" data-view="wayView">
+            <span class="menu-icon">✟</span>
+            <span>Way of the Cross</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Personal</h3>
+          <button class="menu-item" data-view="intentionsView">
+            <span class="menu-icon">💭</span>
+            <span>Intentions</span>
+          </button>
+          <button class="menu-item" data-view="novenaView">
+            <span class="menu-icon">🕯️</span>
+            <span>Novenas</span>
+          </button>
+          <button class="menu-item" data-view="childrenView">
+            <span class="menu-icon">👶</span>
+            <span>Children</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>Study</h3>
+          <button class="menu-item" data-view="readingView">
+            <span class="menu-icon">📖</span>
+            <span>Spiritual Reading</span>
+          </button>
+          <button class="menu-item" data-view="sacramentsView">
+            <span class="menu-icon">✟</span>
+            <span>Sacraments</span>
+          </button>
+        </div>
+
+        <div class="menu-section">
+          <h3>History</h3>
+          <button class="menu-item" data-view="historyView">
+            <span class="menu-icon">📊</span>
+            <span>Prayer History</span>
+          </button>
+        </div>
+
+        <div class="menu-section menu-footer">
+          <button id="exportDataBtn" class="menu-item">
+            <span class="menu-icon">💾</span>
+            <span>Export Data</span>
+          </button>
+          <button id="setGoalBtn" class="menu-item">
+            <span class="menu-icon">🎯</span>
+            <span>Set Daily Goal</span>
+          </button>
+          <button id="logoutBtn" class="menu-item">
+            <span class="menu-icon">🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div id="mainContent" class="main-content">
+      <!-- Dashboard View -->
+      <div id="dashboardView" class="app-view active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="todayPrayersCount">0</div>
+            <div class="stat-label">Prayers Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dailyGoalProgress">0%</div>
+            <div class="stat-label">Daily Goal</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="streakCount">0</div>
+            <div class="stat-label">Day Streak</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-action-btn" id="quickMass">
+              <span class="quick-action-icon">✝️</span>
+              <span class="quick-action-label">Mass</span>
+            </button>
+            <button class="quick-action-btn" id="quickScripture">
+              <span class="quick-action-icon">📖</span>
+              <span class="quick-action-label">Scripture</span>
+            </button>
+            <button class="quick-action-btn" id="quickLectio">
+              <span class="quick-action-icon">🙏</span>
+              <span class="quick-action-label">Lectio</span>
+            </button>
+            <button class="quick-action-btn" id="quickRosary">
+              <span class="quick-action-icon">📿</span>
+              <span class="quick-action-label">Rosary</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Favorites Section -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Favorites</h2>
+            <button class="btn-link" id="manageFavoritesBtn">Manage</button>
+          </div>
+          <div id="favoritesList" class="favorites-container">
+            <p class="empty-state">Add your most-used prayers to quick access</p>
+          </div>
+        </div>
+
+        <!-- Quick Add Intention -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Quick Add Intention</h2>
+          </div>
+          <div class="quick-add-intention">
+            <input type="text" id="quickIntentionInput" class="form-input" placeholder="What would you like to pray for?" />
+            <button id="quickAddIntentionBtn" class="btn btn-primary">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Views (placeholders) -->
+      <div id="dailyPrayersView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🌅 Daily Prayers</h2>
+          </div>
+          <div id="dailyPrayersList"></div>
+        </div>
+      </div>
+
+      <div id="rosaryView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🌹 Rosary</h2>
+          </div>
+          <div id="rosaryList"></div>
+        </div>
+      </div>
+
+      <div id="stMichaelView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⚔️ St. Michael Chaplet</h2>
+            <button class="btn-icon" onclick="showPrayerInfo('stMichaelChaplet')" title="Prayer Instructions">ℹ️</button>
+          </div>
+          <div id="stMichaelContent"></div>
+        </div>
+      </div>
+
+      <div id="wayView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">✟ Way of the Cross</h2>
+          </div>
+          <div id="wayOfCrossContent"></div>
+        </div>
+      </div>
+
+      <div id="silentView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🕊️ Silent Prayer</h2>
+          </div>
+          <div id="silentPrayerContent"></div>
+        </div>
+      </div>
+
+      <div id="devotionsView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🙏 Devotions</h2>
+          </div>
+          <div id="devotionsList"></div>
+        </div>
+      </div>
+
+      <div id="breviaryView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📿 Liturgy of the Hours</h2>
+          </div>
+          <div id="breviaryList"></div>
+        </div>
+      </div>
+
+      <div id="stJosephView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🔨 Little Office of St. Joseph</h2>
+          </div>
+          <div id="stJosephOfficeList"></div>
+        </div>
+      </div>
+
+      <div id="carmelitePrayersView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⛰️ Carmelite Prayers</h2>
+          </div>
+          <div id="carmelitePrayersList"></div>
+        </div>
+      </div>
+
+      <div id="readingView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📖 Spiritual Reading</h2>
+          </div>
+          <div id="readingList"></div>
+        </div>
+      </div>
+
+      <div id="carmeliteView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📚 Carmelite Spiritual Reading</h2>
+          </div>
+          <div id="carmeliteReadingList"></div>
+        </div>
+      </div>
+
+      <div id="sacramentsView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">✟ Sacraments</h2>
+          </div>
+          <div id="sacramentsContent"></div>
+        </div>
+      </div>
+
+      <div id="childrenView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">👶 Children's Prayers</h2>
+          </div>
+          <div id="childrenContent"></div>
+        </div>
+      </div>
+
+      <div id="intentionsView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">💭 Prayer Intentions</h2>
+            <button class="btn btn-primary" id="addIntentionBtn">+ Add</button>
+          </div>
+          <div id="intentionsList"></div>
+        </div>
+      </div>
+
+      <div id="novenaView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🕯️ Novenas</h2>
+            <button class="btn btn-primary" id="addNovenaBtn">+ Add</button>
+          </div>
+          <div id="novenaList"></div>
+        </div>
+      </div>
+
+      <div id="historyView" class="app-view">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📊 Prayer History</h2>
+          </div>
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+  </div>
+
+  <!-- Modals (same as before, but will be managed better) -->
+  <div id="intentionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Intention</h3>
+        <button class="modal-close" id="closeIntentionModal">×</button>
+      </div>
+      <form id="intentionForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Intention Title *</label>
+            <input type="text" class="form-input" id="intentionTitle" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-textarea" id="intentionNote" placeholder="Add any additional details..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelIntentionModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Prayer Text Modal -->
+  <div id="prayerTextModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="prayerTextTitle">Prayer</h3>
+        <button class="modal-close" onclick="closePrayerTextModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="prayerTextContent" style="font-size: 1.05rem; line-height: 1.9; white-space: pre-wrap;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closePrayerTextModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & App Script -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
